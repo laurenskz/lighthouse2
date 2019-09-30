@@ -80,6 +80,7 @@ void PrepareScene()
 //  +-----------------------------------------------------------------------------+
 bool HandleInput( float frameTime )
 {
+#ifdef _MSC_VER
 	// handle keyboard input
 	float tspd = (keystates[GLFW_KEY_LEFT_SHIFT] ? 15.0f : 5.0f) * frameTime, rspd = 2.5f * frameTime;
 	bool changed = false;
@@ -111,6 +112,9 @@ bool HandleInput( float frameTime )
 	}
 	// let the main loop know if the camera should update
 	return changed;
+#else
+	return false;
+#endif
 }
 
 //  +-----------------------------------------------------------------------------+
