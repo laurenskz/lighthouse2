@@ -2,6 +2,8 @@
 # asa first-class language:
 cmake_minimum_required(VERSION 3.10)
 
+cmake_policy(SET CMP0074 NEW)
+
 project(Lighthouse2)
 
 # Module and Config searches look in the cmake subdirectory first:
