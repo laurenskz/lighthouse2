@@ -21,7 +21,8 @@ set(SEARCH_PATHS
     $ENV{ProgramFiles}/freeimage/include $ENV{SystemDrive}/freeimage/include
     $ENV{ProgramFiles}/freeimage $ENV{SystemDrive}/freeimage)
 if(FREEIMAGE_ROOT)
-  set(SEARCH_PATHS ${FREEIMAGE_ROOT} ${FREEIMAGE_ROOT}/include ${SEARCH_PATHS})
+  set(SEARCH_PATHS ${FREEIMAGE_ROOT} ${FREEIMAGE_ROOT}/include
+                   ${FREEIMAGE_ROOT}/inc ${SEARCH_PATHS})
 endif()
 
 find_path(
@@ -34,14 +35,9 @@ if(NOT FREEIMAGE_INCLUDE_DIRS) # now look in system locations
 endif(NOT FREEIMAGE_INCLUDE_DIRS)
 
 if(FREEIMAGE_ROOT)
-  set(FREEIMAGE_LIBRARY_DIRS ${FREEIMAGE_ROOT})
-  if(EXISTS "${FREEIMAGE_ROOT}/lib")
-    set(FREEIMAGE_LIBRARY_DIRS ${FREEIMAGE_LIBRARY_DIRS} ${FREEIMAGE_ROOT}/lib)
-  endif()
-  if(EXISTS "${FREEIMAGE_ROOT}/lib/static")
-    set(FREEIMAGE_LIBRARY_DIRS ${FREEIMAGE_LIBRARY_DIRS}
-                               ${FREEIMAGE_ROOT}/lib/static)
-  endif()
+  set(FREEIMAGE_LIBRARY_DIRS
+      ${FREEIMAGE_ROOT} ${FREEIMAGE_ROOT}/lib ${FREEIMAGE_ROOT}/lib/static
+      ${FREEIMAGE_ROOT}/lib64 ${FREEIMAGE_ROOT}/lib64/static)
 endif()
 
 # FREEIMAGE Without system dirs
