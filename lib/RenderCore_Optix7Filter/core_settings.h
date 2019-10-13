@@ -198,6 +198,7 @@ struct CUDAMaterial4
 #ifndef __CUDACC__
 #define OPTIXU_MATH_DEFINE_IN_NAMESPACE
 #define _USE_MATH_DEFINES
+
 #include "core_api_base.h"
 #include "core_api.h"
 
