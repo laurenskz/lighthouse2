@@ -20,7 +20,7 @@ namespace lh2core
 
 // from OptiX SDK, putil.h
 #define CHK_PRIME(c){RTPresult r=c;if(r){const char*e;rtpContextGetLastErrorString(RenderCore::context,&e);\
-FatalError( "Error at line %i of %s: %s", __LINE__,__FILE__,e);exit(1);}}
+FatalError( "Error at line %i of %s: %s", __LINE__,__FILE__,e);}}
 
 //  +-----------------------------------------------------------------------------+
 //  |  DeviceVars                                                                 |

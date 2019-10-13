@@ -65,7 +65,7 @@ public:
 		uint64_t max_perf = 0;
 		cudaDeviceProp deviceProp;
 		cudaGetDeviceCount( &count );
-		if (count == 0) exit( EXIT_FAILURE );
+		if (count == 0) FatalError( "No CUDA devices!" );
 		while (curdev < count)
 		{
 			cudaGetDeviceProperties( &deviceProp, curdev );
@@ -83,13 +83,8 @@ public:
 			else prohibited++;
 			++curdev;
 		}
-		if (prohibited == count) exit( EXIT_FAILURE );
+		if (prohibited == count) FatalError( "All CUDA devices are prohibited from use!" );
 		return fastest;
-	}
-	static void fail( const char* t )
-	{
-		printf( t );
-		while (1) exit( 0 );
 	}
 	static const char* decodeError( cudaError_t res )
 	{
