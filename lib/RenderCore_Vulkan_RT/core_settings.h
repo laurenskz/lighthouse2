@@ -31,12 +31,6 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif
 
-#ifdef _DEBUG
-#pragma comment(lib, "../platform/lib/debug/platform.lib" )
-#else
-#pragma comment(lib, "../platform/lib/release/platform.lib" )
-#endif
-
 #include "platform.h"
 
 #define NV_EXTENSIONS

@@ -25,12 +25,6 @@
 
 #include "platform.h"
 
-#ifdef _DEBUG
-#pragma comment(lib, "../platform/lib/debug/platform.lib" )
-#else
-#pragma comment(lib, "../platform/lib/release/platform.lib" )
-#endif
-
 using namespace lighthouse2;
 
 #include "core_api_base.h"
