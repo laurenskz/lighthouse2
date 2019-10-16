@@ -84,3 +84,7 @@ foreach(app IN LISTS app_directories)
 
   add_subdirectory(${app})
 endforeach()
+
+if(WIN32)
+  set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ImguiApp)
+endif()
