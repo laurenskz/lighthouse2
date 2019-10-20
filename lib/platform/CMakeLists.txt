@@ -24,3 +24,7 @@ find_package(ZLIB REQUIRED)
 # External dependencies, PUBLIC because exposed through header:
 target_link_libraries(${PROJECT_NAME} PUBLIC glad ${PLATFORM_GLFW} Half::half
                                              FreeImage::freeimage ZLIB::ZLIB)
+
+if(BUILD_SHARED_LIBS)
+  install(TARGETS ${PROJECT_NAME})
+endif()

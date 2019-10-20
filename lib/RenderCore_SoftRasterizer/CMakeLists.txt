@@ -10,3 +10,5 @@ if(MSVC)
 endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE COREDLL_EXPORTS=1)
 target_link_libraries(${PROJECT_NAME} PRIVATE RenderSystem)
+
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")

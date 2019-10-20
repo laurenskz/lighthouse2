@@ -30,6 +30,9 @@
 set(OptiX_INSTALL_DIR
     "${CMAKE_CURRENT_LIST_DIR}/../"
     CACHE PATH "Path to OptiX installed location.")
+set(OptiX_VERSION
+    "6.5.0"
+    CACHE STRING "The full OptiX6 version string")
 
 # The distribution contains only 64 bit libraries.  Error when we have been mis-
 # configured.
@@ -72,9 +75,9 @@ macro(OPTIX_find_api_library name version)
   endif()
 endmacro()
 
-optix_find_api_library(optix 6.5.0)
-optix_find_api_library(optixu 6.5.0)
-optix_find_api_library(optix_prime 6.5.0)
+optix_find_api_library(optix ${OptiX_VERSION})
+optix_find_api_library(optixu ${OptiX_VERSION})
+optix_find_api_library(optix_prime ${OptiX_VERSION})
 
 # Include
 find_path(

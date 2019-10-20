@@ -35,6 +35,4 @@ target_compile_definitions(
 target_include_directories(${PROJECT_NAME}
                            PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
-if(BUILD_SHARED_LIBS)
-  install(TARGETS ${PROJECT_NAME})
-endif()
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")

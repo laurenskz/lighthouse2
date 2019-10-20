@@ -15,3 +15,8 @@ register_app(${PROJECT_NAME})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY
                                                  "${CMAKE_CURRENT_SOURCE_DIR}")
+
+install(TARGETS ${PROJECT_NAME} RUNTIME)
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
+                  "${CMAKE_CURRENT_SOURCE_DIR}/shaders" TYPE DATA)

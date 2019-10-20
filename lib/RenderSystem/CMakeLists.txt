@@ -45,3 +45,7 @@ target_compile_definitions(
   ${PROJECT_NAME}
   PUBLIC $<$<BOOL:${HAVE_MMAP}>:PBRT_HAVE_MMAP>
          $<$<OR:$<BOOL:${MSVC}>,$<BOOL:${WIN32}>>:PBRT_IS_WINDOWS>)
+
+if(BUILD_SHARED_LIBS)
+  install(TARGETS ${PROJECT_NAME})
+endif()

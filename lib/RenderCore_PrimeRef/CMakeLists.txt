@@ -29,3 +29,5 @@ target_compile_definitions(
 # set_source_files_properties(${SOURCES} PROPERTIES LANGUAGE CUDA)
 target_include_directories(${PROJECT_NAME}
                            PRIVATE ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")

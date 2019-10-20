@@ -11,6 +11,4 @@ endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE COREDLL_EXPORTS=1)
 target_link_libraries(${PROJECT_NAME} PRIVATE RenderSystem)
 
-if(BUILD_SHARED_LIBS)
-  install(TARGETS ${PROJECT_NAME})
-endif()
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
