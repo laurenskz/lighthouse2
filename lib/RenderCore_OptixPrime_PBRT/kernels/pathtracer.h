@@ -104,9 +104,6 @@ void shadeKernel( float4* accumulator, const uint stride,
 	const float3 I = RAY_O + HIT_T * D;
 	const float coneWidth = spreadAngle * HIT_T;
 
-	LOCAL_MATERIAL_STORAGE( inplace_material );
-
-
 	// Fetch entire tri
 	CoreTri4 tri = instanceTriangles[PRIMIDX];
 	const CoreMaterialDesc matDesc = materialDescriptors[__float_as_int( tri.v4.w )];
@@ -114,12 +111,22 @@ void shadeKernel( float4* accumulator, const uint stride,
 	if (matDesc.type == MaterialType::DISNEY)
 		tri.v4.w = __int_as_float( matDesc.instanceLocation );
 
-	auto materialPtr = GetMaterial( inplace_material, tri );
+	// Switch between a directly-inlinable material, versus virtual material class:
+#if 1
+	deviceMaterials::MaterialStore inplace_material;
+
+	// GetMaterial returns a mutable pointer
+	// Justification: setup function is separate to prevent overcrowding GetMaterial+constructors
+	auto materialPtr = deviceMaterials::GetMaterial( inplace_material, matDesc );
 	if ( !materialPtr )
 		// Should hardly ever happen
 		return;
 	materialPtr->Setup( D, HIT_U, HIT_V, coneWidth, tri, INSTANCEIDX, N, iN, fN, T );
 	const auto& material = *materialPtr;
+#else
+	deviceMaterials::DisneyMaterial material;
+	material.Setup( D, HIT_U, HIT_V, coneWidth, tri, INSTANCEIDX, N, iN, fN, T );
+#endif
 
 	// we need to detect alpha in the shading code.
 	if (material.IsAlpha())

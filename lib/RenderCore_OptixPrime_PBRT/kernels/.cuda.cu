@@ -87,11 +87,12 @@ __host__ void SetCounters( Counters* p ) { cudaMemcpyToSymbol( counters, &p, siz
 
 // functional blocks
 #include "tools_shared.h"
+#include "tools.h"
 #include "sampling_shared.h"
 #include "material_shared.h"
 #include "lights_shared.h"
 #include "bsdf.h"
-#include "../../CUDA/shared_kernel_code/material_intf.h"
+#include "material_intf.h"
 #include "pathtracer.h"
 #include "finalize_shared.h"
 #include "camera.h"

@@ -16,7 +16,8 @@ class DisneyMaterial : public MaterialIntf
 		const float waveLength = -1.0f	 // IN:	wavelength (optional)
 		) override
 	{
-		GetShadingData( D, u, v, coneWidth, tri, instIdx, shadingData, N, iN, fN, T, waveLength );
+		GetShadingData( D, u, v, coneWidth, tri, instIdx,
+						shadingData, N, iN, fN, T, waveLength );
 	}
 
 	__device__ void DisableTransmittance() override
