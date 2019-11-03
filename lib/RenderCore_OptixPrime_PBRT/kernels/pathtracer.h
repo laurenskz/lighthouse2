@@ -115,7 +115,7 @@ void shadeKernel( float4* accumulator, const uint stride,
 
 	// TODO: PBRT Always has this as false
 	// TODO: Figure out where PBRT accounts for specular reflection/transmission
-	bool specular = false;
+	bool specular = true;
 	deviceMaterials::BxDFType bsdfFlags = specular ? deviceMaterials::BSDF_ALL : deviceMaterials::BSDF_ALL_EXCEPT_SPECULAR;
 
 	// Switch between a directly-inlinable material, versus virtual material class:
