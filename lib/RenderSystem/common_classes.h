@@ -265,7 +265,15 @@ public:
 	// additional bxdf properties
 	// Add data for new BxDFs here. Add '//' to values that are shared with previously
 	// specified material parameter sets.
-	// ...
+
+	// PBRT common values:
+	// TODO: How should this be handled together with unidirectional roughness?
+	ScalarValue urough, vrough;
+
+	// PBRT Glass mapping:
+	// Vec3Value R: color
+	// TODO: Validate if this is transmitted or absorbed color.
+	// Vec3Value T: absorption
 
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };

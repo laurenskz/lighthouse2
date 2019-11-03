@@ -124,7 +124,9 @@ public:
 	// additional bxdf properties
 	// Add data for new BxDFs here. Add '//' to values that are shared with previously
 	// specified material parameter sets.
-	// ...
+
+	// PBRT common values:
+	ScalarValue urough, vrough;
 
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 

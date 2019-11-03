@@ -14,8 +14,9 @@
 */
 
 // generic includes
-#include <stdio.h>
 #include <algorithm>
+#include <cstdint>
+#include <cstdio>
 
 // custom types
 typedef unsigned int uint;

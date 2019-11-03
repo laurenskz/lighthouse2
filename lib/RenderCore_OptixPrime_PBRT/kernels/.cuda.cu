@@ -22,6 +22,8 @@ namespace lh2core
 __constant__ CoreInstanceDesc* instanceDescriptors;
 __constant__ CUDAMaterial* materials;
 __constant__ CoreMaterialDesc* materialDescriptors;
+// For simplicity PBRT materials receive the full-fat CoreMaterial instead of a slimmed-down CUDAMaterial
+__constant__ CoreMaterial* pbrtMaterials;
 __constant__ CoreLightTri* areaLights;
 __constant__ CorePointLight* pointLights;
 __constant__ CoreSpotLight* spotLights;
@@ -43,6 +45,7 @@ __constant__ __device__ float clampValue;
 __host__ void SetInstanceDescriptors( CoreInstanceDesc* p ) { cudaMemcpyToSymbol( instanceDescriptors, &p, sizeof( void* ) ); }
 __host__ void SetMaterialList( CUDAMaterial* p ) { cudaMemcpyToSymbol( materials, &p, sizeof( void* ) ); }
 __host__ void SetMaterialDescList( CoreMaterialDesc* p ) { cudaMemcpyToSymbol( materialDescriptors, &p, sizeof( void* ) ); }
+__host__ void SetPbrtMaterialList( CoreMaterial* p ) { cudaMemcpyToSymbol( pbrtMaterials, &p, sizeof( p ) ); }
 __host__ void SetAreaLights( CoreLightTri* p ) { cudaMemcpyToSymbol( areaLights, &p, sizeof( void* ) ); }
 __host__ void SetPointLights( CorePointLight* p ) { cudaMemcpyToSymbol( pointLights, &p, sizeof( void* ) ); }
 __host__ void SetSpotLights( CoreSpotLight* p ) { cudaMemcpyToSymbol( spotLights, &p, sizeof( void* ) ); }

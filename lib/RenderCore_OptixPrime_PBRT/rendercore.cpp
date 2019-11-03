@@ -43,6 +43,7 @@ void InitCountersSubsequent();
 void SetInstanceDescriptors( CoreInstanceDesc* p );
 void SetMaterialList( CUDAMaterial* p );
 void SetMaterialDescList( CoreMaterialDesc* p );
+void SetPbrtMaterialList( CoreMaterial* p );
 void SetAreaLights( CoreLightTri* p );
 void SetPointLights( CorePointLight* p );
 void SetSpotLights( CoreSpotLight* p );
