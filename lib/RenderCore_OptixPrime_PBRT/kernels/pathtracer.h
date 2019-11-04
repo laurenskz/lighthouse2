@@ -108,6 +108,8 @@ void shadeKernel( float4* accumulator, const uint stride,
 	CoreTri4 tri = instanceTriangles[PRIMIDX];
 	const CoreMaterialDesc matDesc = materialDescriptors[__float_as_int( tri.v4.w )];
 	// Update, GetShadingData doesn't work with matDesc.
+	// NOTE: Could be moved to the MaterialIntf implementations leveraging GetShadingData,
+	// if it weren't for `tri' being passed as const CoreTri4&.
 	if (matDesc.type == MaterialType::DISNEY)
 		tri.v4.w = __int_as_float( matDesc.instanceLocation );
 
@@ -126,11 +128,11 @@ void shadeKernel( float4* accumulator, const uint stride,
 	if ( !materialPtr )
 		// Should hardly ever happen
 		return;
-	materialPtr->Setup( D, HIT_U, HIT_V, coneWidth, tri, INSTANCEIDX, N, iN, fN, T );
+	materialPtr->Setup( D, HIT_U, HIT_V, coneWidth, tri, INSTANCEIDX, matDesc.instanceLocation, N, iN, fN, T );
 	const auto& material = *materialPtr;
 #else
 	deviceMaterials::DisneyMaterial material;
-	material.Setup( D, HIT_U, HIT_V, coneWidth, tri, INSTANCEIDX, N, iN, fN, T );
+	material.Setup( D, HIT_U, HIT_V, coneWidth, tri, INSTANCEIDX, matDesc.instanceLocation, N, iN, fN, T );
 #endif
 
 	// we need to detect alpha in the shading code.
