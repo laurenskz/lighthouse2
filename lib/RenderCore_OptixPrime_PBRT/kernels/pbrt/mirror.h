@@ -31,32 +31,20 @@
 
 #pragma once
 
-// Fresnel declarations
-
-class Fresnel
+class Mirror : public SimpleMaterial<SpecularReflection<FresnelNoOp>>
 {
   public:
-	__device__ virtual float3 Evaluate( float cosI ) const = 0;
-};
-
-class FresnelDielectric : public Fresnel
-{
-	float etaI, etaT;
-
-  public:
-	__device__ FresnelDielectric( float etaI, float etaT ) : etaI( etaI ), etaT( etaT ) {}
-
-	__device__ float3 Evaluate( float cosThetaI ) const override
+	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const bool allowMultipleLobes,
+												const TransportMode mode ) override
 	{
-		return make_float3( FrDielectric( cosThetaI, etaI, etaT ) );
-	}
-};
+		// TODO: Bumpmapping
 
-class FresnelNoOp : public Fresnel
-{
-  public:
-	__device__ float3 Evaluate( float cosThetaI ) const override
-	{
-		return make_float3( 1.f );
+		const auto Kr = params.color.value;
+
+		if ( IsBlack( Kr ) )
+			return;
+
+		bxdfs.emplace_back<SpecularReflection<FresnelNoOp>>( Kr, FresnelNoOp() );
 	}
 };

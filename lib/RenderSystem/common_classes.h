@@ -279,6 +279,9 @@ public:
 	// Vec3Value Kd: color
 	Vec3Value Ks;
 
+	// PBRT Mirror mapping:
+	// Vec3Value Kr: color
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };
 
