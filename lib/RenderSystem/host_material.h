@@ -128,6 +128,8 @@ public:
 	// PBRT common values:
 	ScalarValue urough, vrough;
 
+	Vec3Value Ks;
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 
 	// identifier and name

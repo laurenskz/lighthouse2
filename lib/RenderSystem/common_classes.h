@@ -275,6 +275,10 @@ public:
 	// TODO: Validate if this is transmitted or absorbed color.
 	// Vec3Value T: absorption
 
+	// PBRT Substrate mapping:
+	// Vec3Value Kd: color
+	Vec3Value Ks;
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };
 
