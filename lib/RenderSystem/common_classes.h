@@ -282,6 +282,10 @@ public:
 	// PBRT Mirror mapping:
 	// Vec3Value Kr: color
 
+	// PBRT Metal mapping:
+	// Vec3Value k: absorption
+	Vec3Value eta_rgb;
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };
 

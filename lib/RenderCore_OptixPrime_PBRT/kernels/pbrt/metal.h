@@ -31,45 +31,32 @@
 
 #pragma once
 
-// Fresnel declarations
-
-class Fresnel
+class Metal : public SimpleMaterial<MicrofacetReflection<TrowbridgeReitzDistribution<>, FresnelConductor>>
 {
-  public:
-	__device__ virtual float3 Evaluate( float cosI ) const = 0;
-};
-
-class FresnelConductor : public Fresnel
-{
-	float3 etaI, etaT, k;
 
   public:
-	__device__ FresnelConductor( float3 etaI, float3 etaT, const float3 k ) : etaI( etaI ), etaT( etaT ), k( k ) {}
-
-	__device__ float3 Evaluate( float cosThetaI ) const override
+	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const bool allowMultipleLobes,
+												const TransportMode mode ) override
 	{
-		return FrConductor( std::abs( cosThetaI ), etaI, etaT, k );
-	}
-};
+		// TODO: Bumpmapping
 
-class FresnelDielectric : public Fresnel
-{
-	float etaI, etaT;
+		const auto k = params.absorption.value;
+		const auto eta = params.eta_rgb.value;
 
-  public:
-	__device__ FresnelDielectric( float etaI, float etaT ) : etaI( etaI ), etaT( etaT ) {}
+		const FresnelConductor frMf( make_float3( 1.f ), eta, k );
 
-	__device__ float3 Evaluate( float cosThetaI ) const override
-	{
-		return make_float3( FrDielectric( cosThetaI, etaI, etaT ) );
-	}
-};
+		const auto urough = params.urough.value;
+		const auto vrough = params.vrough.value;
 
-class FresnelNoOp : public Fresnel
-{
-  public:
-	__device__ float3 Evaluate( float cosThetaI ) const override
-	{
-		return make_float3( 1.f );
+		// NOTE: PBRT Doesn't make the optimization here to use a SpecularReflection like Glass does,
+		// when u- and vrough are zero. This means a black output when the value is zero, and banding when near zero
+		// (Unsure if this is a mathematic PBRT issue since the documentation says near-zero values should represent
+		//  a mirror).
+		// While the Mirror material would be a good alternative, it doesn't have an ETA nor K value. This material
+		// on the other hand doesn't allow specifying the reflection color.
+
+		const TrowbridgeReitzDistribution<> distrib( urough, vrough );
+		bxdfs.emplace_back<MicrofacetReflection<TrowbridgeReitzDistribution<>, FresnelConductor>>( make_float3( 1.f ), distrib, frMf );
 	}
 };

@@ -129,6 +129,7 @@ public:
 	ScalarValue urough, vrough;
 
 	Vec3Value Ks;
+	Vec3Value eta_rgb;
 
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 
