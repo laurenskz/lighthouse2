@@ -72,6 +72,69 @@ void PrepareScene()
 	// renderer->AddScene( "project_polly.glb", "data/", mat4::Translate( 4.5f, -5.45f, -5.2f ) * mat4::Scale( 2 ) );
 	// load changed materials
 	renderer->DeserializeMaterials( materialFile.c_str() );
+
+	HostMaterial glass{};
+	glass.pbrtMaterialType = MaterialType::PBRT_GLASS;
+	glass.color /* R */ = make_float3( .9f );
+	glass.absorption /* T */ = make_float3( .9f );
+	glass.urough = .001f;
+	glass.vrough = .001f;
+	glass.eta = 1.5f;
+
+	HostMaterial substrate{};
+	substrate.pbrtMaterialType = MaterialType::PBRT_SUBSTRATE;
+	substrate.Ks = make_float3( 0.04f );
+	substrate.urough = 0.001f;
+	substrate.vrough = 0.001f;
+	substrate.color /* Kd */ = make_float3( 1.000000, 0.378676, 0.013473 );
+
+	HostMaterial mirror{};
+	mirror.pbrtMaterialType = MaterialType::PBRT_MIRROR;
+	mirror.color /* Kr */ = make_float3( .9f );
+
+	HostMaterial metal{};
+	metal.pbrtMaterialType = MaterialType::PBRT_METAL;
+	metal.eta_rgb = make_float3( 1.657460, 0.880369, 0.521229 );
+	metal.absorption /* k */ = make_float3( 9.223869, 6.269523, 4.837001 );
+	metal.urough = .1f;
+	metal.vrough = .1f;
+
+	HostMaterial matte{};
+	matte.pbrtMaterialType = MaterialType::PBRT_MATTE;
+	matte.color /* Kd */ = make_float3( 0.325000, 0.310000, 0.250000 );
+	matte.sigma = 90.f;
+
+	HostMaterial disney{};
+	disney.pbrtMaterialType = MaterialType::PBRT_DISNEY;
+	disney.metallic = 1.f;
+	disney.color = make_float3( .5f );
+	disney.eta = 1.5f;
+
+	HostMaterial plastic{};
+	plastic.pbrtMaterialType = MaterialType::PBRT_PLASTIC;
+	plastic.Ks = make_float3( 1, 0, 1 );
+	plastic.color /* Kd */ = make_float3( 0, .25f, 0 );
+	plastic.roughness = 0.1f;
+
+	int i = 0;
+	for ( const auto mat : renderer->GetMaterials() )
+	{
+		constexpr auto matcount = 5;
+		// auto mat = renderer->GetMaterial( i );
+		printf( "Assigning to %p\n", mat );
+		if ( i % matcount == 0 )
+			*mat = glass;
+		else if ( i % matcount == 1 )
+			*mat = substrate;
+		else if ( i % matcount == 2 )
+			*mat = mirror;
+		else if ( i % matcount == 3 )
+			*mat = metal;
+		else
+			*mat = matte;
+
+		i++;
+	}
 }
 
 //  +-----------------------------------------------------------------------------+
