@@ -1,0 +1,10 @@
+{
+	"cmake.configureOnOpen": true,
+	"cmake.preferredGenerators": [
+		"Unix Makefiles"
+	],
+	"editor.detectIndentation": false,
+	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
+	"files.insertFinalNewline": false,
+}
