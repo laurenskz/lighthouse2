@@ -130,6 +130,7 @@ public:
 
 	Vec3Value Ks;
 	Vec3Value eta_rgb;
+	ScalarValue sigma;
 
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 

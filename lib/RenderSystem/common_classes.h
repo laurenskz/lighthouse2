@@ -286,6 +286,10 @@ public:
 	// Vec3Value k: absorption
 	Vec3Value eta_rgb;
 
+	// PBRT Matte mapping:
+	// Vec3Value Kd: color
+	ScalarValue sigma;
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };
 
