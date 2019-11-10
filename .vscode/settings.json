@@ -1,0 +1,12 @@
+{
+    "cmake.configureOnOpen": true,
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": false,
+    "editor.tabSize": 4,
+    "files.insertFinalNewline": false,
+    "cmake.configureSettings": {
+        "OptiX_INSTALL_DIR:PATH": "/opt/optix-6",
+        "OptiX7_INSTALL_DIR:PATH": "/opt/optix"
+    },
+    "cmake.generator": "Unix Makefiles"
+}
