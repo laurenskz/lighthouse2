@@ -132,6 +132,10 @@ public:
 	Vec3Value Ks;
 	Vec3Value eta_rgb;
 	ScalarValue sigma;
+	bool thin = false;
+	ScalarValue specTrans, diffTrans;
+	Vec3Value scatterDistance;
+	ScalarValue flatness;
 
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 

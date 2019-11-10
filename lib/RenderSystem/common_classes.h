@@ -291,6 +291,14 @@ public:
 	// Vec3Value Kd: color
 	ScalarValue sigma;
 
+	// PBRT Disney mapping:
+	bool thin;
+	// Specular and diffuse transmission.
+	// TODO: One of these should reuse `transmission'!
+	ScalarValue specTrans, diffTrans;
+	Vec3Value scatterDistance;
+	ScalarValue flatness;
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };
 
