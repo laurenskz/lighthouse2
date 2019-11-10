@@ -299,6 +299,11 @@ public:
 	Vec3Value scatterDistance;
 	ScalarValue flatness;
 
+	// PBRT Plastic mapping:
+	// Vec3Value Kd: color
+	// Vec3Value Ks;
+	// ScalarValue roughness;
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };
 
