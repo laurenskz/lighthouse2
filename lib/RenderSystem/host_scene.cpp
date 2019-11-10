@@ -174,15 +174,30 @@ void HostScene::Init()
 
 //  +-----------------------------------------------------------------------------+
 //  |  HostScene::AddMesh                                                         |
+//  |  Add an existing HostMesh to the list of meshes and return the mesh ID.     |
+//  |                                                                       LH2'19|
+//  +-----------------------------------------------------------------------------+
+int HostScene::AddMesh( HostMesh* mesh )
+{
+	auto res = std::find( meshPool.begin(), meshPool.end(), mesh );
+
+	if ( res != meshPool.end() )
+		return std::distance( meshPool.begin(), res );
+
+	mesh->ID = (int)meshPool.size();
+	meshPool.push_back( mesh );
+	return mesh->ID;
+}
+
+//  +-----------------------------------------------------------------------------+
+//  |  HostScene::AddMesh                                                         |
 //  |  Create a mesh specified by a file name and data dir, apply a scale, add    |
 //  |  the mesh to the list of meshes and return the mesh ID.               LH2'19|
 //  +-----------------------------------------------------------------------------+
 int HostScene::AddMesh( const char* objFile, const char* dir, const float scale, const bool flatShaded )
 {
 	HostMesh* newMesh = new HostMesh( objFile, dir, scale, flatShaded );
-	newMesh->ID = (int)meshPool.size();
-	meshPool.push_back( newMesh );
-	return newMesh->ID;
+	return AddMesh( newMesh );
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -194,9 +209,7 @@ int HostScene::AddMesh( const char* objFile, const char* dir, const float scale,
 int HostScene::AddMesh( const int triCount )
 {
 	HostMesh* newMesh = new HostMesh( triCount );
-	newMesh->ID = (int)meshPool.size();
-	meshPool.push_back( newMesh );
-	return newMesh->ID;
+	return AddMesh( newMesh );
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -290,7 +303,7 @@ int HostScene::AddScene( const char* sceneFile, const char* dir, const mat4& tra
 		meshPool.push_back( newMesh );
 	}
 	// push an extra node that holds a transform for the gltf scene
-	HostNode* newNode = new HostNode(); 
+	HostNode* newNode = new HostNode();
 	newNode->localTransform = transform;
 	newNode->ID = nodeBase - 1;
 	nodePool.push_back( newNode );
@@ -536,15 +549,30 @@ int HostScene::CreateTexture( const string& origin, const uint modFlags )
 
 //  +-----------------------------------------------------------------------------+
 //  |  HostScene::AddMaterial                                                     |
+//  |  Adds an existing HostMaterial* and returns the ID. If the material         |
+//  |  with that pointer is already added, it is not added again.           LH2'19|
+//  +-----------------------------------------------------------------------------+
+int HostScene::AddMaterial( HostMaterial* material )
+{
+	auto res = std::find( materials.begin(), materials.end(), material );
+
+	if ( res != materials.end() )
+		return std::distance( materials.begin(), res );
+
+	int matid = (int)materials.size();
+	materials.push_back( material );
+	return matid;
+}
+
+//  +-----------------------------------------------------------------------------+
+//  |  HostScene::AddMaterial                                                     |
 //  |  Create a material, with a limited set of parameters.                 LH2'19|
 //  +-----------------------------------------------------------------------------+
 int HostScene::AddMaterial( const float3 color )
 {
 	HostMaterial* material = new HostMaterial();
 	material->color = color;
-	material->ID = (int)materials.size();
-	materials.push_back( material );
-	return material->ID;
+	return material->ID = AddMaterial( material );
 }
 
 //  +-----------------------------------------------------------------------------+

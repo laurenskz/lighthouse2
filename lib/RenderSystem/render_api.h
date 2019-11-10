@@ -53,6 +53,7 @@ public:
 	RenderSettings* GetSettings();
 	int GetTriangleNode( const int coreInstId, const int coreTriId );
 	int GetTriangleMesh( const int coreInstId, const int coreTriId );
+	HostScene* GetScene();
 	int GetTriangleMaterialID( const int coreInstId, const int coreTriId );
 	HostMaterial* GetTriangleMaterial( const int coreInstId, const int coreTriId );
 	HostMaterial* GetMaterial( const int matId );
