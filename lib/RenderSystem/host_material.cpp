@@ -16,12 +16,12 @@
 #include "rendersystem.h"
 
 // Lighthouse2 data model design principles:
-// 
+//
 // - If a data member can be given an obvious name, access is public, saving on LOC and repetition.
 // - (Almost) all data members are initialized to promote deterministic behavior in debug and release.
 // - Textures, materials, meshes etc. have IDs; use of pointers is minimized.
 // - Textures, materials, meshes etc. also have an optional name and origin string (not a char*).
-// - A struct is either host-oriented or GPU-oriented; the name (as well as the file name) indicates 
+// - A struct is either host-oriented or GPU-oriented; the name (as well as the file name) indicates
 //   this. If both are needed, both will be created, even if they are the same.
 // - The RenderCore is the only system communicating with the GPU. It is thus also the only owner of
 //   device-side data. The RenderSystem is responsible for setting this data before rendering starts.

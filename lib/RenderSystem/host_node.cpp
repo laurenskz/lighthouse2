@@ -217,7 +217,7 @@ void HostNode::PrepareLights()
 				tri->ltriIdx = (int)HostScene::areaLights.size(); // TODO: can't duplicate a light due to this.
 				HostScene::areaLights.push_back( light );
 				hasLTris = true;
-				// Note: TODO: 
+				// Note: TODO:
 				// 1. if a mesh is deleted it should scan the list of area lights
 				//    to delete those that no longer exist.
 				// 2. if a material is changed from emissive to non-emissive,
