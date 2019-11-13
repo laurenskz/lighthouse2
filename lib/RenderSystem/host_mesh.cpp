@@ -688,21 +688,26 @@ void HostMesh::SetPose( const HostSkin* skin )
 	}
 #if 1
 	// code optimized for INFOMOV by Alysha Bogaers and Naraenda Prasetya
-#define USE_PARALLEL_SETPOSE 1
-	// adjust full triangles
-#if USE_PARALLEL_SETPOSE == 1
-#if 0
+
+#if defined( __AVX2__ ) && ( defined( _MSC_VER ) || defined( __FMA__ ) )
 	// use avx2 instruction
-#define FMADD256(a,b,c) _mm256_fmadd_ps( (a),(b),(c) )
+#define FMADD256( a, b, c ) _mm256_fmadd_ps( ( a ), ( b ), ( c ) )
 #else
 	// avx fallback (negligible impact on performance)
-#define FMADD256(a,b,c) _mm256_add_ps( _mm256_mul_ps( (a), (b) ), (c) )
+#define FMADD256( a, b, c ) _mm256_add_ps( _mm256_mul_ps( ( a ), ( b ) ), ( c ) )
 #endif
+
+#ifdef _MSC_VER
+#define USE_PARALLEL_SETPOSE // TODO: Find Linux replacement for PPL
+#endif
+
+	// adjust full triangles
+#ifdef USE_PARALLEL_SETPOSE
 	concurrency::parallel_for<int>( 0, (int)triangles.size(), [&]( int t ) {
-	#else
+#else
 	for (int s = (int)triangles.size(), t = 0; t < s; t++)
 	{
-	#endif
+#endif
 		__m128 tri_vtx[3], tri_nrm[3];
 		// adjust vertices of triangle
 		for (int t_v = 0; t_v < 3; t_v++)
@@ -797,11 +802,11 @@ void HostMesh::SetPose( const HostSkin* skin )
 		_mm_store_ps( &triangles[t].vN1.x, tri_nrm[1] );
 		// store to [vN1 (float3), Nz (float)]
 		_mm_store_ps( &triangles[t].vN2.x, tri_nrm[2] );
-	#if USE_PARALLEL_SETPOSE == 1
-	} );
-#else
 	}
+#ifdef USE_PARALLEL_SETPOSE
+	);
 #endif
+
 #else
 	// transform original into vertex vector using skin matrices
 	for (int s = (int)vertices.size(), i = 0; i < s; i++)
