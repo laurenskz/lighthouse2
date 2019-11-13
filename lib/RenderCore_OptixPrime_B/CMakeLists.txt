@@ -7,7 +7,7 @@ add_library(${PROJECT_NAME} SHARED ${sources} ${kernels} ${headers})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR})
 target_compile_definitions(${PROJECT_NAME} PRIVATE COREDLL_EXPORTS=1)
 target_link_libraries(${PROJECT_NAME} PRIVATE RenderSystem sharedBSDFs CUDA
-                                              CUDA_host_code)
+                                              CUDA_host_code CUDA_kernel_code)
 
 # set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_MODULE_PATH "/opt/optix-6/SDK/CMake/")
