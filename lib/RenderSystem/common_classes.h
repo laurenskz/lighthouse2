@@ -216,6 +216,7 @@ public:
 		int textureID;							// texture ID; 'value'field is used if -1
 		float scale;							// map values will be scaled by this
 		float2 uvscale, uvoffset;				// uv coordinate scale and offset
+		uint2 size;
 	};
 	struct ScalarValue
 	{
@@ -224,6 +225,7 @@ public:
 		int component;							// 0 = x, 1 = y, 2 = z, 3 = w
 		float scale;							// map values will be scaled by this
 		float2 uvscale, uvoffset;				// uv coordinate scale and offset
+		uint2 size;
 	};
 
 	// START OF HOSTMATERIAL DATA COPY

@@ -47,6 +47,7 @@ public:
 		float scale = 1;						// map values will be scaled by this
 		float2 uvscale = make_float2( 1 );		// uv coordinate scale
 		float2 uvoffset = make_float2( 0 );		// uv coordinate offset
+		uint2 size = make_uint2( 0 );
 		bool Specified() { return (value.x != 1e32f) || (value.y != 1e32f) || (value.z != 1e32f) || (textureID != -1); }
 		float3& operator()() { return value; }
 	};
@@ -60,6 +61,7 @@ public:
 		float scale = 1;						// map values will be scaled by this
 		float2 uvscale = make_float2( 1 );		// uv coordinate scale
 		float2 uvoffset = make_float2( 0 );		// uv coordinate offset
+		uint2 size = make_uint2( 0 );
 		bool Specified() { return (value != 1e32f) || (textureID != -1); }
 		float& operator()() { return value; }
 	};

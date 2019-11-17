@@ -444,18 +444,19 @@ class Disney : public SimpleMaterial<
   public:
 	__device__ void ComputeScatteringFunctions(
 		const CoreMaterial& params,
+		const float2 uv,
 		const bool allowMultipleLobes,
 		const TransportMode mode ) override
 	{
 		// TODO: Bumpmapping
 
-		const float3 c = params.color.value;
-		const float metallicWeight = params.metallic.value;
-		const float e = params.eta.value;
-		const float strans = params.specTrans.value;
+		const float3 c = SampleCoreTexture( params.color, uv );
+		const float metallicWeight = SampleCoreTexture( params.metallic, uv );
+		const float e = SampleCoreTexture( params.eta, uv );
+		const float strans = SampleCoreTexture( params.specTrans, uv );
 		const float diffuseWeight = ( 1.f - metallicWeight ) * ( 1.f - strans );
-		const float dt = params.diffTrans.value / 2.f; // 0: all diffuse is reflected -> 1, transmitted
-		const float rough = params.roughness.value;
+		const float dt = SampleCoreTexture( params.diffTrans, uv ) / 2.f; // 0: all diffuse is reflected -> 1, transmitted
+		const float rough = SampleCoreTexture( params.roughness, uv );
 		const float lum = 0.212671f * c.x + 0.715160f * c.y + 0.072169f * c.z;
 		// normalize lum. to isolate hue+sat
 		const float3 Ctint = lum > 0 ? ( c / lum ) : make_float3( 1.f );
@@ -474,7 +475,7 @@ class Disney : public SimpleMaterial<
 			}
 			else
 			{
-				const auto sd = params.scatterDistance.value;
+				const auto sd = SampleCoreTexture( params.scatterDistance, uv );
 				if ( IsBlack( sd ) )
 				{
 					bxdfs.emplace_back<DisneyDiffuse>( diffuseWeight * c );
@@ -494,10 +495,10 @@ class Disney : public SimpleMaterial<
 			bxdfs.emplace_back<DisneyRetro>( diffuseWeight * c, rough );
 
 			// Sheen (if enabled)
-			const float sheenWeight = params.sheen.value;
+			const float sheenWeight = SampleCoreTexture( params.sheen, uv );
 			if ( sheenWeight > 0 )
 			{
-				const float stint = params.sheenTint.value;
+				const float stint = SampleCoreTexture( params.sheenTint, uv );
 				const float3 Csheen = pbrt_Lerp( stint, make_float3( 1.f ), Ctint );
 
 				bxdfs.emplace_back<DisneySheen>( diffuseWeight * sheenWeight * Csheen );
@@ -506,22 +507,22 @@ class Disney : public SimpleMaterial<
 
 		// Create the microfacet distribution for metallic and/or specular
 		// transmission.
-		const float aspect = std::sqrt( 1.f - params.anisotropic.value * .9f );
+		const float aspect = std::sqrt( 1.f - SampleCoreTexture( params.anisotropic, uv ) * .9f );
 		const float ax = std::max( .001f, sqr( rough ) / aspect );
 		const float ay = std::max( .001f, sqr( rough ) * aspect );
 		const DisneyMicrofacetDistribution distrib( ax, ay );
 
 		// Specular is Trowbridge-Reitz with a modified Fresnel function.
-		const float specTint = params.specularTint.value;
+		const float specTint = SampleCoreTexture( params.specularTint, uv );
 		const float3 Cspec0 = pbrt_Lerp( metallicWeight, SchlickR0FromEta( e ) * pbrt_Lerp( specTint, make_float3( 1.f ), Ctint ), c );
 		const DisneyFresnel fresnel( Cspec0, metallicWeight, e );
 		// https://github.com/mmp/pbrt-v3/issues/224
 		bxdfs.emplace_back<DisneyMicrofacetReflection>( make_float3( 1.f ), distrib, fresnel );
 
 		// Clearcoat
-		const float cc = params.clearcoat.value;
+		const float cc = SampleCoreTexture( params.clearcoat, uv );
 		if ( cc > 0 )
-			bxdfs.emplace_back<DisneyClearcoat>( cc, pbrt_Lerp( params.clearcoatGloss.value, .1f, .001f ) );
+			bxdfs.emplace_back<DisneyClearcoat>( cc, pbrt_Lerp( SampleCoreTexture( params.clearcoatGloss, uv ), .1f, .001f ) );
 
 		// BTDF
 		if ( strans > 0 )

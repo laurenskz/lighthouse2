@@ -36,17 +36,18 @@ class Matte : public SimpleMaterial<LambertianReflection, OrenNayar>
 
   public:
 	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const float2 uv,
 												const bool allowMultipleLobes,
 												const TransportMode mode ) override
 	{
 		// TODO: Bumpmapping
 
-		const auto Kd = params.color.value;
+		const auto Kd = SampleCoreTexture( params.color, uv );
 
 		if ( IsBlack( Kd ) )
 			return;
 
-		const auto sigma = params.sigma.value;
+		const auto sigma = SampleCoreTexture( params.sigma, uv );
 		const float sig = clamp( sigma, 0.f, 90.f );
 
 		if ( sig == 0.f )

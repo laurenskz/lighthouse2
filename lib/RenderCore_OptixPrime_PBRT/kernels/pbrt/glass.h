@@ -41,20 +41,21 @@ class Glass : public SimpleMaterial<
 
   public:
 	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const float2 uv,
 												const bool allowMultipleLobes,
 												const TransportMode mode ) override
 	{
 		// TODO: Bumpmapping
 
-		const auto R = params.color.value;
-		const auto T = params.absorption.value;
+		const auto R = SampleCoreTexture( params.color, uv );
+		const auto T = SampleCoreTexture( params.absorption, uv );
 
 		if ( IsBlack( R ) && IsBlack( T ) )
 			return;
 
-		const auto urough = params.urough.value;
-		const auto vrough = params.vrough.value;
-		const auto eta = params.eta.value;
+		const auto urough = SampleCoreTexture( params.urough, uv );
+		const auto vrough = SampleCoreTexture( params.vrough, uv );
+		const auto eta = SampleCoreTexture( params.eta, uv );
 
 		const bool isSpecular = urough == 0 && vrough == 0;
 

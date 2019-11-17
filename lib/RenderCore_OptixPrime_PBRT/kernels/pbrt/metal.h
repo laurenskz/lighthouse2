@@ -36,18 +36,19 @@ class Metal : public SimpleMaterial<MicrofacetReflection<TrowbridgeReitzDistribu
 
   public:
 	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const float2 uv,
 												const bool allowMultipleLobes,
 												const TransportMode mode ) override
 	{
 		// TODO: Bumpmapping
 
-		const auto k = params.absorption.value;
-		const auto eta = params.eta_rgb.value;
+		const auto k = SampleCoreTexture( params.absorption, uv );
+		const auto eta = SampleCoreTexture( params.eta_rgb, uv );
 
 		const FresnelConductor frMf( make_float3( 1.f ), eta, k );
 
-		const auto urough = params.urough.value;
-		const auto vrough = params.vrough.value;
+		const auto urough = SampleCoreTexture( params.urough, uv );
+		const auto vrough = SampleCoreTexture( params.vrough, uv );
 
 		// NOTE: PBRT Doesn't make the optimization here to use a SpecularReflection like Glass does,
 		// when u- and vrough are zero. This means a black output when the value is zero, and banding when near zero

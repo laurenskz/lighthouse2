@@ -37,20 +37,21 @@ class Plastic : public SimpleMaterial<
 {
   public:
 	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const float2 uv,
 												const bool allowMultipleLobes,
 												const TransportMode mode ) override
 	{
 		// TODO: Bumpmapping
 
-		const auto Kd = params.color.value;
-		const auto Ks = params.Ks.value;
+		const auto Kd = SampleCoreTexture( params.color, uv );
+		const auto Ks = SampleCoreTexture( params.Ks, uv );
 
 		if ( !IsBlack( Kd ) )
 			bxdfs.emplace_back<LambertianReflection>( Kd );
 
 		if ( !IsBlack( Ks ) )
 		{
-			const float rough = params.roughness.value;
+			const float rough = SampleCoreTexture( params.roughness, uv );
 
 			const FresnelDielectric fresnel( 1.5f, 1.f );
 			const TrowbridgeReitzDistribution<> distrib( rough, rough );

@@ -35,12 +35,13 @@ class Mirror : public SimpleMaterial<SpecularReflection<FresnelNoOp>>
 {
   public:
 	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const float2 uv,
 												const bool allowMultipleLobes,
 												const TransportMode mode ) override
 	{
 		// TODO: Bumpmapping
 
-		const auto Kr = params.color.value;
+		const auto Kr = SampleCoreTexture( params.color, uv );
 
 		if ( IsBlack( Kr ) )
 			return;

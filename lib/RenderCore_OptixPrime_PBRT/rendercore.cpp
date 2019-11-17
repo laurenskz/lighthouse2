@@ -420,7 +420,50 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 		else
 		{
 			matDesc.push_back( {static_cast<const MaterialType>( m.pbrtMaterialType ), (unsigned int)pbrtMaterials.size()} );
-			pbrtMaterials.push_back( m );
+
+			// TODO: Realistically need a smaller object for the GPU, like CUDAMaterial.
+			// This includes a more GPU-specific representation for texture-alike types.
+			auto local = m;
+			auto reassign = [&]( auto& val ) {
+				if ( val.textureID != -1 )
+				{
+					CoreTexDesc& t = texDescs[val.textureID];
+					val.textureID = t.firstPixel;
+					val.size = make_uint2( t.width, t.height );
+				}
+			};
+
+			reassign( local.color );
+			reassign( local.detailColor );
+			reassign( local.normals );
+			reassign( local.detailNormals );
+			reassign( local.absorption );
+			reassign( local.metallic );
+			reassign( local.subsurface );
+			reassign( local.specular );
+			reassign( local.roughness );
+			reassign( local.specularTint );
+			reassign( local.anisotropic );
+			reassign( local.sheen );
+			reassign( local.sheenTint );
+			reassign( local.clearcoat );
+			reassign( local.clearcoatGloss );
+			reassign( local.transmission );
+			reassign( local.eta );
+			reassign( local.reflection );
+			reassign( local.refraction );
+			reassign( local.ior );
+			reassign( local.urough );
+			reassign( local.vrough );
+			reassign( local.Ks );
+			reassign( local.eta_rgb );
+			reassign( local.sigma );
+			reassign( local.specTrans );
+			reassign( local.diffTrans );
+			reassign( local.scatterDistance );
+			reassign( local.flatness );
+
+			pbrtMaterials.push_back( local );
 		}
 	}
 	materialBuffer = new CoreBuffer<CUDAMaterial>( disneyMaterialCount, ON_DEVICE | ON_HOST /* on_host: for alpha mapped tris */, hostMaterialBuffer );

@@ -15,8 +15,6 @@
 
 #include "create_material.h"
 
-#include "textures/constant.h"
-
 namespace pbrt
 {
 
@@ -42,21 +40,21 @@ HostMaterial* CreateDisneyMaterial( const TextureParams& mp )
 {
 	HostMaterial disney;
 	disney.pbrtMaterialType = MaterialType::PBRT_DISNEY;
-	disney.color = mp.GetConstantSpectrumTexture( "color", Spectrum( .5f ) ).vector();
-	disney.metallic = mp.GetConstantFloatTexture( "metallic", 0.f );
-	disney.eta = mp.GetConstantFloatTexture( "eta", 1.5f );
-	disney.roughness = mp.GetConstantFloatTexture( "roughness", .5f );
-	disney.specularTint = mp.GetConstantFloatTexture( "speculartint", 0.f );
-	disney.anisotropic = mp.GetConstantFloatTexture( "anisotropic", 0.f );
-	disney.sheen = mp.GetConstantFloatTexture( "sheen", 0.f );
-	disney.sheenTint = mp.GetConstantFloatTexture( "sheentint", .5f );
-	disney.clearcoat = mp.GetConstantFloatTexture( "clearcoat", 0.f );
-	disney.clearcoatGloss = mp.GetConstantFloatTexture( "clearcoatgloss", 1.f );
-	disney.specTrans = mp.GetConstantFloatTexture( "spectrans", 0.f );
-	disney.scatterDistance = mp.GetConstantSpectrumTexture( "scatterdistance", Spectrum( 0.f ) ).vector();
+	disney.color = mp.GetFloat3Texture( "color", Spectrum( .5f ) );
+	disney.metallic = mp.GetFloatTexture( "metallic", 0.f );
+	disney.eta = mp.GetFloatTexture( "eta", 1.5f );
+	disney.roughness = mp.GetFloatTexture( "roughness", .5f );
+	disney.specularTint = mp.GetFloatTexture( "speculartint", 0.f );
+	disney.anisotropic = mp.GetFloatTexture( "anisotropic", 0.f );
+	disney.sheen = mp.GetFloatTexture( "sheen", 0.f );
+	disney.sheenTint = mp.GetFloatTexture( "sheentint", .5f );
+	disney.clearcoat = mp.GetFloatTexture( "clearcoat", 0.f );
+	disney.clearcoatGloss = mp.GetFloatTexture( "clearcoatgloss", 1.f );
+	disney.specTrans = mp.GetFloatTexture( "spectrans", 0.f );
+	disney.scatterDistance = mp.GetFloat3Texture( "scatterdistance", Spectrum( 0.f ) );
 	disney.thin = mp.FindBool( "thin", false );
-	disney.flatness = mp.GetConstantFloatTexture( "flatness", 0.f );
-	disney.diffTrans = mp.GetConstantFloatTexture( "difftrans", 0.f );
+	disney.flatness = mp.GetFloatTexture( "flatness", 0.f );
+	disney.diffTrans = mp.GetFloatTexture( "difftrans", 0.f );
 
 	if ( mp.GetFloatTextureOrNull( "bumpmap" ) )
 		Error( "Bumpmaps not yet supported!" );
@@ -68,13 +66,15 @@ HostMaterial* CreateGlassMaterial( const TextureParams& mp )
 {
 	HostMaterial glass;
 	glass.pbrtMaterialType = MaterialType::PBRT_GLASS;
-	glass.color /* R */ = mp.GetConstantSpectrumTexture( "Kr", Spectrum( 1.f ) ).vector();
-	glass.absorption /* T */ = mp.GetConstantSpectrumTexture( "Kt", Spectrum( 1.f ) ).vector();
-	// Use "eta", otherwise fall back on "index", otherwise use 1.f:
-	glass.eta = mp.GetConstantFloatTexture( "eta", mp.GetConstantFloatTexture( "index", 1.f ) );
+	glass.color /* R */ = mp.GetFloat3Texture( "Kr", Spectrum( 1.f ) );
+	glass.absorption /* T */ = mp.GetFloat3Texture( "Kt", Spectrum( 1.f ) );
 
-	glass.urough = mp.GetConstantFloatTexture( "uroughness", 0.f );
-	glass.vrough = mp.GetConstantFloatTexture( "vroughness", 0.f );
+	// Use "eta", otherwise fall back on "index", otherwise use 1.f:
+	auto eta = mp.GetFloatTextureOrNull( "eta" );
+	glass.eta = eta ? *eta : mp.GetFloatTexture( "index", 1.f );
+
+	glass.urough = mp.GetFloatTexture( "uroughness", 0.f );
+	glass.vrough = mp.GetFloatTexture( "vroughness", 0.f );
 
 	if ( mp.GetFloatTextureOrNull( "bumpmap" ) )
 		Error( "Bumpmaps not yet supported!" );
@@ -89,8 +89,8 @@ HostMaterial* CreateMatteMaterial( const TextureParams& mp )
 {
 	HostMaterial matte;
 	matte.pbrtMaterialType = MaterialType::PBRT_MATTE;
-	matte.color /* Kd */ = mp.GetConstantSpectrumTexture( "Kd", Spectrum( .5f ) ).vector();
-	matte.sigma = mp.GetConstantFloatTexture( "sigma", 0.f );
+	matte.color /* Kd */ = mp.GetFloat3Texture( "Kd", Spectrum( .5f ) );
+	matte.sigma = mp.GetFloatTexture( "sigma", 0.f );
 
 	if ( mp.GetFloatTextureOrNull( "bumpmap" ) )
 		Error( "Bumpmaps not yet supported!" );
@@ -100,7 +100,7 @@ HostMaterial* CreateMatteMaterial( const TextureParams& mp )
 
 HostMaterial* CreateMetalMaterial( const TextureParams& mp )
 {
-	// Values courtesy of PBRT
+	//HostMaterial Values courtesy of PBRT
 	const int CopperSamples = 56;
 	const Float CopperWavelengths[CopperSamples] = {
 		298.7570554, 302.4004341, 306.1337728, 309.960445, 313.8839949,
@@ -142,13 +142,15 @@ HostMaterial* CreateMetalMaterial( const TextureParams& mp )
 	HostMaterial metal;
 	metal.pbrtMaterialType = MaterialType::PBRT_METAL;
 
-	metal.eta_rgb = mp.GetConstantSpectrumTexture( "eta", copperN ).vector();
-	metal.absorption /* k */ = mp.GetConstantSpectrumTexture( "k", copperN ).vector();
+	metal.eta_rgb = mp.GetFloat3Texture( "eta", copperN );
+	metal.absorption /* k */ = mp.GetFloat3Texture( "k", copperN );
 
-	auto roughness = mp.GetConstantFloatTexture( "roughness", .01f );
+	auto roughness = mp.GetFloatTexture( "roughness", .01f );
 	// Try u/v, otherwise fall back on roughness:
-	metal.urough = mp.GetConstantFloatTexture( "uroughness", roughness );
-	metal.vrough = mp.GetConstantFloatTexture( "vroughness", roughness );
+	auto urough = mp.GetFloatTextureOrNull( "uroughness" );
+	metal.urough = urough ? *urough : roughness;
+	auto vrough = mp.GetFloatTextureOrNull( "vroughness" );
+	metal.vrough = vrough ? *vrough : roughness;
 
 	if ( mp.FindBool( "remaproughness", true ) )
 		RemapRoughness( metal.urough ), RemapRoughness( metal.vrough );
@@ -162,7 +164,7 @@ HostMaterial* CreateMirrorMaterial( const TextureParams& mp )
 {
 	HostMaterial mirror;
 	mirror.pbrtMaterialType = MaterialType::PBRT_MIRROR;
-	mirror.color /* Kr */ = mp.GetConstantSpectrumTexture( "Kr", .9f ).vector();
+	mirror.color /* Kr */ = mp.GetFloat3Texture( "Kr", .9f );
 
 	if ( mp.GetFloatTextureOrNull( "bumpmap" ) )
 		Error( "Bumpmaps not yet supported!" );
@@ -174,9 +176,9 @@ HostMaterial* CreatePlasticMaterial( const TextureParams& mp )
 {
 	HostMaterial plastic;
 	plastic.pbrtMaterialType = MaterialType::PBRT_PLASTIC;
-	plastic.color /* Kd */ = mp.GetConstantSpectrumTexture( "Kd", .25f ).vector();
-	plastic.Ks = mp.GetConstantSpectrumTexture( "Ks", .25f ).vector();
-	plastic.roughness = mp.GetConstantFloatTexture( "roughness", .1f );
+	plastic.color /* Kd */ = mp.GetFloat3Texture( "Kd", .25f );
+	plastic.Ks = mp.GetFloat3Texture( "Ks", .25f );
+	plastic.roughness = mp.GetFloatTexture( "roughness", .1f );
 
 	if ( mp.FindBool( "remaproughness", true ) )
 		RemapRoughness( plastic.roughness );
@@ -191,10 +193,10 @@ HostMaterial* CreateSubstrateMaterial( const TextureParams& mp )
 {
 	HostMaterial substrate;
 	substrate.pbrtMaterialType = MaterialType::PBRT_SUBSTRATE;
-	substrate.color /* Kd */ = mp.GetConstantSpectrumTexture( "Kd", .5f ).vector();
-	substrate.Ks = mp.GetConstantSpectrumTexture( "Ks", .5f ).vector();
-	substrate.urough = mp.GetConstantFloatTexture( "uroughness", .1f );
-	substrate.vrough = mp.GetConstantFloatTexture( "vroughness", .1f );
+	substrate.color /* Kd */ = mp.GetFloat3Texture( "Kd", .5f );
+	substrate.Ks = mp.GetFloat3Texture( "Ks", .5f );
+	substrate.urough = mp.GetFloatTexture( "uroughness", .1f );
+	substrate.vrough = mp.GetFloatTexture( "vroughness", .1f );
 
 	if ( mp.FindBool( "remaproughness", true ) )
 		RemapRoughness( substrate.urough ), RemapRoughness( substrate.vrough );

@@ -35,19 +35,20 @@ class Substrate : public SimpleMaterial<FresnelBlend<TrowbridgeReitzDistribution
 {
   public:
 	__device__ void ComputeScatteringFunctions( const CoreMaterial& params,
+												const float2 uv,
 												const bool allowMultipleLobes,
 												const TransportMode mode ) override
 	{
 		// TODO: Bumpmapping
 
-		const auto Kd = params.color.value;
-		const auto Ks = params.Ks.value;
+		const auto Kd = SampleCoreTexture( params.color, uv );
+		const auto Ks = SampleCoreTexture( params.Ks, uv );
 
 		if ( IsBlack( Kd ) && IsBlack( Ks ) )
 			return;
 
-		const auto urough = params.urough.value;
-		const auto vrough = params.vrough.value;
+		const auto urough = SampleCoreTexture( params.urough, uv );
+		const auto vrough = SampleCoreTexture( params.vrough, uv );
 
 		const TrowbridgeReitzDistribution<> distrib( urough, vrough );
 

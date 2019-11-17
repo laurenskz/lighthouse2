@@ -66,6 +66,7 @@ public:
 	// internal methods
 	int PixelsNeeded( const int width, const int height, const int MIPlevels ) const;
 	void ConstructMIPmaps();
+
 	// public properties
 public:
 	uint width = 0;						// width in pixels

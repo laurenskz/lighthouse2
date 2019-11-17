@@ -22,7 +22,6 @@
 
 #include "paramset.h"
 #include "pbrt_wrap.h"
-#include "texture.h"
 
 #include <memory>
 
