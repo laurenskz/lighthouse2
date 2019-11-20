@@ -34,4 +34,5 @@ HostMaterial* CreateMetalMaterial( const TextureParams& mp );
 HostMaterial* CreateMirrorMaterial( const TextureParams& mp );
 HostMaterial* CreatePlasticMaterial( const TextureParams& mp );
 HostMaterial* CreateSubstrateMaterial( const TextureParams& mp );
+HostMaterial* CreateUberMaterial( const TextureParams& mp );
 }; // namespace pbrt

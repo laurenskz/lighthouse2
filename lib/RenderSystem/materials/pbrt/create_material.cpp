@@ -207,4 +207,32 @@ HostMaterial* CreateSubstrateMaterial( const TextureParams& mp )
 	return new HostMaterial( substrate );
 }
 
+HostMaterial* CreateUberMaterial( const TextureParams& mp )
+{
+	HostMaterial uber;
+	uber.pbrtMaterialType = MaterialType::PBRT_UBER;
+	uber.color /* Kd */ = mp.GetFloat3Texture( "Kd", .25f );
+	uber.Ks = mp.GetFloat3Texture( "Ks", .25f );
+	uber.Kr = mp.GetFloat3Texture( "Kr", 0.f );
+	uber.absorption /* Kt */ = mp.GetFloat3Texture( "Kt", 0.f );
+	auto roughness = mp.GetFloatTexture( "roughness", .1f );
+	auto urough = mp.GetFloatTextureOrNull( "uroughness" );
+	auto vrough = mp.GetFloatTextureOrNull( "vroughness" );
+	uber.urough = urough ? *urough : roughness;
+	uber.vrough = vrough ? *vrough : roughness;
+
+	auto eta = mp.GetFloatTextureOrNull( "eta" );
+	uber.eta = eta ? *eta : mp.GetFloatTexture( "index", 1.5f );
+
+	uber.opacity = mp.GetFloat3Texture( "opacity", 1.f );
+
+	if ( mp.FindBool( "remaproughness", true ) )
+		RemapRoughness( uber.urough ), RemapRoughness( uber.vrough );
+
+	if ( mp.GetFloatTextureOrNull( "bumpmap" ) )
+		Error( "Bumpmaps not yet supported!" );
+
+	return new HostMaterial( uber );
+}
+
 }; // namespace pbrt

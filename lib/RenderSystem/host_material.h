@@ -138,6 +138,8 @@ public:
 	ScalarValue specTrans, diffTrans;
 	Vec3Value scatterDistance;
 	ScalarValue flatness;
+	Vec3Value Kr;
+	Vec3Value opacity;
 
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 

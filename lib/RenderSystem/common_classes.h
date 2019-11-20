@@ -306,6 +306,12 @@ public:
 	// Vec3Value Ks;
 	// ScalarValue roughness;
 
+	// PBRT Uber mapping:
+	// Vec3Value Kd: color
+	Vec3Value Kr;
+	// Vec3Value Kt: absorptions
+	Vec3Value opacity;
+
 	// END OF DATA THAT WILL BE COPIED TO COREMATERIAL
 };
 
