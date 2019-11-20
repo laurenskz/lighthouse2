@@ -54,6 +54,7 @@ void SetARGB128Pixels( float4* p );
 void SetNRM32Pixels( uint* p );
 void SetSkyPixels( float3* p );
 void SetSkySize( int w, int h );
+void SetWorldToSky( const mat4& worldToLight  );
 void SetDebugData( float4* p );
 void SetGeometryEpsilon( float e );
 void SetClampValue( float c );
@@ -499,12 +500,13 @@ void RenderCore::SetLights( const CoreLightTri* areaLights, const int areaLightC
 //  |  RenderCore::SetSkyData                                                     |
 //  |  Set the sky dome data.                                               LH2'19|
 //  +-----------------------------------------------------------------------------+
-void RenderCore::SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& /* worldToLight */ )
+void RenderCore::SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& worldToLight )
 {
 	delete skyPixelBuffer;
 	skyPixelBuffer = new CoreBuffer<float3>( width * height, ON_DEVICE, pixels );
 	SetSkyPixels( skyPixelBuffer->DevPtr() );
 	SetSkySize( width, height );
+	SetWorldToSky( worldToLight );
 	skywidth = width;
 	skyheight = height;
 }

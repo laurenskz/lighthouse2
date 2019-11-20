@@ -35,6 +35,7 @@ typedef unsigned char uchar;
 #include "../RenderSystem/common_settings.h"
 #include "../RenderSystem/common_classes.h"
 #include "../RenderSystem/common_functions.h"
+#include "../RenderSystem/common_types.h"
 #include "../core_settings.h"
 #if __CUDA_ARCH__ >= 700
 #define THREADMASK	__activemask() // volta, turing
