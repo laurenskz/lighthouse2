@@ -416,6 +416,9 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 				(m.detailColor.textureID != -1 ? HAS2NDDIFFUSEMAP : 0) +
 				((m.flags & 1) ? HASSMOOTHNORMALS : 0) + ((m.flags & 2) ? HASALPHA : 0);
 
+			if (m.flags & /* HostMaterial::EMISSIVE_TWOSIDED */ 8)
+				gpuMat.flags |= ISEMISSIVETWOSIDED;
+
 			matDesc.push_back( {MaterialType::DISNEY, disneyMaterialCount++} );
 		}
 		else

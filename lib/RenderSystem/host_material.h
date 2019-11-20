@@ -69,7 +69,8 @@ public:
 	{
 		SMOOTH = 1,								// material uses normal interpolation
 		HASALPHA = 2,							// material textures use alpha channel
-		FROM_MTL = 4							// changes are persistent for these, not for others
+		FROM_MTL = 4,							// changes are persistent for these, not for others
+		EMISSIVE_TWOSIDED = 8,
 	};
 
 	// constructor / destructor

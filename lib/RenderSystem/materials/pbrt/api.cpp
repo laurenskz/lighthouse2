@@ -928,14 +928,17 @@ void pbrtShape( const std::string& name, const ParamSet& params )
 	{
 		// area = MakeAreaLight( graphicsState.areaLight, curTransform[0],
 		//                                        mi, graphicsState.areaLightParams, s );
-		auto& lparams = graphicsState.areaLightParams;
-		auto L = lparams.FindOneSpectrum( "L", Spectrum( 1.0 ) ).vector();
-		auto sc = lparams.FindOneSpectrum( "scale", Spectrum( 1.0 ) ).vector();
+		const auto& lparams = graphicsState.areaLightParams;
+		const auto L = lparams.FindOneSpectrum( "L", Spectrum( 1.0 ) ).vector();
+		const auto sc = lparams.FindOneSpectrum( "scale", Spectrum( 1.0 ) ).vector();
+		const bool twoSided = lparams.FindOneBool( "twosided", false );
 		auto mtl = new HostMaterial();
 		mtl->color = L * sc;
 		// Sanity, ensure the material is emissive within LH2 definitions:
 		if ( !mtl->IsEmissive() )
 			Error( "None of the rgb components are larger than 1, material is not emissive!" );
+		if (twoSided)
+			mtl->flags |= HostMaterial::EMISSIVE_TWOSIDED;
 		materialIdx = hostScene->AddMaterial( mtl );
 	}
 	else

@@ -32,6 +32,11 @@ LH2_DEVFUNC float3 ciexyz_to_linear_rgb( const float3 xyz )
 		max( 0.0f, 0.055648f * xyz.x - 0.204043f * xyz.y + 1.057311f * xyz.z ) );
 }
 
+enum ShadingDataFlags {
+	ALPHA = 1,
+	EMISSIVE_TWOSIDED = 2,
+};
+
 /**
  * Extract information from the triangle instance, not (directly)
  * related to any material (type).
@@ -124,6 +129,11 @@ LH2_DEVFUNC void GetShadingData(
 		N, iN, fN, T, w );
 	const float4 vertexAlpha = tri.alpha4;
 
+	#ifdef MAT_EMISSIVE_TWOSIDED
+	if (MAT_EMISSIVE_TWOSIDED)
+		retVal.flags |= EMISSIVE_TWOSIDED;
+	#endif
+
 	// texturing
 	float tu, tv;
 	if (MAT_HASDIFFUSEMAP || MAT_HAS2NDDIFFUSEMAP || MAT_HASSPECULARITYMAP || MAT_HASNORMALMAP || MAT_HAS2NDNORMALMAP || MAT_HASROUGHNESSMAP)
@@ -149,7 +159,7 @@ LH2_DEVFUNC void GetShadingData(
 		const float4 texel = FetchTexelTrilinear( lambda, uvscale * (uvoffs + make_float2( tu, tv )), data.w, data.x & 0xffff, data.x >> 16 );
 		if (MAT_HASALPHA && texel.w < 0.5f)
 		{
-			retVal.flags |= 1;
+			retVal.flags |= ALPHA;
 			return;
 		}
 		retVal.color = retVal.color * make_float3( texel );

@@ -31,9 +31,14 @@ class DisneyMaterial : public MaterialIntf
 		return shadingData.IsEmissive();
 	}
 
+	__device__ bool IsEmissiveTwosided() const override
+	{
+		return shadingData.flags &  ShadingDataFlags::EMISSIVE_TWOSIDED;
+	}
+
 	__device__ bool IsAlpha() const override
 	{
-		return shadingData.flags & 1;
+		return shadingData.flags & ShadingDataFlags::ALPHA;
 	}
 
 	__device__ float3 Color() const override
