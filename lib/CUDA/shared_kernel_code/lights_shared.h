@@ -238,7 +238,7 @@ LH2_DEVFUNC float3 RandomPointOnLight( float r0, float r1, const float3& I, cons
 //  |  Sample_Le                                                                  |
 //  |  Part of the BDPT core.                                               LH2'19|
 //  +-----------------------------------------------------------------------------+
-LH2_DEVFUNC float3 Sample_Le( const float& r0, float r1, const float& r2, const float& r3,
+LH2_DEVFUNC float3 Sample_Le( float& r0, float r1, const float& r2, const float& r3,
 	float3& normal, float3& lightDir, float3& lightColor,
 	float& lightPdf, float& pdfPos, float& pdfDir )
 {
