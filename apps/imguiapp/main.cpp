@@ -22,7 +22,7 @@ static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0;
 static Shader* shader = 0;
 static uint scrwidth = 0, scrheight = 0, scrspp = 1;
-static bool camMoved = false, spaceDown = false, hasFocus = true, running = true, animPaused = false;
+static bool camMoved = false, spaceDown = false, hasFocus = true, running = true, animPaused = false, showUi = true;
 static std::bitset<1024> keystates;
 static std::bitset<8> mbstates;
 static string materialFile;
@@ -117,6 +117,8 @@ void HandleOneOffInput( int key, int action )
 {
 	if ( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
 		animPaused = !animPaused;
+	else if( key == GLFW_KEY_H && action == GLFW_PRESS )
+		showUi = !showUi;
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -195,7 +197,12 @@ int main()
 		shader->SetInt( "method", renderer->GetCamera()->tonemapper );
 		DrawQuad();
 		shader->Unbind();
+
 		// gui
+		if (showUi) {
+
+		// Not indented to prevent conflicts
+		// Please indent and remove comment on merge to master.
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -247,6 +254,7 @@ int main()
 		ImGui::End();
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+		}
 		// finalize
 		glfwSwapBuffers( window );
 		// terminate
