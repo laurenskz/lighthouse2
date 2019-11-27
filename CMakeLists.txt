@@ -78,12 +78,12 @@ endif()
 find_package(Vulkan QUIET)
 find_package(Shaderc QUIET)
 if(Vulkan_FOUND AND Shaderc_FOUND)
-  add_render_core("lib/RenderCore_Vulkan_RT")
+  add_render_core("${CMAKE_SOURCE_DIR}/lib/RenderCore_Vulkan_RT")
 endif()
 
 # Include default RenderCores:
-add_render_core("lib/RenderCore_SoftRasterizer")
-add_render_core("lib/RenderCore_Minimal")
+add_render_core("${CMAKE_SOURCE_DIR}/lib/RenderCore_SoftRasterizer")
+add_render_core("${CMAKE_SOURCE_DIR}/lib/RenderCore_Minimal")
 
 message(STATUS "Found RenderCores: ${render_cores}")
 
