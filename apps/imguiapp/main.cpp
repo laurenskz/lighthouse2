@@ -21,7 +21,7 @@ static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0;
 static Shader* shader = 0;
 static uint scrwidth = 0, scrheight = 0, scrspp = 2;
-static bool spaceDown = false, hasFocus = true, running = true, animPaused = false;
+static bool spaceDown = false, hasFocus = true, running = true, animPaused = false, showUi = true;
 static std::bitset<1024> keystates;
 static std::bitset<8> mbstates;
 static string materialFile;
@@ -116,6 +116,8 @@ void HandleOneOffInput( int key, int action )
 {
 	if ( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
 		animPaused = !animPaused;
+	else if( key == GLFW_KEY_H && action == GLFW_PRESS )
+		showUi = !showUi;
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -228,7 +230,8 @@ int main()
 		DrawQuad();
 		shader->Unbind();
 		// update user interface
-		UpdateUI();
+		if (showUi)
+			UpdateUI();
 		glfwSwapBuffers( window );
 		firstFrame = false;
 	}
