@@ -635,7 +635,7 @@ void RenderCore::SetLights( const CoreLightTri* areaLights, const int areaLightC
 //  |  RenderCore::SetSkyData                                                     |
 //  |  Set the sky dome data.                                               LH2'19|
 //  +-----------------------------------------------------------------------------+
-void RenderCore::SetSkyData( const float3* pixels, const uint width, const uint height )
+void RenderCore::SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& /* worldToLight */ )
 {
 	delete skyPixelBuffer;
 	skyPixelBuffer = new CoreBuffer<float3>( width * height, ON_DEVICE, pixels );
@@ -896,6 +896,10 @@ void RenderCore::Shutdown()
 	cudaFree( (void*)sbt.raygenRecord );
 	cudaFree( (void*)sbt.missRecordBase );
 	cudaFree( (void*)sbt.hitgroupRecordBase );
+}
+
+CoreStats RenderCore::GetCoreStats() const {
+	return coreStats;
 }
 
 // EOF

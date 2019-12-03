@@ -887,7 +887,7 @@ void RenderCore::SetLights( const CoreLightTri *areaLights, const int areaLightC
 //  |  RenderCore::SetSkyData                                                     |
 //  |  Set the sky dome data.                                               LH2'19|
 //  +-----------------------------------------------------------------------------+
-void RenderCore::SetSkyData( const float3 *pixels, const uint width, const uint height )
+void RenderCore::SetSkyData( const float3 *pixels, const uint width, const uint height, const mat4& /* worldToLight */ )
 {
 	std::vector<float4> data( size_t( width * height ) );
 	for (uint i = 0; i < (width * height); i++) data[i] = make_float4( pixels[i].x, pixels[i].y, pixels[i].z, 0.0f );
@@ -1194,6 +1194,10 @@ void RenderCore::Shutdown()
 	if (m_InteropTexture) delete m_InteropTexture;
 	if (m_VkDebugMessenger) m_VkInstance.destroyDebugUtilsMessengerEXT( m_VkDebugMessenger, nullptr, dynamicDispatcher );
 	// Vulkan device & Vulkan instance automatically get freed when this class gets destroyed
+}
+
+CoreStats RenderCore::GetCoreStats() const {
+	return coreStats;
 }
 
 } // namespace lh2core

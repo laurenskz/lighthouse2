@@ -197,7 +197,7 @@ void RenderAPI::SetProbePos( const int2 pos )
 	renderer->SetProbePos( pos );
 }
 
-CoreStats RenderAPI::GetCoreStats()
+CoreStats RenderAPI::GetCoreStats() const
 {
 	return renderer->GetCoreStats();
 }
