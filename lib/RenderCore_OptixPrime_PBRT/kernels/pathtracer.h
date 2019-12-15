@@ -104,7 +104,14 @@ void shadeKernel( float4* accumulator, const uint stride,
 	float3 N, iN, fN, T;
 	const float3 I = RAY_O + HIT_T * D;
 	const float coneWidth = spreadAngle * HIT_T;
-	GetShadingData( D, HIT_U, HIT_V, coneWidth, instanceTriangles[PRIMIDX], INSTANCEIDX, shadingData, N, iN, fN, T );
+	// Fetch entire tri
+	CoreTri4 tri = instanceTriangles[PRIMIDX];
+	// Update
+	const CoreMaterialDesc matDesc = materialDescriptors[__float_as_int( tri.v4.w )];
+	if (matDesc.type == MaterialType::DISNEY) {
+		tri.v4.w = __int_as_float( matDesc.instanceLocation );
+		GetShadingData( D, HIT_U, HIT_V, coneWidth, tri, INSTANCEIDX, shadingData, N, iN, fN, T );
+	}
 
 	// we need to detect alpha in the shading code.
 	if (shadingData.flags & 1)

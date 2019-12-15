@@ -131,6 +131,20 @@ struct CUDAMaterial4
 #define MAT_HASALPHA				(flags & HASALPHA)
 };
 
+// Types specific to PBRT core:
+namespace lh2core
+{
+
+// Shared classes specific to PBRT core:
+struct CoreMaterialDesc
+{
+	MaterialType type;
+	unsigned int instanceLocation : 24;
+};
+// Not on windows, here it is aligned to 8. As long as NVCC agrees, this is "fine"
+// static_assert( sizeof( CoreMaterialDesc ) == sizeof( int ), "CoreMaterialDesc must be 4 bytes!" );
+}; // namespace lh2core
+
 // ------------------------------------------------------------------------------
 // Below this line: derived, low-level and internal.
 

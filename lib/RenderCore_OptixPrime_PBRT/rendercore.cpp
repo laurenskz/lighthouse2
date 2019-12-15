@@ -42,6 +42,7 @@ void InitCountersSubsequent();
 // setters / getters
 void SetInstanceDescriptors( CoreInstanceDesc* p );
 void SetMaterialList( CUDAMaterial* p );
+void SetMaterialDescList( CoreMaterialDesc* p );
 void SetAreaLights( CoreLightTri* p );
 void SetPointLights( CorePointLight* p );
 void SetSpotLights( CoreSpotLight* p );
@@ -364,7 +365,13 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 	// in the continuous arrays; this data is valid only when textures are in sync.
 	delete materialBuffer;
 	delete hostMaterialBuffer;
+	delete materialDescBuffer;
+
 	hostMaterialBuffer = new CUDAMaterial[materialCount];
+
+	std::vector<CoreMaterialDesc> matDesc;
+	matDesc.reserve( materialCount );
+
 	for (int i = 0; i < materialCount; i++)
 	{
 		// perform conversion to internal material format
@@ -401,6 +408,11 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 	}
 	materialBuffer = new CoreBuffer<CUDAMaterial>( materialCount, ON_DEVICE | ON_HOST /* on_host: for alpha mapped tris */, hostMaterialBuffer );
 	SetMaterialList( materialBuffer->DevPtr() );
+	for ( int i = 0; i < materialCount; i++ )
+		matDesc.push_back( {MaterialType::DISNEY, (unsigned int)i} );
+
+	materialDescBuffer = new CoreBuffer<CoreMaterialDesc>( matDesc.size(), ON_DEVICE, matDesc.data() );
+	SetMaterialDescList( materialDescBuffer->DevPtr() );
 }
 
 //  +-----------------------------------------------------------------------------+

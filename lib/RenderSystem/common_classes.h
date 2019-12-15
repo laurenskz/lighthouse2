@@ -170,6 +170,39 @@ struct CoreInstanceDesc
 };
 #endif
 
+#ifdef __cplusplus
+enum class MaterialType : char
+#else
+enum MaterialType
+#endif
+{
+	// Existing compacted Disney material
+	DISNEY = 0,
+	// A tree of custom BSDF nodes
+	CUSTOM_BSDF,
+
+	// Other materials:
+
+	// The Disney material expressed in device-created BxDF nodes,
+	// Based on PBRT
+	PBRT_DISNEY,
+
+	// PBRT Common materials:
+	PBRT_FOURIER,
+	PBRT_GLASS,
+	PBRT_HAIR,
+	PBRT_KD_SUBSURFACE,
+	PBRT_MATTE,
+	PBRT_METAL,
+	PBRT_MIRROR,
+	PBRT_MIXTURE,
+	PBRT_PLASTIC,
+	PBRT_SUBSTRATE,
+	PBRT_SUBSURFACE,
+	PBRT_TRANSLUCENT,
+	PBRT_UBER,
+};
+
 //  +-----------------------------------------------------------------------------+
 //  |  CoreMaterial - keep this in sync with the HostMaterial class, as these     |
 //  |  will be copied into CoreMaterials before being passed to the cores.  LH2'19|
@@ -199,7 +232,7 @@ public:
 	Vec3Value color;							// universal material property: base color
 	Vec3Value detailColor;						// universal material property: detail texture
 	Vec3Value normals;							// universal material property: normal map
-	Vec3Value detailNormals;					// universal material property: detail normal map			
+	Vec3Value detailNormals;					// universal material property: detail normal map
 	uint flags;									// material flags: 1 = SMOOTH, 2 = HASALPHA
 
 	// Disney BRDF properties
@@ -221,7 +254,7 @@ public:
 	// lambert bsdf properties
 	// Data for a basic Lambertian BRDF, augmented with pure specular reflection and
 	// refraction. Assumptions:
-	// diffuse component = 1 - (reflectionm + refraction); 
+	// diffuse component = 1 - (reflectionm + refraction);
 	// (reflection + refraction) < 1;
 	// ior is the index of refraction of the medium below the shading point.
 	// Vec3Value absorption;					// shared with disney brdf

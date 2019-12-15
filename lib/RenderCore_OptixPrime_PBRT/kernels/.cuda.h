@@ -30,10 +30,10 @@ typedef unsigned char uchar;
 #else
 #include "half.hpp"
 #endif
-#include "../core_settings.h"
 #include "../RenderSystem/common_settings.h"
 #include "../RenderSystem/common_classes.h"
 #include "../RenderSystem/common_functions.h"
+#include "../core_settings.h"
 #if __CUDA_ARCH__ >= 700
 #define THREADMASK	__activemask() // volta, turing
 #else

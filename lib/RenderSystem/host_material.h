@@ -80,18 +80,18 @@ public:
 
 	// START OF DATA THAT WILL BE COPIED TO COREMATERIAL
 
-	// Note: cores receive an exact copy of the material properties. The differences 
+	// Note: cores receive an exact copy of the material properties. The differences
 	// between a HostMaterial and a CoreMaterial are:
 	// 1. A CoreMaterial instance does not initialize any fields;
 	// 2. Data other than material parameters is not included in the CoreMaterial.
-	// Cores are expected to take the data as-is, or to convert it to a core-specific 
+	// Cores are expected to take the data as-is, or to convert it to a core-specific
 	// format.
 
 	// material properties
 	Vec3Value color = Vec3Value( 1 );			// universal material property: base color
 	Vec3Value detailColor;						// universal material property: detail texture
 	Vec3Value normals;							// universal material property: normal map
-	Vec3Value detailNormals;					// universal material property: detail normal map			
+	Vec3Value detailNormals;					// universal material property: detail normal map
 	uint flags = SMOOTH;						// material flags: 1 = SMOOTH, 2 = HASALPHA
 
 	// Disney BRDF properties
@@ -113,7 +113,7 @@ public:
 	// lambert bsdf properties
 	// Data for a basic Lambertian BRDF, augmented with pure specular reflection and
 	// refraction. Assumptions:
-	// diffuse component = 1 - (reflectionm + refraction); 
+	// diffuse component = 1 - (reflectionm + refraction);
 	// (reflection + refraction) < 1;
 	// ior is the index of refraction of the medium below the shading point.
 	// Vec3Value absorption;					// shared with disney brdf
