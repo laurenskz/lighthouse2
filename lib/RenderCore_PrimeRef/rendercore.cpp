@@ -280,7 +280,7 @@ void RenderCore::SetTextures( const CoreTexDesc* tex, const int textures )
 	SyncStorageType( TexelStorage::ARGB32 );
 	SyncStorageType( TexelStorage::ARGB128 );
 	SyncStorageType( TexelStorage::NRM32 );
-	// Notes: 
+	// Notes:
 	// - the three types are copied from the original HostTexture pixel data (to which the
 	//   descriptors point) straight to the GPU. There is no pixel storage on the host
 	//   in the RenderCore.
@@ -378,7 +378,7 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 		if (m.roughness.textureID != -1) gpuMat.rmap = Map<CoreMaterial::ScalarValue>( m.roughness );
 		if (m.specular.textureID != -1) gpuMat.smap = Map<CoreMaterial::ScalarValue>( m.specular );
 		bool hdr = false;
-		if (m.color.textureID != 1) if (texDescs[m.color.textureID].flags & 8 /* HostTexture::HDR */) hdr = true;
+		if (m.color.textureID != -1) if (texDescs[m.color.textureID].flags & 8 /* HostTexture::HDR */) hdr = true;
 		gpuMat.flags =
 			(m.eta.value < 1 ? ISDIELECTRIC : 0) + (hdr ? DIFFUSEMAPISHDR : 0) +
 			(m.color.textureID != -1 ? HASDIFFUSEMAP : 0) +
