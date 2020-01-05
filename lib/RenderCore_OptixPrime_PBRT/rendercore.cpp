@@ -367,52 +367,68 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 	delete materialBuffer;
 	delete hostMaterialBuffer;
 	delete materialDescBuffer;
+	delete pbrtMaterialBuffer;
 
 	hostMaterialBuffer = new CUDAMaterial[materialCount];
 
 	std::vector<CoreMaterialDesc> matDesc;
 	matDesc.reserve( materialCount );
+	std::vector<CoreMaterial> pbrtMaterials;
+	pbrtMaterials.resize( materialCount );
+
+	uint disneyMaterialCount = 0;
 
 	for (int i = 0; i < materialCount; i++)
 	{
 		// perform conversion to internal material format
 		CoreMaterial& m = mat[i];
-		CUDAMaterial& gpuMat = hostMaterialBuffer[i];
-		memset( &gpuMat, 0, sizeof( CUDAMaterial ) );
-		gpuMat.diffuse_r = m.color.value.x,
-			gpuMat.diffuse_g = m.color.value.y;
-		gpuMat.diffuse_b = m.color.value.z;
-		gpuMat.transmittance_r = 1 - m.absorption.value.x;
-		gpuMat.transmittance_g = 1 - m.absorption.value.y;
-		gpuMat.transmittance_b = 1 - m.absorption.value.z;
-		gpuMat.parameters.x = TOUINT4( m.metallic.value, m.subsurface.value, m.specular.value, m.roughness.value );
-		gpuMat.parameters.y = TOUINT4( m.specularTint.value, m.anisotropic.value, m.sheen.value, m.sheenTint.value );
-		gpuMat.parameters.z = TOUINT4( m.clearcoat.value, m.clearcoatGloss.value, m.transmission.value, 0 );
-		gpuMat.parameters.w = *((uint*)&m.eta);
-		if (m.color.textureID != -1) gpuMat.tex0 = Map<CoreMaterial::Vec3Value>( m.color );
-		if (m.detailColor.textureID != -1) gpuMat.tex1 = Map<CoreMaterial::Vec3Value>( m.detailColor );
-		if (m.normals.textureID != -1) gpuMat.nmap0 = Map<CoreMaterial::Vec3Value>( m.normals );
-		if (m.detailNormals.textureID != -1) gpuMat.nmap1 = Map<CoreMaterial::Vec3Value>( m.detailNormals );
-		if (m.roughness.textureID != -1) gpuMat.rmap = Map<CoreMaterial::ScalarValue>( m.roughness );
-		if (m.specular.textureID != -1) gpuMat.smap = Map<CoreMaterial::ScalarValue>( m.specular );
-		bool hdr = false;
-		if (m.color.textureID != -1) if (texDescs[m.color.textureID].flags & 8 /* HostTexture::HDR */) hdr = true;
-		gpuMat.flags =
-			(m.eta.value < 1 ? ISDIELECTRIC : 0) + (hdr ? DIFFUSEMAPISHDR : 0) +
-			(m.color.textureID != -1 ? HASDIFFUSEMAP : 0) +
-			(m.normals.textureID != -1 ? HASNORMALMAP : 0) +
-			(m.specular.textureID != -1 ? HASSPECULARITYMAP : 0) +
-			(m.roughness.textureID != -1 ? HASROUGHNESSMAP : 0) +
-			(m.detailNormals.textureID != -1 ? HAS2NDNORMALMAP : 0) +
-			(m.detailColor.textureID != -1 ? HAS2NDDIFFUSEMAP : 0) +
-			((m.flags & 1) ? HASSMOOTHNORMALS : 0) + ((m.flags & 2) ? HASALPHA : 0);
-	}
-	materialBuffer = new CoreBuffer<CUDAMaterial>( materialCount, ON_DEVICE | ON_HOST /* on_host: for alpha mapped tris */, hostMaterialBuffer );
-	SetMaterialList( materialBuffer->DevPtr() );
-	for ( int i = 0; i < materialCount; i++ )
-		matDesc.push_back( {MaterialType::DISNEY, (unsigned int)i} );
 
-	materialDescBuffer = new CoreBuffer<CoreMaterialDesc>( matDesc.size(), ON_DEVICE, matDesc.data() );
+		if ( static_cast<const MaterialType>( m.pbrtMaterialType ) == MaterialType::DISNEY )
+		{
+			CUDAMaterial& gpuMat = hostMaterialBuffer[disneyMaterialCount];
+			memset( &gpuMat, 0, sizeof( CUDAMaterial ) );
+			gpuMat.diffuse_r = m.color.value.x,
+				gpuMat.diffuse_g = m.color.value.y;
+			gpuMat.diffuse_b = m.color.value.z;
+			gpuMat.transmittance_r = 1 - m.absorption.value.x;
+			gpuMat.transmittance_g = 1 - m.absorption.value.y;
+			gpuMat.transmittance_b = 1 - m.absorption.value.z;
+			gpuMat.parameters.x = TOUINT4( m.metallic.value, m.subsurface.value, m.specular.value, m.roughness.value );
+			gpuMat.parameters.y = TOUINT4( m.specularTint.value, m.anisotropic.value, m.sheen.value, m.sheenTint.value );
+			gpuMat.parameters.z = TOUINT4( m.clearcoat.value, m.clearcoatGloss.value, m.transmission.value, 0 );
+			gpuMat.parameters.w = *((uint*)&m.eta);
+			if (m.color.textureID != -1) gpuMat.tex0 = Map<CoreMaterial::Vec3Value>( m.color );
+			if (m.detailColor.textureID != -1) gpuMat.tex1 = Map<CoreMaterial::Vec3Value>( m.detailColor );
+			if (m.normals.textureID != -1) gpuMat.nmap0 = Map<CoreMaterial::Vec3Value>( m.normals );
+			if (m.detailNormals.textureID != -1) gpuMat.nmap1 = Map<CoreMaterial::Vec3Value>( m.detailNormals );
+			if (m.roughness.textureID != -1) gpuMat.rmap = Map<CoreMaterial::ScalarValue>( m.roughness );
+			if (m.specular.textureID != -1) gpuMat.smap = Map<CoreMaterial::ScalarValue>( m.specular );
+			bool hdr = false;
+			if (m.color.textureID != -1) if (texDescs[m.color.textureID].flags & 8 /* HostTexture::HDR */) hdr = true;
+			gpuMat.flags =
+				(m.eta.value < 1 ? ISDIELECTRIC : 0) + (hdr ? DIFFUSEMAPISHDR : 0) +
+				(m.color.textureID != -1 ? HASDIFFUSEMAP : 0) +
+				(m.normals.textureID != -1 ? HASNORMALMAP : 0) +
+				(m.specular.textureID != -1 ? HASSPECULARITYMAP : 0) +
+				(m.roughness.textureID != -1 ? HASROUGHNESSMAP : 0) +
+				(m.detailNormals.textureID != -1 ? HAS2NDNORMALMAP : 0) +
+				(m.detailColor.textureID != -1 ? HAS2NDDIFFUSEMAP : 0) +
+				((m.flags & 1) ? HASSMOOTHNORMALS : 0) + ((m.flags & 2) ? HASALPHA : 0);
+
+			matDesc.push_back( {MaterialType::DISNEY, disneyMaterialCount++} );
+		}
+		else
+		{
+			matDesc.push_back( {static_cast<const MaterialType>( m.pbrtMaterialType ), (unsigned int)pbrtMaterials.size()} );
+			pbrtMaterials.push_back( m );
+		}
+	}
+	materialBuffer = new CoreBuffer<CUDAMaterial>( disneyMaterialCount, ON_DEVICE | ON_HOST /* on_host: for alpha mapped tris */, hostMaterialBuffer );
+	SetMaterialList( materialBuffer->DevPtr() );
+	pbrtMaterialBuffer = new CoreBuffer<CoreMaterial>( pbrtMaterials.size(), ON_DEVICE, pbrtMaterials.data() );
+	SetPbrtMaterialList( pbrtMaterialBuffer->DevPtr() );
+
+	materialDescBuffer = new CoreBuffer<CoreMaterialDesc>( materialCount, ON_DEVICE, matDesc.data() );
 	SetMaterialDescList( materialDescBuffer->DevPtr() );
 }
 

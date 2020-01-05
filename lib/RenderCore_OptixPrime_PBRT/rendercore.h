@@ -100,6 +100,7 @@ private:
 	CoreBuffer<CUDAMaterial>* materialBuffer = 0;	// material array
 	CUDAMaterial* hostMaterialBuffer = 0;			// core-managed copy of the materials
 	CoreBuffer<CoreMaterialDesc>* materialDescBuffer = 0; // material descriptors
+	CoreBuffer<CoreMaterial>* pbrtMaterialBuffer = 0; // pbrt materials (currently expressed as fat CoreMaterial)
 	CoreBuffer<CoreLightTri>* areaLightBuffer;		// area lights
 	CoreBuffer<CorePointLight>* pointLightBuffer;	// point lights
 	CoreBuffer<CoreSpotLight>* spotLightBuffer;		// spot lights

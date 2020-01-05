@@ -126,6 +126,7 @@ public:
 	// specified material parameter sets.
 
 	// PBRT common values:
+	MaterialType pbrtMaterialType : 8;
 	ScalarValue urough, vrough;
 
 	Vec3Value Ks;

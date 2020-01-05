@@ -268,6 +268,7 @@ public:
 
 	// PBRT common values:
 	// TODO: How should this be handled together with unidirectional roughness?
+	MaterialType pbrtMaterialType : 8;
 	ScalarValue urough, vrough;
 
 	// PBRT Glass mapping:
