@@ -149,7 +149,7 @@ void RenderCore::CreateOptixContext( int cc )
 
 	// load and compile PTX
 	string ptx;
-	if (NeedsRecompile( "../../lib/RenderCore_Optix7Filter/optix/", ".optix.turing.cu.ptx", ".optix.cu", "../../rendersystem/common_settings.h", "../core_settings.h" ))
+	if (NeedsRecompile( "../../lib/RenderCore_Optix7Filter/optix/", ".optix.turing.cu.ptx", ".optix.cu", "../../RenderSystem/common_settings.h", "../core_settings.h" ))
 	{
 		CUDATools::compileToPTX( ptx, TextFileRead( "../../lib/RenderCore_Optix7Filter/optix/.optix.cu" ).c_str(), "../../lib/RenderCore_Optix7Filter/optix", cc, 7 );
 		if (cc / 10 == 7) TextFileWrite( ptx, "../../lib/RenderCore_Optix7Filter/optix/.optix.turing.cu.ptx" );
