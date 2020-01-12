@@ -58,7 +58,12 @@ bool GetLastErrorString( char* buffer, DWORD length )
 HMODULE LoadModule( const char* dllName )
 {
 	// try the development folder structure first
+#ifdef CMAKE_BUILD_PATH
+	string dllpath = string( "../../build/lib/" ) + dllName + "/";
+#else
 	string dllpath = "../../coredlls/";
+#endif
+
 #ifdef _DEBUG
 	dllpath += "debug/";
 #else
