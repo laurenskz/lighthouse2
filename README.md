@@ -74,12 +74,42 @@ Visual Studio 2017 doesn't play well with `VS_` variables when opening a CMake f
 where these configurations most likely get lost). Instead it is advised to generate a Visual Studio solution using [`cmake` or `cmake-gui`](https://cmake.org/download/).
 TODO: Check VS2019
 
-#### OptiX
-OptiX doesn't install well to the standard system folders because multiple versions are required. When you deploy both SDKs somewhere, pass them to cmake as follows:
-Note that `:PATH` is necessary to make this a so-called `cached` variable. Cached variables surpass regular variables, and this would otherwise get overwritten by the default. The following command will immediately kick off a build, in release mode with debug info.
+#### CMake in Visual Studio Code
+Make sure the [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools) extension is installed. The project should [automatically configure](./.vscode/settings.json#2) when VSCode is opened but requires cache entries for OptiX to be defined when building on !Windows, see [OptiX](#OptiX). When building on an OS that is not covered by the OptiX 6 prebuilts in [`./lib/OptiX`](./lib/OptiX) specify these paths for CMake Tools to configure using `"cmake.configureSettings"` as follows in the user (preferred) or [workspace](./.vscode/settings.json) settings file:
+```json
+"cmake.configureSettings": {
+	"OptiX_INSTALL_DIR:PATH": "/opt/optix-6",
+	// Header-only lib: try included files in ./lib/OptiX7 first, they likely work fine:
+	// "OptiX7_INSTALL_DIR:PATH": "/opt/optix"
+},
+```
+(This example defaults to the [AUR](https://aur.archlinux.org/packages/optix/) installation path).
 
+The extension will ask for a kit (compiler toolchain) on startup, select `[unspecified]` to let `cmake` figure out what to use.
+
+##### Configuring, Compiling and Running
+
+CMake Tools has builtin ["Quick Debugging"](https://vector-of-bool.github.io/docs/vscode-cmake-tools/debugging.html#quick-debugging) options (`CMake: Debug`, usually <kbd>ctrl</kbd>+<kbd>F5</kbd>), but these do not allow a working directory to be set. Instead, use VScode's built-in "Run and debug" (<kbd>F5</kbd>) to start) which invokes the gdb debugging target as defined in [launch.json](./.vscode/launch.json). This relies on a special task defined by cmake (`cmake.launchTargetPath`) to automatically invoke the build command: read [their documentation](https://vector-of-bool.github.io/docs/vscode-cmake-tools/debugging.html#debugging-with-cmake-tools-and-launch-json) for more info.
+The plugin will ask which executable to launch on the first try, but **BE AWARE**: the working directory (`cwd`) cannot be derived from the executable, update this manually in [launch.json](./.vscode/launch.json) to have access to the corresponding scene files and shaders.
+In order to start without debugger attached, create a launch config without gdb using the appropriate path for `cwd` and `${command:cmake.launchTargetPath}` as the `program`. Starting `CMake: Run Without Debugging` is not recommended due to the incorrect working directory.
+
+#### OptiX
+**NOTE**: The headers and libraries for Windows are included in the project, this step is only relevant on other OS'es. However OptiX 7 is a header-only library that _should_ be compatible on all platforms. Not specifying `OptiX7_INSTALL_DIR` works on my side, but YMMV.
+
+OptiX doesn't install well to the standard system folders because multiple versions are required. Deploy OptiX 6 and/or 7 somewhere, and pass the path of OptiX 6 to `OptiX_INSTALL_DIR` and OptiX 7 to OptiX7_INSTALL_DIR.
+Example `cmake` invocation:
 ```sh
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -B build && make -j$(nproc --all) -C build
+cmake -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -B build
+```
+Note that `:PATH` is necessary to make this a so-called `cached` variable. Cached variables surpass regular variables, which would otherwise get overwritten by the default.
+
+#### Building from the command-line
+The following command configures the project using CMake to a (new) folder `build/`, and immediately kicks off a multithreaded compilation in release mode with debug info.
+```sh
+# Configure project:
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -B build
+# Build project on all cores:
+cmake --build build -j$(nproc)
 ```
 
 #### Running
