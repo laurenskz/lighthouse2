@@ -44,7 +44,7 @@ using namespace half_float;
 
 // https://devblogs.microsoft.com/cppblog/msvc-preprocessor-progress-towards-conformance/
 // MSVC _Should_ support this extended functionality for the token-paste operator:
-#define FATALERROR( f, ... ) FatalError( "Error on line %d of %s: " f "\n", __LINE__, __FILE__, ##__VA_ARGS__ )
+#define FATALERROR( f, ... ) FatalError( "Fatal error at %s:%d: " f "\n", __LINE__, __FILE__, ##__VA_ARGS__ )
 #define FATALERROR_IF( c, f, ... ) do { if (c) FATALERROR( f, ##__VA_ARGS__ ); } while ( 0 )
 #define FATALERROR_IN( p, e, f, ... ) FatalError( p " returned error '%s' at %s:%d" f "\n", e, __FILE__, __LINE__, ##__VA_ARGS__ );
 #define FATALERROR_IN_CALL( s, e, f, ... ) do { auto r = (s); if (r) FATALERROR_IN( #s, e( r ), f, ##__VA_ARGS__ ) } while (0)
