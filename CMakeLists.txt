@@ -10,6 +10,22 @@ project(Lighthouse2)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" "${CMAKE_MODULE_PATH}")
 set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/cmake" "${CMAKE_PREFIX_PATH}")
 
+# Install binaries, libraries and data files (scenes, models and shaders) to the
+# same root directory.
+set(CMAKE_INSTALL_BINDIR ".")
+set(CMAKE_INSTALL_LIBDIR ".")
+set(CMAKE_INSTALL_DATADIR ".")
+if(APPLE)
+  # Allow the linker to look for libraries in the current working directory
+  set(CMAKE_INSTALL_RPATH ".")
+else()
+  # Allow the linker to look for libraries in the same directory
+  set(CMAKE_INSTALL_RPATH "$ORIGIN")
+  # Link build-time libraries with $ORIGIN RPATH token. This allows the build
+  # directory to be relocated.
+  set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+endif()
+
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
