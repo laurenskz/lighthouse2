@@ -118,6 +118,19 @@ An app must be ran from the application dir, where all models, shaders and confi
 (cd apps/imguiapp && ../../build/apps/imguiapp/ImguiApp)
 ```
 
+#### Creating installable package
+There is rudimentary support for creating installable packages. Depending on the usecase such a package could either be to unzip-and-run, or installed "properly" to system directories.
+```sh
+# Configure the project, taking care to set CMAKE_INSTALL_PREFIX to a local folder:
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -DCMAKE_INSTALL_PREFIX=install -B build
+# Run the `install` target
+cmake --build build -j$(nproc) -t install
+# Now the entire project including all apps, cores and data is in the install directory. When changed into apps can be started immediately, with the RenderCores and data folder in the right place.
+# The folder can be zipped and distributed (as far as cross-CPU optimization flags go, the project is optimized for the native CPU by default).
+```
+
+Note that `-DBUILD_SHARED_LIBS=ON` can be passed to create separate shared libraries for all libraries that are not explicitly `STATIC`/`SHARED`/`MODULE`. See [the documentation](https://cmake.org/cmake/help/latest/command/add_library.html#normal-libraries) for more details.
+
 ### TODO:
 The CMake conversion on this branch is not done yet.
 1. Cherry-pick missing Windows commits from `do-not-merge` branch
