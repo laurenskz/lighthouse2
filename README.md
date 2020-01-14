@@ -99,7 +99,7 @@ In order to start without debugger attached, create a launch config without gdb 
 OptiX doesn't install well to the standard system folders because multiple versions are required. Deploy OptiX 6 and/or 7 somewhere, and pass the path of OptiX 6 to `OptiX_INSTALL_DIR` and OptiX 7 to OptiX7_INSTALL_DIR.
 Example `cmake` invocation:
 ```sh
-cmake -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -B build
+cmake -GNinja -Bbuild -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix
 ```
 Note that `:PATH` is necessary to make this a so-called `cached` variable. Cached variables surpass regular variables, which would otherwise get overwritten by the default.
 
@@ -107,7 +107,7 @@ Note that `:PATH` is necessary to make this a so-called `cached` variable. Cache
 The following command configures the project using CMake to a (new) folder `build/`, and immediately kicks off a multithreaded compilation in release mode with debug info.
 ```sh
 # Configure project:
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -B build
+cmake -GNinja -Bbuild -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix
 # Build project on all cores:
 cmake --build build -j$(nproc)
 ```
@@ -122,7 +122,7 @@ An app must be ran from the application dir, where all models, shaders and confi
 There is rudimentary support for creating installable packages. Depending on the usecase such a package could either be to unzip-and-run, or installed "properly" to system directories.
 ```sh
 # Configure the project, taking care to set CMAKE_INSTALL_PREFIX to a local folder:
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -DCMAKE_INSTALL_PREFIX=install -B build
+cmake -GNinja -Bbuild -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -DCMAKE_INSTALL_PREFIX=install
 # Run the `install` target
 cmake --build build -j$(nproc) -t install
 # Now the entire project including all apps, cores and data is in the install directory. When changed into apps can be started immediately, with the RenderCores and data folder in the right place.
