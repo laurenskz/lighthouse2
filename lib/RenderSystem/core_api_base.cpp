@@ -98,14 +98,7 @@ void* LoadModule( const char* dllName )
 {
 	auto dllpath = string( "lib" ) + string( dllName ) + string( ".so" );
 	module = dlopen( dllpath.c_str(), RTLD_NOW | RTLD_GLOBAL );
-	if (!module)
-	{
-		printf( "dlopen %s failed with %s\n", dllpath.c_str(), dlerror() );
-
-		// see if the dll is perhaps in the current folder
-		module = dlopen( dllName, RTLD_NOW | RTLD_GLOBAL );
-		FATALERROR_IF( !module, "Failed to dlopen %s: %s", dllName, dlerror() );
-	}
+	FATALERROR_IF( !module, "Failed to dlopen %s: %s", dllpath.c_str(), dlerror() );
 	return module;
 }
 
