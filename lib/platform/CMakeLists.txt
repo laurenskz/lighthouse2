@@ -11,12 +11,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 find_package(FreeImage REQUIRED)
 find_package(glfw3 REQUIRED)
 
-if(WIN32)
-  # Try to find a system version first (ZLIB_ROOT would take precedence)
-  find_package(ZLIB QUIET)
-  if(NOT ZLIB_FOUND)
-    set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
-  endif()
+if(MSVC)
+  # Always use the bundled zlib. Attempting to detect a zlib install on the
+  # current machine (eg. find_package(ZLIB QUIET) if ((NOT ZLIB_FOUND)...))
+  # sometimes results in finding the one from mingw64, which will not compile
+  # natively in Visual Studio.
+  set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
 endif()
 
 find_package(ZLIB REQUIRED)
