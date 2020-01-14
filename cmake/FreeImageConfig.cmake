@@ -5,3 +5,8 @@ endif()
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/lib/FreeImage")
 find_package(FreeImage)
 list(POP_FRONT CMAKE_MODULE_PATH)
+
+if(WIN32)
+  install(FILES "$<TARGET_PROPERTY:FreeImage::freeimage,IMPORTED_LOCATION>"
+          TYPE LIB)
+endif()
