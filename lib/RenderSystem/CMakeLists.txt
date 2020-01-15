@@ -44,10 +44,4 @@ int main() {
 target_compile_definitions(
   ${PROJECT_NAME}
   PUBLIC $<$<BOOL:${HAVE_MMAP}>:PBRT_HAVE_MMAP>
-         $<$<OR:$<BOOL:${MSVC}>,$<BOOL:${WIN32}>>:
-         # Flag for PBRT code to know we're compiling on/for Windows (Used
-         # instead of WIN32/_MSC_VER presence)
-         PBRT_IS_WINDOWS
-         # Point the module loader to the build system, instead of changing the
-         # DLL output dir.
-         CMAKE_BUILD_PATH>)
+         $<$<OR:$<BOOL:${MSVC}>,$<BOOL:${WIN32}>>:PBRT_IS_WINDOWS>)
