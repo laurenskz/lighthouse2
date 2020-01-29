@@ -3,6 +3,8 @@ project(TinyApp)
 file(GLOB_RECURSE sources "*.cpp")
 file(GLOB_RECURSE headers "*.h")
 add_executable(${PROJECT_NAME} ${sources} ${headers})
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17
+                                                 CXX_STANDARD_REQUIRED ON)
 
 # External dependencies:
 find_package(glfw3 REQUIRED)

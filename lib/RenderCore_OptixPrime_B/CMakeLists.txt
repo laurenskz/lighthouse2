@@ -4,6 +4,8 @@ file(GLOB kernels "kernels/*.cu")
 file(GLOB_RECURSE sources "*.cpp")
 file(GLOB_RECURSE headers "*.h")
 add_library(${PROJECT_NAME} MODULE ${sources} ${kernels} ${headers})
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17
+                                                 CXX_STANDARD_REQUIRED ON)
 if(MSVC)
   set_target_properties(
     ${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY

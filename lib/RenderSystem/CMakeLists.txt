@@ -3,7 +3,8 @@ project(RenderSystem)
 file(GLOB_RECURSE sources "*.cpp")
 file(GLOB_RECURSE headers "*.h")
 add_library(${PROJECT_NAME} ${sources} ${headers})
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17
+                                                 CXX_STANDARD_REQUIRED ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE RENDERSYSTEMBUILD)
 target_compile_options(
   ${PROJECT_NAME} PRIVATE $<$<BOOL:${MSVC}>:/arch:AVX2>
