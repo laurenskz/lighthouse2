@@ -38,6 +38,7 @@ add_subdirectory("lib/tinyxml2")
 add_subdirectory("lib/tinygltf")
 add_subdirectory("lib/tinyobjloader")
 add_subdirectory("lib/imgui")
+add_subdirectory("lib/taskflow")
 
 # Platform configuration goes first:
 add_subdirectory("lib/platform")
