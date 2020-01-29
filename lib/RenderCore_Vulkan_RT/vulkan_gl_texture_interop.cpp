@@ -63,7 +63,11 @@ lh2core::VulkanGLTextureInterop::VulkanGLTextureInterop( const VulkanDevice &dev
 
 	// Allocate memory for image
 	vk::ExportMemoryAllocateInfo exportAllocInfo{};
+#ifdef WIN32
 	exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR );
+#else
+	exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd );
+#endif
 	vk::MemoryAllocateInfo memAllocInfo{};
 	memAllocInfo.pNext = &exportAllocInfo;
 	m_BufferSize = NEXTMULTIPLEOF( vk::DeviceSize( memoryRequirements.size * 1.3f ), memoryRequirements.alignment );
@@ -240,7 +244,11 @@ void lh2core::VulkanGLTextureInterop::Resize( uint32_t width, uint32_t height, b
 		memoryRequirements.size = m_BufferSize;
 		// Allocate memory
 		vk::ExportMemoryAllocateInfo exportAllocInfo{};
+#ifdef WIN32
 		exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR );
+#else
+		exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd );
+#endif
 		vk::MemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.pNext = &exportAllocInfo;
 		memAllocInfo.setAllocationSize( m_BufferSize );
