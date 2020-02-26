@@ -14,7 +14,7 @@
 */
 
 #include "rendersystem.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #include <direct.h>
 #define getcwd _getcwd
 #define chdir _chdir

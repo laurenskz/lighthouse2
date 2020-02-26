@@ -15,7 +15,13 @@
 
 #include "platform.h"
 #include "rendersystem.h"
-#include "direct.h" // for _chdir
+#ifdef WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#define chdir _chdir
+#else
+#include <unistd.h>
+#endif
 #include <bitset>
 #include <map>
 #include "irrklang.h"
@@ -851,7 +857,7 @@ int main( int argc, char* argv[] )
 	}
 
 	// get to the correct dir if exe is in root of project folder
-	redirected = _chdir( "./apps/benchmarkapp" );
+	redirected = chdir( "./apps/benchmarkapp" );
 
 	// prepare for rendering
 	Initialize();
