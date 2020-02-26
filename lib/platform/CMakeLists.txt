@@ -10,6 +10,7 @@ set_target_properties(
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 
 find_package(FreeImage REQUIRED)
+find_package(FreeType2 REQUIRED)
 find_package(glfw3 REQUIRED)
 
 if(MSVC)
@@ -24,8 +25,14 @@ find_package(ZLIB REQUIRED)
 
 # External dependencies, PUBLIC because exposed through header:
 target_link_libraries(
-  ${PROJECT_NAME} PUBLIC ${PLATFORM_GLFW} FreeImage::freeimage glad Half::half
-                         Taskflow::Taskflow ZLIB::ZLIB)
+  ${PROJECT_NAME}
+  PUBLIC ${PLATFORM_GLFW}
+         FreeImage::freeimage
+         FreeType2::freetype2
+         glad
+         Half::half
+         Taskflow::Taskflow
+         ZLIB::ZLIB)
 
 if(BUILD_SHARED_LIBS)
   install(TARGETS ${PROJECT_NAME})
