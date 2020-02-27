@@ -292,7 +292,7 @@ int HostScene::AddScene( const char* sceneFile, const char* dir, const mat4& tra
 	for (size_t s = gltfModel.textures.size(), i = 0; i < s; i++)
 	{
 		char t[1024];
-		sprintf_s( t, "%s-%s-%03i", dir, sceneFile, (int)i );
+		snprintf( t, sizeof( t ), "%s-%s-%03i", dir, sceneFile, (int)i );
 		int textureID = FindTextureID( t );
 		if (textureID != -1)
 		{
@@ -323,7 +323,7 @@ int HostScene::AddScene( const char* sceneFile, const char* dir, const mat4& tra
 	for (size_t s = gltfModel.materials.size(), i = 0; i < s; i++)
 	{
 		char t[1024];
-		sprintf_s( t, "%s-%s-%03i", dir, sceneFile, (int)i );
+		snprintf( t, sizeof( t ), "%s-%s-%03i", dir, sceneFile, (int)i );
 		int matID = FindMaterialIDByOrigin( t );
 		if (matID != -1)
 		{
@@ -566,9 +566,9 @@ int HostScene::FindOrCreateMaterialCopy( const int matID, const uint color )
 	// search list for existing material copy
 	const int r = (color >> 16) & 255, g = (color >> 8) & 255, b = color & 255;
 	const float3 c = make_float3( b * (1.0f / 255.0f), g * (1.0f / 255.0f), r * (1.0f / 255.0f ) );
-	for (auto material : materials) 
+	for (auto material : materials)
 	{
-		if (material->flags & HostMaterial::SINGLE_COLOR_COPY && 
+		if (material->flags & HostMaterial::SINGLE_COLOR_COPY &&
 			material->color.value.x == c.x && material->color.value.y == c.y && material->color.value.z == c.z)
 		{
 			material->refCount++;
