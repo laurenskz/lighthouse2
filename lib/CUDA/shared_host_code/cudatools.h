@@ -15,6 +15,8 @@
 
 #pragma once
 
+// For in-kernel printf:
+#include <stdio.h>
 #include <cstdint>
 
 enum { NOT_ALLOCATED = 0, ON_HOST = 1, ON_DEVICE = 2, STAGED = 4 };
