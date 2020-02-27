@@ -155,7 +155,7 @@ public:
 //  |  RenderThread                                                               |
 //  |  Worker thread for asynchronous rendering.                            LH2'20|
 //  +-----------------------------------------------------------------------------+
-class RenderThread : public WinThread
+class RenderThread : public StdThread
 {
 public:
 	void Init( RenderCore* core )
