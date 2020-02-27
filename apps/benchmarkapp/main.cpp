@@ -24,7 +24,7 @@
 #endif
 #include <bitset>
 #include <map>
-#include "irrklang.h"
+#include <irrKlang.h>
 using namespace irrklang;
 
 #define DEMOMODE
@@ -689,7 +689,7 @@ void TitleState( bool results )
 		shader->SetInputMatrix( "view", mat4::Identity() );
 		DrawQuad();
 		shader->Unbind();
-		Sleep( 50 );
+		std::this_thread::sleep_for(50ms);
 		return;
 	}
 	shader->Bind();
@@ -705,7 +705,7 @@ void TitleState( bool results )
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	// construct title screen
-	if (GetAsyncKeyState( VK_RETURN ))
+	if ( keystates[GLFW_KEY_ENTER] )
 	{
 		if (results) exit( 0 );
 		state = 1;

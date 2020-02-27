@@ -10,7 +10,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
 
 # Internal dependencies:
-target_link_libraries(${PROJECT_NAME} PRIVATE RenderSystem)
+find_package("IrrKlang" REQUIRED PATHS "${PROJECT_SOURCE_DIR}/lib/irrKlang")
+target_link_libraries(${PROJECT_NAME} PRIVATE RenderSystem IrrKlang::irrklang)
 
 register_app(${PROJECT_NAME})
 
