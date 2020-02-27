@@ -98,6 +98,42 @@ public:
 	void setPriority( int p );
 };
 
+// std thread with start/stop synchronisation
+// and (too) scoped locking.
+class LoopThread : public StdThread
+{
+	// events
+	std::mutex mut;
+	std::condition_variable startEvent, doneEvent;
+	bool shouldBeRunning = false;
+
+public:
+	inline void WaitForCompletion()
+	{
+		std::unique_lock<std::mutex> lock( mut );
+		doneEvent.wait( lock, [this] { return !shouldBeRunning; } );
+	}
+	inline void SignalStart()
+	{
+		std::lock_guard<std::mutex> lock( mut );
+		shouldBeRunning = true;
+		startEvent.notify_one();
+	}
+
+	virtual void step() = 0;
+	inline void run() final override
+	{
+		std::unique_lock<std::mutex> lock( mut );
+		for ( ;; )
+		{
+			startEvent.wait( lock, [this] { return shouldBeRunning; } );
+			step();
+			shouldBeRunning = false;
+			doneEvent.notify_one();
+		}
+	}
+};
+
 // Nils's jobmanager
 class Job
 {
