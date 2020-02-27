@@ -27,6 +27,12 @@ FATALERROR_IN( #stmt, CUDATools::decodeError( ret ), "\n\t(Are you running using
 FATALERROR_IN( #stmt, CUDATools::decodeError( ret ), "" ) } } while ( 0 )
 #define CHK_NVRTC( stmt ) FATALERROR_IN_CALL( ( stmt ), nvrtcGetErrorString, "" )
 
+// Forward-declare
+namespace lh2core
+{
+void stageMemcpy( void* d, void* s, int n );
+};
+
 class CUDATools
 {
 public:
@@ -277,7 +283,7 @@ public:
 				location |= ON_DEVICE;
 				owner |= ON_DEVICE;
 			}
-			stageMemcpy( devPtr, hostPtr, sizeInBytes );
+			lh2core::stageMemcpy( devPtr, hostPtr, sizeInBytes );
 		}
 		return devPtr;
 	}
