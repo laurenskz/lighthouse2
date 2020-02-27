@@ -142,10 +142,14 @@ void JobManager::ThreadDone( unsigned int n )
 
 static int CountSetBits( ptrdiff_t bitMask )
 {
+#if __cplusplus > 201703L
+	return std::popcount( bitMask );
+#else
 	int LSHIFT = sizeof( ptrdiff_t ) * 8 - 1, bitSetCount = 0;
 	ptrdiff_t bitTest = (ptrdiff_t)1 << LSHIFT;
 	for (int i = 0; i <= LSHIFT; ++i) bitSetCount += ((bitMask & bitTest) ? 1 : 0), bitTest /= 2;
 	return bitSetCount;
+#endif
 }
 
 void JobManager::GetProcessorCount( uint& cores, uint& logical )

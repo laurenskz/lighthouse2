@@ -20,6 +20,9 @@
 #pragma once
 
 #include <algorithm>
+#if __cplusplus > 201703
+#include <bit>
+#endif
 #include <cassert>
 #include <chrono>
 #include <fstream>
