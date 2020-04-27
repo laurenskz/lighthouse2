@@ -33,7 +33,7 @@ using namespace irrklang;
 static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0, * overlayTarget = 0, * menuScreen;
 static Shader* shader = 0, * overlayShader = 0;
-static uint scrwidth = 0, scrheight = 0, scrspp = 2;
+static uint scrwidth = 0, scrheight = 0, scrspp = 8;
 static bool spaceDown = false, enterDown = false, tabDown = false, hasFocus = true, running = true, animPaused = false;
 static std::bitset<1024> keystates;
 static std::bitset<8> mbstates;
