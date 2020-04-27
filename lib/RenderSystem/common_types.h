@@ -459,6 +459,7 @@ public:
 	mat4() = default;
 	float cell[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 	float& operator [] ( const int idx ) { return cell[idx]; }
+	float operator [] ( const int idx ) const { return cell[idx]; }
 	float operator()( const int i, const int j ) const { return cell[i * 4 + j]; }
 	float& operator()( const int i, const int j ) { return cell[i * 4 + j]; }
 	mat4& operator += ( const mat4& a )
@@ -493,7 +494,7 @@ public:
 		m[12] = m[13] = m[14] = 0, m[15] = 1;
 		return m;
 	}
-	static mat4 Orthonormalize( mat4& M )
+	static mat4 Orthonormalize( const mat4& M )
 	{
 		const float3 x = normalize( make_float3( M[0], M[4], M[8] ) );
 		const float3 z = normalize( cross( x, make_float3( M[1], M[5], M[9] ) ) );
