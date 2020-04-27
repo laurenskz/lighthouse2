@@ -77,7 +77,7 @@ bool HandleInput( float frameTime )
 		{
 			currentMaterial = *renderer->GetMaterial( selectedMaterialID );
 			currentMaterialID = selectedMaterialID;
-			currentMaterial.Changed(); // update checksum so we can track ch		
+			currentMaterial.Changed(); // update checksum so we can track ch
 		}
 		// camera->focalDistance = coreStats.probedDist;
 		changed = true;
@@ -163,7 +163,7 @@ void Initialize()
 //  |  main                                                                       |
 //  |  Application entry point.                                             LH2'19|
 //  +-----------------------------------------------------------------------------+
-void main()
+int main()
 {
 	// prepare for rendering
 	Initialize();
@@ -217,6 +217,8 @@ void main()
 	ImGui::DestroyContext();
 	glfwDestroyWindow( window );
 	glfwTerminate();
+
+	return 0;
 }
 
 // EOF
