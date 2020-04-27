@@ -3,8 +3,12 @@ project(ImguiApp)
 file(GLOB_RECURSE sources "*.cpp")
 file(GLOB_RECURSE headers "*.h")
 add_executable(${PROJECT_NAME} ${sources} ${headers})
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17
-                                                 CXX_STANDARD_REQUIRED ON)
+if(${CMAKE_VERSION} VERSION_LESS 3.17)
+  if(${CMAKE_VERSION} VERSION_LESS 3.17)
+    set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17
+                                                     CXX_STANDARD_REQUIRED ON)
+  endif()
+endif()
 
 # External dependencies:
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui)
