@@ -154,6 +154,7 @@ The CMake conversion on this branch is not done yet.
    (eg. `src/apps/*`, `src/rendercores/RenderCore_*`, `external/glfw`)
 8. `*Config.cmake` isn't intended for configuring `Find*.cmake` targets the way it's abused for currently. Fix this by providing nested `Find*.cmake` instead.
    After all, `REQUIRED` flags aren't properly forwarded anyway.
+9. Projects loading sources from the relative `../_shareddata` folder do not install properly (breaking debugging in VS2019 for example). This is mitigated by moving the entire installation package into an `apps` directory and copying `_shareddata` as sibling.
 
 ## Contact
 

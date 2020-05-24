@@ -10,11 +10,13 @@ project(Lighthouse2)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" "${CMAKE_MODULE_PATH}")
 set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/cmake" "${CMAKE_PREFIX_PATH}")
 
-# Install binaries, libraries and data files (scenes, models and shaders) to the
-# same root directory.
-set(CMAKE_INSTALL_BINDIR ".")
-set(CMAKE_INSTALL_LIBDIR ".")
-set(CMAKE_INSTALL_DATADIR ".")
+# Install binaries, libraries and data files (scenes, models and shaders) in a
+# special "apps" subdirectory. This is to allow loading relative asset files in
+# "../_shareddata", without having to change a single app to load from a
+# different folder.
+set(CMAKE_INSTALL_BINDIR "apps")
+set(CMAKE_INSTALL_LIBDIR "apps")
+set(CMAKE_INSTALL_DATADIR "apps")
 if(APPLE)
   # Allow the linker to look for libraries in the current working directory
   set(CMAKE_INSTALL_RPATH ".")
