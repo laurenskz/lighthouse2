@@ -64,7 +64,7 @@ lh2core::VulkanGLTextureInterop::VulkanGLTextureInterop( const VulkanDevice &dev
 	// Allocate memory for image
 	vk::ExportMemoryAllocateInfo exportAllocInfo{};
 #ifdef WIN32
-	exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR );
+	exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32 );
 #else
 	exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd );
 #endif
@@ -93,7 +93,7 @@ lh2core::VulkanGLTextureInterop::VulkanGLTextureInterop( const VulkanDevice &dev
 	assert( getMemoryWin32HandleKHR != nullptr );
 
 	// Acquire WIN32 handle to Vulkan initialized memory
-	vk::MemoryGetWin32HandleInfoKHR getMemoryHandleInfo = vk::MemoryGetWin32HandleInfoKHR( m_Memory, vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR );
+	vk::MemoryGetWin32HandleInfoKHR getMemoryHandleInfo = vk::MemoryGetWin32HandleInfoKHR( m_Memory, vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32 );
 	getMemoryWin32HandleKHR( m_Device.GetVkDevice(), (VkMemoryGetWin32HandleInfoKHR *)&getMemoryHandleInfo, &handle );
 	assert( handle != INVALID_HANDLE_VALUE && handle != nullptr );
 #else // LINUX
@@ -245,7 +245,7 @@ void lh2core::VulkanGLTextureInterop::Resize( uint32_t width, uint32_t height, b
 		// Allocate memory
 		vk::ExportMemoryAllocateInfo exportAllocInfo{};
 #ifdef WIN32
-		exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR );
+		exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32 );
 #else
 		exportAllocInfo.setHandleTypes( vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd );
 #endif
@@ -271,7 +271,7 @@ void lh2core::VulkanGLTextureInterop::Resize( uint32_t width, uint32_t height, b
 	assert( getMemoryWin32HandleKHR != nullptr );
 
 	// Acquire WIN32 handle to Vulkan initialized memory
-	vk::MemoryGetWin32HandleInfoKHR getMemoryHandleInfo = vk::MemoryGetWin32HandleInfoKHR( m_Memory, vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR );
+	vk::MemoryGetWin32HandleInfoKHR getMemoryHandleInfo = vk::MemoryGetWin32HandleInfoKHR( m_Memory, vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32 );
 	getMemoryWin32HandleKHR( m_Device.GetVkDevice(), (VkMemoryGetWin32HandleInfoKHR *)&getMemoryHandleInfo, &handle );
 	assert( handle != INVALID_HANDLE_VALUE && handle != nullptr );
 #else // LINUX
