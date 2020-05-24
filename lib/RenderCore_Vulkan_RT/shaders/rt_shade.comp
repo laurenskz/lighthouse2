@@ -278,7 +278,7 @@ void main()
 	if (pathLength >= MAXPATHLENGTH /* don't fill arrays with rays we won't trace */) return;
 
 	vec3 R;
-	float newBsdfPdf, r3, r4;
+	float newBsdfPdf, r3, r4, r5;
 #ifdef BLUENOISE
 	if (sampleIdx < 256) // Blue noise
 	{
@@ -286,18 +286,16 @@ void main()
 		const int y = int(pixelIdx / scrWidth) & 127;
 		r3 = blueNoiseSampler( x, y, int(sampleIdx), 6 + 4 * pathLength );
 		r4 = blueNoiseSampler( x, y, int(sampleIdx), 7 + 4 * pathLength );
+		r5 = blueNoiseSampler( x, y, int(sampleIdx), 8 + 4 * pathLength );
 	}
 	else
-	{
-		r3 = RandomFloat( seed );
-		r4 = RandomFloat( seed );
-	}
-#else
-	r3 = RandomFloat( seed );
-	r4 = RandomFloat( seed );
 #endif
+		r3 = RandomFloat( seed ),
+		r4 = RandomFloat( seed ),
+		r5 = RandomFloat( seed );
+
 	bool specular = false;
-	const vec3 bsdf = SampleBSDF( shadingData, fN, N, T, D * -1.0f, HIT_T, r3, r4, R, newBsdfPdf, specular );
+	const vec3 bsdf = SampleBSDF( shadingData, fN, N, T, D * -1.0f, HIT_T, r3, r4, r5, R, newBsdfPdf, specular );
 	if (newBsdfPdf < EPSILON || isnan( newBsdfPdf )) return; // Early out in case we have an invalid bsdf
 	if (specular) FLAGS |= S_SPECULAR;
 
