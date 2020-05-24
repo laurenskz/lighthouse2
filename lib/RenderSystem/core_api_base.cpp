@@ -59,7 +59,9 @@ HMODULE LoadModule( const char* dllName )
 {
 	// try the development folder structure first
 	string dllpath = "../../coredlls/";
-#ifdef _DEBUG
+#if defined(RENDERCORE_SUBDIRECTORY)
+	dllpath += RENDERCORE_SUBDIRECTORY "/";
+#elif defined(_DEBUG)
 	dllpath += "debug/";
 #else
 	dllpath += "release/";

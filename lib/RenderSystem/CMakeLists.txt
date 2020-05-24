@@ -7,7 +7,17 @@ if(${CMAKE_VERSION} VERSION_LESS 3.17)
   set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17
                                                    CXX_STANDARD_REQUIRED ON)
 endif()
-target_compile_definitions(${PROJECT_NAME} PRIVATE RENDERSYSTEMBUILD)
+
+get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+# Note that RENDERCORE_SUBDIRECTORY is always set to prevent grabbing the value
+# of _DEBUG and using Debug/ or Release/ (in core_api_base.cpp) which is
+# reserved for Visual Studio builds. Single-config generators never append a
+# subdirectory for outputs
+# (https://cmake.org/cmake/help/latest/prop_tgt/LIBRARY_OUTPUT_DIRECTORY.html).
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PRIVATE RENDERSYSTEMBUILD
+          RENDERCORE_SUBDIRECTORY=$<$<BOOL:${_isMultiConfig}>:"$<CONFIG>">)
 target_compile_options(
   ${PROJECT_NAME} PRIVATE $<$<BOOL:${MSVC}>:/arch:AVX2>
                           $<$<NOT:$<BOOL:${MSVC}>>:-mavx2 -mfma>)
