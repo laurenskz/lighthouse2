@@ -69,10 +69,19 @@ Only CUDA is required, see the download link above.
 Most dependencies are written to look for binaries/headers on the system first, before switching to (most likely outdated) blobs bundled in this repository.
 (TODO: Actually add Linux binaries? Package managers are so much better at dealing with this...)
 
-#### CMake in Visual Studio
+#### CMake in Visual Studio 2017
 Visual Studio 2017 doesn't play well with `VS_` variables when opening a CMake file directory (the logs indicate an intermediary `Ninja` build is generated,
 where these configurations most likely get lost). Instead it is advised to generate a Visual Studio solution using [`cmake` or `cmake-gui`](https://cmake.org/download/).
-TODO: Check VS2019
+NOTE: The info below for VS2019 may or may not apply to VS2017 too.
+
+#### CMake in Visual Studio 2019
+
+LH2 can properly build and run in Visual Studio 2019 using the CMake project description rather than the sln+vcxproj. Note that there are some caveats starting and debugging the targets:
+- `VS_DEBUGGER_WORKING_DIRECTORY` is still ignored. The default targets will miss DLLs and other assets;
+- Using `launch.vs.json` is a hit-and-miss, and obnoxious to set up + maintain for every project;
+- Selecting the `install` variant (eg. `PbrtDemoApp.exe (Install)`) gives a working and debuggable launch target. Install rules (as detailed [below](#Creating-installable-package)) make this possible: apps, cores, DLL dependencies, shaders and assets are all copied to a simple directory structure. Visual Studio conveniently puts this under `out/` rather than relying on admin rights to install to `C:\Program Files`, as is the case with building the global `Install` target.
+
+Note that these builds are _incredibly fast_. Ninja does a _much_ better job parallelizing independent steps, making exceptional use of high core counts on HEDT.
 
 #### CMake in Visual Studio Code
 Make sure the [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools) extension is installed. The project should [automatically configure](./.vscode/settings.json#2) when VSCode is opened but requires cache entries for OptiX to be defined when building on !Windows, see [OptiX](#OptiX). When building on an OS that is not covered by the OptiX 6 prebuilts in [`./lib/OptiX`](./lib/OptiX) specify these paths for CMake Tools to configure using `"cmake.configureSettings"` as follows in the user (preferred) or [workspace](./.vscode/settings.json) settings file:
