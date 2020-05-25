@@ -140,6 +140,28 @@ cmake --build build -j$(nproc) -t install
 
 Note that `-DBUILD_SHARED_LIBS=ON` can be passed to create separate shared libraries for all libraries that are not explicitly `STATIC`/`SHARED`/`MODULE`. See [the documentation](https://cmake.org/cmake/help/latest/command/add_library.html#normal-libraries) for more details.
 
+### Timing
+Or: why CMake and all used tools (eg. `ninja`) are so much better than Visual Studio solutions.
+
+All measurements taken on an AMD TR 3970X, building all of the CMake supported cores and apps:
+`RenderCore_Optix7;RenderCore_Optix7Adaptive;RenderCore_Optix7Filter;RenderCore_Optix7Guiding;RenderCore_OptixPrime_B;RenderCore_OptixPrime_BDPT;RenderCore_OptixPrime_PBRT;RenderCore_PrimeAdaptive;RenderCore_PrimeRef;RenderCore_Vulkan_RT;RenderCore_SoftRasterizer;RenderCore_Minimal`; `benchmarkapp;imguiapp;pbrtdemoapp;tinyapp;viewerapp`.
+
+_NOTE_: IDE launch and CMake configuration perform lots of file operations an are heavily machine-dependent (SSD): take them for what they are.
+
+The build has been cleaned between every step. `Build > Build Solution` is used to build all targets on Visual Studio.
+
+| Platform | CMake generation | Debug | Release | RelWithDebInfo |
+| --- | ---: | ---: | ---: | ---: |
+| Linux (Ninja) | 4 sec | 10 sec | 16 sec | 20 sec |
+| Windows (Ninja) | 20 sec | 12 sec | 11 sec | 13 sec |
+| VS2019 open Cmake | 30 sec | 14 sec | 13 sec | 13 sec |
+| VS2019 open `.sln` | ... | 28 sec | 35-39 sec |  |
+| VS2019 sln from `cmake` | 18 sec | 23 sec | 21 sec | 21 sec |
+
+`Looking for a CUDA compiler` and friends is responsible for most of the CMake configuration time.
+
+The `.sln` from `cmake` seems particularly bad due to sparse application of the `/MP` flag. This
+
 ### TODO:
 The CMake conversion on this branch is not done yet.
 1. Cherry-pick missing Windows commits from `do-not-merge` branch
