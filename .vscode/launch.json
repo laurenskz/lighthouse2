@@ -5,6 +5,18 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "(Windows) Launch CMake target",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${command:cmake.launchTargetPath}",
+			"args": [],
+			"stopAtEntry": false,
+			// WARNING: Change this to the app folder with the appropriate scene data:
+			"cwd": "${workspaceFolder}/apps/benchmarkapp",
+			"environment": [],
+			"externalConsole": false
+		},
+		{
 			"name": "(gdb) Launch CMake target",
 			"type": "cppdbg",
 			"request": "launch",
@@ -12,7 +24,7 @@
 			"args": [],
 			"stopAtEntry": false,
 			// WARNING: Change this to the app folder with the appropriate scene data:
-			"cwd": "${workspaceFolder}/apps/imguiapp",
+			"cwd": "${workspaceFolder}/apps/benchmarkapp",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
