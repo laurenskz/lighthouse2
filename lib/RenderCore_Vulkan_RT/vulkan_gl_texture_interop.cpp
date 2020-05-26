@@ -83,7 +83,7 @@ lh2core::VulkanGLTextureInterop::VulkanGLTextureInterop( const VulkanDevice &dev
 #ifdef WIN32
 	HANDLE handle = INVALID_HANDLE_VALUE;
 #else
-	int handle = 0;
+	int handle = -1;
 #endif
 
 #if WIN32 // WINDOWS
@@ -105,7 +105,7 @@ lh2core::VulkanGLTextureInterop::VulkanGLTextureInterop( const VulkanDevice &dev
 	// Acquire Fd handle to Vulkan initialized memory
 	vk::MemoryGetFdInfoKHR getMemoryHandleInfo = vk::MemoryGetFdInfoKHR( m_Memory, vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd );
 	getMemoryFdKHR( m_Device.GetVkDevice(), (VkMemoryGetFdInfoKHR *)&getMemoryHandleInfo, &handle );
-	assert( handle != 0 );
+	assert( handle >= 0 );
 #endif
 
 	// Create a new texture object in OpenGL
@@ -261,7 +261,7 @@ void lh2core::VulkanGLTextureInterop::Resize( uint32_t width, uint32_t height, b
 #ifdef WIN32
 	HANDLE handle = INVALID_HANDLE_VALUE;
 #else
-	int handle = 0;
+	int handle = -1;
 #endif
 
 #if _WIN32 // WINDOWS
@@ -283,7 +283,7 @@ void lh2core::VulkanGLTextureInterop::Resize( uint32_t width, uint32_t height, b
 	// Acquire Fd handle to Vulkan initialized memory
 	vk::MemoryGetFdInfoKHR getMemoryHandleInfo = vk::MemoryGetFdInfoKHR( m_Memory, vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd );
 	getMemoryFdKHR( m_Device.GetVkDevice(), (VkMemoryGetFdInfoKHR *)&getMemoryHandleInfo, &handle );
-	assert( handle != 0 );
+	assert( handle >= 0 );
 #endif
 
 	// Create a new texture object in OpenGL
