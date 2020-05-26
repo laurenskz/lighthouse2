@@ -18,7 +18,7 @@
 namespace lh2core
 {
 
-constexpr std::array<const char *, 1> VALIDATION_LAYERS = { "VK_LAYER_LUNARG_standard_validation" };
+constexpr std::array<const char *, 1> VALIDATION_LAYERS = { "VK_LAYER_KHRONOS_validation" };
 const std::vector<const char *> DEVICE_EXTENSIONS = { VK_NV_RAY_TRACING_EXTENSION_NAME };
 
 RenderCore *RenderCore::instance = nullptr;
