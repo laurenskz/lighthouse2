@@ -93,7 +93,16 @@ void lh2core::VulkanComputePipeline::Finalize()
 	m_Layout = m_Device->createPipelineLayout( computeLayoutCreateInfo );
 
 	const auto computeCreateInfo = vk::ComputePipelineCreateInfo( vk::PipelineCreateFlags(), m_ShaderStage, m_Layout, nullptr );
-	m_Pipeline = m_Device->createComputePipeline( nullptr, computeCreateInfo );
+
+	m_Pipeline = m_Device->createComputePipeline( nullptr, computeCreateInfo )
+#if VK_HEADER_VERSION >= 140
+// Show warning on the next header revision (current is 141), hoping the PR has been merged and distributed by then.
+#if VK_HEADER_VERSION > 141
+#warning "Temporarily retrieving ResultValue::value because of ambiguity, see https://github.com/KhronosGroup/Vulkan-Hpp/ pull 618 for details. Please update ./lib/Vulkan with the latest SDK and revert the commit introducing this case, as soon as it has been merged and distributed."
+#endif
+					 .value
+#endif
+		;
 
 	m_Generated = true;
 }
