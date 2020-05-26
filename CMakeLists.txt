@@ -95,6 +95,11 @@ if(CMAKE_CUDA_COMPILER)
   endforeach()
 endif()
 
+if(WIN32)
+  # Use the provided Vulkan SDK:
+  set(Vulkan_ROOT "${CMAKE_SOURCE_DIR}/lib/vulkan")
+endif()
+
 find_package(Vulkan QUIET)
 find_package(Shaderc QUIET)
 if(Vulkan_FOUND AND Shaderc_FOUND)
