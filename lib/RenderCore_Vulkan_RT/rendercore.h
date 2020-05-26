@@ -86,7 +86,7 @@ private:
 	void CreateInstance();
 	void SetupValidationLayers( vk::InstanceCreateInfo &createInfo );
 
-	void CreateDebugReportCallback();
+	vk::DebugUtilsMessengerCreateInfoEXT CreateDebugReportCallback();
 	void CreateDevice();
 	void CreateCommandBuffers();
 	void CreateOffscreenBuffers();
@@ -165,44 +165,46 @@ public:
 };
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-	VkDebugUtilsMessageTypeFlagsEXT messageType,
-	const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-	void *pUserData )
+													 VkDebugUtilsMessageTypeFlagsEXT messageType,
+													 const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+													 void* pUserData )
 {
-	const char *severity = 0, *type = 0;
-	switch (messageSeverity)
+	const char *severity = "SEVERITY_UNKNOWN", *type = "TYPE_UNKNOWN";
+	switch ( messageSeverity )
 	{
-	case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT):
-		return VK_FALSE;
-	case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT):
-		severity = "INFO";
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+		// return VK_FALSE;
+		severity = "V";
 		break;
-	case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT):
-		severity = "WARNING";
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+		severity = "I";
 		break;
-	case (VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT):
-		severity = "ERROR";
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+		severity = "W";
+		break;
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+		severity = "E";
 		break;
 	default:
 		break;
 	}
 
-	switch (messageType)
+	switch ( messageType )
 	{
-	case (VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT):
+	case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
 		type = "GENERAL";
 		break;
-	case (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT):
+	case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
 		type = "VALIDATION";
 		break;
-	case (VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT):
+	case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
 		type = "PERFORMANCE";
 		break;
 	default:
 		break;
 	}
 
-	printf( "Vulkan Validation Layer: [Severity: %s] [Type: %s] : %s\n", severity, type, pCallbackData->pMessage );
+	printf( "Vulkan Validation Layer: [%s] [%s] : %s\n", severity, type, pCallbackData->pMessage );
 
 	return VK_FALSE;
 }

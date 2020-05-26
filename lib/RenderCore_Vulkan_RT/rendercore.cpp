@@ -37,7 +37,10 @@ void RenderCore::InitRenderer()
 	// Create dynamic Vulkan function loader
 	dynamicDispatcher.init( m_VkInstance, m_Device );
 #ifndef NDEBUG
-	CreateDebugReportCallback();
+	auto dbgMessengerCreateInfo = CreateDebugReportCallback();
+	m_VkDebugMessenger = m_VkInstance.createDebugUtilsMessengerEXT( dbgMessengerCreateInfo, nullptr, dynamicDispatcher );
+	if (!m_VkDebugMessenger)
+		printf( "Could not setup Vulkan debug utils messenger.\n" );
 #endif
 	CreateCommandBuffers();								  // Initialize blit buffers
 	m_TopLevelAS = new TopLevelAS( m_Device, FastTrace ); // Create a top level AS, Vulkan doesn't like unbound buffers
@@ -78,6 +81,8 @@ void RenderCore::CreateInstance()
 
 #ifndef NDEBUG
 	SetupValidationLayers( createInfo ); // Configure Vulkan validation layers
+	auto dbgMessengerCreateInfo = CreateDebugReportCallback();
+	createInfo.setPNext( &dbgMessengerCreateInfo );
 #endif
 
 	m_VkInstance = vk::createInstance( createInfo );
@@ -125,19 +130,17 @@ void RenderCore::SetupValidationLayers( vk::InstanceCreateInfo &createInfo )
 #endif
 }
 
-void RenderCore::CreateDebugReportCallback()
+vk::DebugUtilsMessengerCreateInfoEXT RenderCore::CreateDebugReportCallback()
 {
-#ifndef NDEBUG
-	vk::DebugUtilsMessengerCreateInfoEXT dbgMessengerCreateInfo{};
-	dbgMessengerCreateInfo.setMessageSeverity( vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning );
-	dbgMessengerCreateInfo.setMessageType( vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation );
-	dbgMessengerCreateInfo.setPfnUserCallback( debugCallback );
-	dbgMessengerCreateInfo.setPUserData( nullptr );
-
-	m_VkDebugMessenger = m_VkInstance.createDebugUtilsMessengerEXT( dbgMessengerCreateInfo, nullptr, dynamicDispatcher );
-	if (!m_VkDebugMessenger)
-		printf( "Could not setup Vulkan debug utils messenger.\n" );
-#endif
+	return vk::DebugUtilsMessengerCreateInfoEXT(
+		vk::DebugUtilsMessengerCreateFlagsEXT( 0 ),
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+			vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+			vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+			vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+			vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
+		debugCallback );
 }
 
 void RenderCore::CreateDevice()
@@ -1200,7 +1203,7 @@ void RenderCore::Shutdown()
 //  |  RenderCore::GetCoreStats                                                   |
 //  |  Get a copy of the counters.                                          LH2'19|
 //  +-----------------------------------------------------------------------------+
-CoreStats RenderCore::GetCoreStats() const 
+CoreStats RenderCore::GetCoreStats() const
 {
 	return coreStats;
 }
