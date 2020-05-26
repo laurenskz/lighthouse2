@@ -232,7 +232,7 @@ std::optional<vk::PhysicalDevice> VulkanDevice::PickDeviceWithExtensions( vk::In
 
 		const auto dExtensions = candidate.second.enumerateDeviceExtensionProperties();
 		for ( const auto &ext : dExtensions )
-			requiredExtensions.erase( ext.extensionName );
+			requiredExtensions.erase( std::string(ext.extensionName) );
 
 		// Device supports every requested extension
 		if ( requiredExtensions.empty() )
