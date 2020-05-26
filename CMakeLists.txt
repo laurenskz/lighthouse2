@@ -33,6 +33,12 @@ if(WIN32)
   add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
 endif()
 
+if(MSVC)
+  # Enable multiprocess compilation on non-CUDA invocations only
+  # https://gitlab.kitware.com/cmake/cmake/issues/19105#note_551189
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/MP>)
+endif()
+
 # External dependencies bundled with the source:
 add_subdirectory("lib/glad")
 add_subdirectory("lib/half2.1.0")
