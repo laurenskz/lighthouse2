@@ -83,7 +83,7 @@ VulkanDevice::VulkanDevice( vk::PhysicalDevice physicalDevice, const std::vector
 	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos{};
 	std::set<uint32_t> uniqueQueueFamilies = {
 		m_Members->m_Indices.graphicsIdx.value(),
-		m_Members->m_Indices.computeIdx.has_value(),
+		m_Members->m_Indices.computeIdx.value(),
 		m_Members->m_Indices.transferIdx.value(),
 		surface.has_value() ? m_Members->m_Indices.presentIdx.value() : m_Members->m_Indices.graphicsIdx.value()};
 
