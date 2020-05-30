@@ -79,7 +79,7 @@ struct VulkanFinalizeParams
 	uint spp;
 	uint idummy = 0;
 	float pixelValueScale;
-	float fdummy0 = 0.0f, fdummy1 = 0.0f, fdummy2 = 0.0f;
+	float _fdummy[3];
 };
 
 using UniformCamera = UniformObject<VulkanCamera>;

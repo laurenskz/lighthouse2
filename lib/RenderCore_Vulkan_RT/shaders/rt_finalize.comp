@@ -24,9 +24,7 @@ struct FinalizeParams {
 	uint spp;
 	uint _idummy;
 	float pixelValueScale;
-	float brightness;
-	float contrastFactor;
-	float _dummy;
+	float _fdummy[3];
 };
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -45,9 +43,5 @@ void main()
 	// plot scaled pixel, gamma corrected
 	vec4 value = acPixels[currentIndex] * params.pixelValueScale;
 
-	const float r = sqrt( max( 0.0f, (value.x - 0.5f) * params.contrastFactor + 0.5f + params.brightness ) );
-	const float g = sqrt( max( 0.0f, (value.y - 0.5f) * params.contrastFactor + 0.5f + params.brightness ) );
-	const float b = sqrt( max( 0.0f, (value.z - 0.5f) * params.contrastFactor + 0.5f + params.brightness ) );
-
-	imageStore(outputImage, imageIndex, vec4(r, g, b, value.w));
+	imageStore(outputImage, imageIndex, value);
 }
