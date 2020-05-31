@@ -608,11 +608,11 @@ void RenderCore::SetInstance( const int instanceIdx, const int meshIdx, const ma
 }
 
 //  +-----------------------------------------------------------------------------+
-//  |  RenderCore::UpdateToplevel                                                 |
+//  |  RenderCore::FinalizeInstances                                              |
 //  |  After changing meshes, instances or instance transforms, we need to        |
 //  |  rebuild the top-level structure.                                     LH2'19|
 //  +-----------------------------------------------------------------------------+
-void RenderCore::UpdateToplevel()
+void RenderCore::FinalizeInstances()
 {
 	for (uint i = 0; i < m_Instances.size(); i++)
 	{

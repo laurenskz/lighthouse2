@@ -64,8 +64,7 @@ public:
 	// also note that, when using alpha flags, materials must be in sync.
 	void SetGeometry( const int meshIdx, const float4 *vertexData, const int vertexCount, const int triangleCount, const CoreTri *triangles );
 	void SetInstance( const int instanceIdx, const int modelIdx, const mat4 &transform );
-	void FinalizeInstances() { /* nothing here */ }
-	void UpdateToplevel();
+	void FinalizeInstances() override;
 	void SetProbePos( const int2 pos );
 	CoreStats GetCoreStats() const override;
 
