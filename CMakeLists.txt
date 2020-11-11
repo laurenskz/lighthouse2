@@ -95,7 +95,7 @@ if(CMAKE_CUDA_COMPILER)
   add_subdirectory("lib/CUDA")
 
   # Include CUDA+Optix RenderCores:
-  file(GLOB cores "lib/RenderCore_Opti*" "lib/RenderCore_Prime*")
+  file(GLOB cores "lib/RenderCore_Opti*" "lib/RenderCore_PrimeAd*")
   foreach(core IN LISTS cores)
     add_render_core(${core})
   endforeach()

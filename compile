@@ -1,0 +1,1 @@
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOptiX_INSTALL_DIR:PATH=/opt/optix-6 -DOptiX7_INSTALL_DIR:PATH=/opt/optix -B build && make -j$(nproc --all) -C build
