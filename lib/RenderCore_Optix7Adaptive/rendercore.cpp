@@ -278,9 +278,6 @@ void RenderCore::Init()
 	}
 	cudaEventCreate( &shadowStart );
 	cudaEventCreate( &shadowEnd );
-	// create events for worker thread communication
-	startEvent = CreateEvent( NULL, false, false, NULL );
-	doneEvent = CreateEvent( NULL, false, false, NULL );
 	// create worker thread
 	renderThread = new RenderThread();
 	renderThread->Init( this );
@@ -698,19 +695,13 @@ void RenderCore::UpdateToplevel()
 }
 
 //  +-----------------------------------------------------------------------------+
-//  |  RenderThread::run                                                          |
+//  |  RenderThread::step                                                         |
 //  |  Main function of the render worker thread.                           LH2'20|
 //  +-----------------------------------------------------------------------------+
-void RenderThread::run()
+void RenderThread::step()
 {
-	while (1)
-	{
-		WaitForSingleObject( coreState.startEvent, INFINITE );
-		// render a single frame
-		coreState.RenderImpl( view );
-		// we're done, go back to waiting
-		SetEvent( coreState.doneEvent );
-	}
+	// render a single frame
+	coreState.RenderImpl( view );
 }
 
 static float4* reference = 0;
@@ -740,7 +731,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 	{
 		asyncRenderInProgress = true;
 		renderThread->Init( this, view );
-		SetEvent( startEvent );
+		renderThread->SignalStart();
 	}
 	else
 	{
@@ -851,7 +842,7 @@ void RenderCore::RenderImpl( const ViewPyramid& view )
 				pathCount = counters.activePaths = budget;
 				counterBuffer->CopyToDevice();
 			}
-			if (pathCount > 1.1f * budget) devScale *= 0.92f;			// big reduction 
+			if (pathCount > 1.1f * budget) devScale *= 0.92f;			// big reduction
 			else if (pathCount > 1.025f * budget) devScale *= 0.99f;	// small reduction
 			else if (pathCount < 0.9f * budget) devScale *= 1.08f;		// big increase
 			else if (pathCount < 0.975f * budget) devScale *= 1.01f;	// small increase
@@ -919,7 +910,7 @@ void RenderCore::WaitForRender()
 {
 	// wait for the renderthread to complete
 	if (!asyncRenderInProgress) return;
-	WaitForSingleObject( doneEvent, INFINITE );
+	renderThread->WaitForCompletion();
 	asyncRenderInProgress = false;
 	// get back the RenderCore state data changed by the thread
 	coreStats = renderThread->coreState.coreStats;

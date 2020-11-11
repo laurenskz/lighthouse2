@@ -8,5 +8,5 @@
     <distortion>0.050000001</distortion>
     <focalDistance>9.0037441</focalDistance>
     <clampValue>10</clampValue>
-    <tonemapper>4</tonemapper>
+    <tonemapper>0</tonemapper>
 </camera>

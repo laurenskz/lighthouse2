@@ -21,7 +21,7 @@ static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0;
 static Shader* shader = 0;
 static uint scrwidth = 0, scrheight = 0, scrspp = 2;
-static bool spaceDown = false, hasFocus = true, running = true, animPaused = false;
+static bool spaceDown = false, hasFocus = true, running = true, animPaused = false, showUi = true;
 static std::bitset<1024> keystates;
 static std::bitset<8> mbstates;
 static string materialFile;
@@ -121,7 +121,6 @@ bool HandleInput( float frameTime )
 	if (keystates[GLFW_KEY_DOWN]) { changed = true; camera->TranslateTarget( make_float3( 0, rspd, 0 ) ); }
 	if (keystates[GLFW_KEY_LEFT]) { changed = true; camera->TranslateTarget( make_float3( -rspd, 0, 0 ) ); }
 	if (keystates[GLFW_KEY_RIGHT]) { changed = true; camera->TranslateTarget( make_float3( rspd, 0, 0 ) ); }
-	if (!keystates[GLFW_KEY_SPACE]) spaceDown = false; else { if (!spaceDown) animPaused = !animPaused, changed = true; spaceDown = true; }
 	// process left button click
 	if (mbstates[GLFW_MOUSE_BUTTON_1] && keystates[GLFW_KEY_LEFT_SHIFT])
 	{
@@ -137,6 +136,15 @@ bool HandleInput( float frameTime )
 	}
 	// let the main loop know if the camera should update
 	return changed;
+}
+
+// Handle a single event, once.
+void HandleOneOffInput( int key, int action )
+{
+	if ( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
+		animPaused = !animPaused;
+	else if( key == GLFW_KEY_H && action == GLFW_PRESS )
+		showUi = !showUi;
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -166,12 +174,12 @@ void Initialize()
 	InitImGui();
 
 	// initialize renderer: pick one
-	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7filter" );			// OPTIX7 core, with filtering (static scenes only for now)
-	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7" );			// OPTIX7 core, best for RTX devices
+	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7Filter" );			// OPTIX7 core, with filtering (static scenes only for now)
+	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7" );			// OPTIX7 core, best for RTX devices
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_B" );		// OPTIX PRIME, best for pre-RTX CUDA devices
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" );	// RASTERIZER, your only option if not on NVidia
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Minimal" );			// MINIMAL example, to get you started on your own core
-	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
+	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_PBRT" );	// Marijn's PBRT core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7Guiding" );		// OPTIX7 core with path guiding for next event estimation (under construction)
@@ -271,7 +279,8 @@ int main()
 		DrawQuad();
 		shader->Unbind();
 		// update user interface
-		UpdateUI();
+		if (showUi)
+			UpdateUI();
 		glfwSwapBuffers( window );
 		firstFrame = false;
 	}

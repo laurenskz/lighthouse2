@@ -174,9 +174,6 @@ void RenderCore::Init()
 		cudaEventCreate( &shadeStart[i] );
 		cudaEventCreate( &shadeEnd[i] );
 	}
-	// create events for worker thread communication
-	startEvent = CreateEvent( NULL, false, false, NULL );
-	doneEvent = CreateEvent( NULL, false, false, NULL );
 	// create worker thread
 	renderThread = new RenderThread();
 	renderThread->Init( this );
@@ -565,19 +562,13 @@ void RenderCore::UpdateToplevel()
 }
 
 //  +-----------------------------------------------------------------------------+
-//  |  RenderThread::run                                                          |
+//  |  RenderThread::step                                                         |
 //  |  Main function of the render worker thread.                           LH2'20|
 //  +-----------------------------------------------------------------------------+
-void RenderThread::run()
+void RenderThread::step()
 {
-	while (1)
-	{
-		WaitForSingleObject( coreState.startEvent, INFINITE );
-		// render a single frame
-		coreState.RenderImpl( view );
-		// we're done, go back to waiting
-		SetEvent( coreState.doneEvent );
-	}
+	// render a single frame
+	coreState.RenderImpl( view );
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -605,7 +596,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 	{
 		asyncRenderInProgress = true;
 		renderThread->Init( this, view );
-		SetEvent( startEvent );
+		renderThread->SignalStart();
 	}
 	else */
 	{
@@ -730,7 +721,7 @@ void RenderCore::WaitForRender()
 {
 	// wait for the renderthread to complete
 	if (!asyncRenderInProgress) return;
-	WaitForSingleObject( doneEvent, INFINITE );
+	renderThread->WaitForCompletion();
 	asyncRenderInProgress = false;
 	// get back the RenderCore state data changed by the thread
 	coreStats = renderThread->coreState.coreStats;

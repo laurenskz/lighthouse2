@@ -15,10 +15,16 @@
 
 #include "platform.h"
 #include "rendersystem.h"
-#include "direct.h" // for _chdir
+#ifdef WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#define chdir _chdir
+#else
+#include <unistd.h>
+#endif
 #include <bitset>
 #include <map>
-#include "irrklang.h"
+#include <irrKlang.h>
 using namespace irrklang;
 
 #define DEMOMODE
@@ -27,7 +33,7 @@ using namespace irrklang;
 static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0, * overlayTarget = 0, * menuScreen;
 static Shader* shader = 0, * overlayShader = 0;
-static uint scrwidth = 0, scrheight = 0, scrspp = 2;
+static uint scrwidth = 0, scrheight = 0, scrspp = 8;
 static bool spaceDown = false, enterDown = false, tabDown = false, hasFocus = true, running = true, animPaused = false;
 static std::bitset<1024> keystates;
 static std::bitset<8> mbstates;
@@ -681,7 +687,7 @@ void TitleState( bool results )
 		shader->SetInputMatrix( "view", mat4::Identity() );
 		DrawQuad();
 		shader->Unbind();
-		Sleep( 50 );
+		std::this_thread::sleep_for(50ms);
 		return;
 	}
 	shader->Bind();
@@ -697,7 +703,7 @@ void TitleState( bool results )
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	// construct title screen
-	if (GetAsyncKeyState( VK_RETURN ))
+	if ( keystates[GLFW_KEY_ENTER] )
 	{
 		if (results) exit( 0 );
 		state = 1;
@@ -849,7 +855,7 @@ int main( int argc, char* argv[] )
 	}
 
 	// get to the correct dir if exe is in root of project folder
-	redirected = _chdir( "./apps/benchmarkapp" );
+	redirected = chdir( "./apps/benchmarkapp" );
 
 	// prepare for rendering
 	Initialize();

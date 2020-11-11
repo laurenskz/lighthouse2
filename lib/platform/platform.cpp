@@ -28,45 +28,42 @@
 #pragma comment( linker, "/subsystem:windows /ENTRY:mainCRTStartup" )
 
 //  +-----------------------------------------------------------------------------+
-//  |  Minimalistic Windows thread.                                         LH2'20|
+//  |  Minimalistic std thread.                                             LH2'20|
 //  +-----------------------------------------------------------------------------+
-extern "C" unsigned int sthread_proc( void* param ) { WinThread* tp = (WinThread*)param; tp->run(); return 0; }
-
-void WinThread::setPriority( int tp ) 
-{ 
-	SetThreadPriority( t, tp ); 
-}
-
-void WinThread::start() 
+void StdThread::setPriority( int tp )
 {
-	DWORD id = 0;	
-	t = (unsigned long*)CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)sthread_proc, this, 0, &id );
-	setPriority( THREAD_PRIORITY_ABOVE_NORMAL );
+#ifdef WIN32
+	SetThreadPriority( t.native_handle(), tp );
+#endif
 }
+
+void StdThread::start()
+{
+	t = std::thread( static_proc, this );
+#ifdef WIN32
+	setPriority( THREAD_PRIORITY_ABOVE_NORMAL );
+#endif
+}
+
+unsigned int StdThread::static_proc( void* param ) { StdThread* tp = (StdThread*)param; tp->run(); return 0; }
+
 
 //  +-----------------------------------------------------------------------------+
 //  |  Jobmanager.                                                          LH2'20|
 //  +-----------------------------------------------------------------------------+
 
-DWORD JobThreadProc( LPVOID lpParameter )
-{
-	JobThread* JobThreadInstance = (JobThread*)lpParameter;
-	JobThreadInstance->BackgroundTask();
-	return 0;
-}
-
 void JobThread::CreateAndStartThread( unsigned int threadId )
 {
-	m_GoSignal = CreateEvent( 0, FALSE, FALSE, 0 );
-	m_ThreadHandle = CreateThread( 0, 0, (LPTHREAD_START_ROUTINE)&JobThreadProc, (LPVOID)this, 0, 0 );
 	m_ThreadID = threadId;
+	start();
 }
-void JobThread::BackgroundTask()
+void JobThread::run()
 {
-	while (1)
+	std::unique_lock<std::mutex> lock( m_GoMutex );
+	for ( ;; )
 	{
-		WaitForSingleObject( m_GoSignal, INFINITE );
-		while (1)
+		m_GoSignal.wait( lock );
+		for ( ;; )
 		{
 			Job* job = JobManager::GetJobManager()->GetNextJob();
 			if (!job)
@@ -81,7 +78,8 @@ void JobThread::BackgroundTask()
 
 void JobThread::Go()
 {
-	SetEvent( m_GoSignal );
+	std::lock_guard<std::mutex> lock( m_GoMutex );
+	m_GoSignal.notify_one();
 }
 
 void Job::RunCodeWrapper()
@@ -93,12 +91,6 @@ JobManager* JobManager::m_JobManager = 0;
 
 JobManager::JobManager( unsigned int threads ) : m_NumThreads( threads )
 {
-	InitializeCriticalSection( &m_CS );
-}
-
-JobManager::~JobManager()
-{
-	DeleteCriticalSection( &m_CS );
 }
 
 void JobManager::CreateJobManager( unsigned int numThreads )
@@ -108,7 +100,6 @@ void JobManager::CreateJobManager( unsigned int numThreads )
 	for (unsigned int i = 0; i < numThreads; i++)
 	{
 		m_JobManager->m_JobThreadList[i].CreateAndStartThread( i );
-		m_JobManager->m_ThreadDone[i] = CreateEvent( 0, FALSE, FALSE, 0 );
 	}
 	m_JobManager->m_JobCount = 0;
 }
@@ -121,33 +112,49 @@ void JobManager::AddJob2( Job* a_Job )
 Job* JobManager::GetNextJob()
 {
 	Job* job = 0;
-	EnterCriticalSection( &m_CS );
-	if (m_JobCount > 0) job = m_JobList[--m_JobCount];
-	LeaveCriticalSection( &m_CS );
+	auto nextJob = m_JobCount.fetch_sub( 1, std::memory_order_relaxed ) - 1;
+	if (nextJob >= 0) job = m_JobList[nextJob];
 	return job;
 }
 
 void JobManager::RunJobs()
 {
+	m_JobsToComplete.store( m_JobCount );
 	for (unsigned int i = 0; i < m_NumThreads; i++) m_JobThreadList[i].Go();
-	WaitForMultipleObjects( m_NumThreads, m_ThreadDone, TRUE, INFINITE );
+	// WaitForMultipleObjects( m_NumThreads, m_ThreadDone, TRUE, INFINITE );
+
+	std::unique_lock<std::mutex> lock( m_CS );
+	m_Done.wait( lock, [this] {
+		return m_JobsToComplete == 0;
+	} );
 }
 
 void JobManager::ThreadDone( unsigned int n )
 {
-	SetEvent( m_ThreadDone[n] );
+	auto completedJob = m_JobsToComplete.fetch_sub( 1, std::memory_order_relaxed ) - 1;
+	// Signal all threads done if we are the last thread to complete an outstanding job:
+	if ( completedJob == 0 )
+	{
+		std::lock_guard<std::mutex> lock( m_CS );
+		m_Done.notify_one();
+	}
 }
 
-DWORD CountSetBits( ULONG_PTR bitMask )
+static int CountSetBits( ptrdiff_t bitMask )
 {
-	DWORD LSHIFT = sizeof( ULONG_PTR ) * 8 - 1, bitSetCount = 0;
-	ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;
-	for (DWORD i = 0; i <= LSHIFT; ++i) bitSetCount += ((bitMask & bitTest) ? 1 : 0), bitTest /= 2;
+#if __cplusplus > 201703L
+	return std::popcount( bitMask );
+#else
+	int LSHIFT = sizeof( ptrdiff_t ) * 8 - 1, bitSetCount = 0;
+	ptrdiff_t bitTest = (ptrdiff_t)1 << LSHIFT;
+	for (int i = 0; i <= LSHIFT; ++i) bitSetCount += ((bitMask & bitTest) ? 1 : 0), bitTest /= 2;
 	return bitSetCount;
+#endif
 }
 
 void JobManager::GetProcessorCount( uint& cores, uint& logical )
 {
+#ifdef WIN32
 	// https://github.com/GPUOpen-LibrariesAndSDKs/cpu-core-counts
 	cores = logical = 0;
 	char* buffer = NULL;
@@ -176,17 +183,21 @@ void JobManager::GetProcessorCount( uint& cores, uint& logical )
 			free( buffer );
 		}
 	}
+#else
+	// TODO:
+	cores = 0, logical = sysconf( _SC_NPROCESSORS_ONLN );
+#endif
 }
 
 JobManager* JobManager::GetJobManager()
-{ 
-	if (!m_JobManager) 
+{
+	if (!m_JobManager)
 	{
 		uint c, l;
 		GetProcessorCount( c, l );
-		CreateJobManager( l ); 
+		CreateJobManager( l );
 	}
-	return m_JobManager; 
+	return m_JobManager;
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -789,7 +800,7 @@ static int has_ext( const char *ext )
 			return 0;
 		}
 
-		while (1)
+		for ( ;; )
 		{
 			loc = strstr( extensions, ext );
 			if (loc == NULL)

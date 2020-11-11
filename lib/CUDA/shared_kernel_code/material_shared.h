@@ -16,6 +16,9 @@
    used in RenderCore_OptixPrime and RenderCore_OptixRTX.
 */
 
+// For in-kernel printf:
+#include <stdio.h>
+
 LH2_DEVFUNC float3 linear_rgb_to_ciexyz( const float3 rgb )
 {
 	return make_float3(

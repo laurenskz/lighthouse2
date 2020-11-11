@@ -14,7 +14,7 @@
 */
 
 #include "rendersystem.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #include <direct.h>
 #define getcwd _getcwd
 #define chdir _chdir
@@ -390,7 +390,12 @@ void HostMesh::ConvertFromGTLFMesh( const tinygltfMesh& gltfMesh, const tinygltf
 			{
 				if (attribAccessor.type == TINYGLTF_TYPE_VEC4)
 					if (attribAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
-						for (size_t i = 0; i < count; i++, a += byte_stride) tmpTs.push_back( *((float4*)a) );
+						for (size_t i = 0; i < count; i++, a += byte_stride)
+						{
+							float4 b;
+							memcpy(&b, a, sizeof(b));
+							tmpTs.push_back( b );
+						}
 					else FATALERROR( "double precision tangents not supported in gltf file" );
 				else FATALERROR( "expected vec4 uvs in gltf file" );
 			}

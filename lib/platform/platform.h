@@ -85,18 +85,54 @@ public:
 };
 
 // Low-level thread class
-class WinThread 
+class StdThread
 {
+	std::thread t;
+	static unsigned int static_proc( void* param );
+
 public:
-	WinThread() { t = 0; }
-	unsigned long* handle() { return t; }
+	StdThread() { }
+	decltype(t)::native_handle_type handle() { return t.native_handle(); }
 	void start();
 	virtual void run() {};
 	void setPriority( int p );
-private:
-	unsigned long* t;
 };
-extern "C" { unsigned int sthread_proc( void* param ); }
+
+// std thread with start/stop synchronisation
+// and (too) scoped locking.
+class LoopThread : public StdThread
+{
+	// events
+	std::mutex mut;
+	std::condition_variable startEvent, doneEvent;
+	bool shouldBeRunning = false;
+
+public:
+	inline void WaitForCompletion()
+	{
+		std::unique_lock<std::mutex> lock( mut );
+		doneEvent.wait( lock, [this] { return !shouldBeRunning; } );
+	}
+	inline void SignalStart()
+	{
+		std::lock_guard<std::mutex> lock( mut );
+		shouldBeRunning = true;
+		startEvent.notify_one();
+	}
+
+	virtual void step() = 0;
+	inline void run() final override
+	{
+		std::unique_lock<std::mutex> lock( mut );
+		for ( ;; )
+		{
+			startEvent.wait( lock, [this] { return shouldBeRunning; } );
+			step();
+			shouldBeRunning = false;
+			doneEvent.notify_one();
+		}
+	}
+};
 
 // Nils's jobmanager
 class Job
@@ -107,14 +143,15 @@ protected:
 	friend class JobThread;
 	void RunCodeWrapper();
 };
-class JobThread
+class JobThread : public StdThread
 {
 public:
 	void CreateAndStartThread( unsigned int threadId );
 	void WaitForThreadToStop();
 	void Go();
-	void BackgroundTask();
-	HANDLE m_GoSignal, m_ThreadHandle;
+	void run() override;
+	std::mutex m_GoMutex;
+	std::condition_variable m_GoSignal;
 	int m_ThreadID;
 };
 class JobManager	// singleton class!
@@ -122,9 +159,8 @@ class JobManager	// singleton class!
 protected:
 	JobManager( unsigned int numThreads );
 public:
-	~JobManager();
 	static void CreateJobManager( unsigned int numThreads );
-	static JobManager* GetJobManager(); 
+	static JobManager* GetJobManager();
 	static void GetProcessorCount( uint& cores, uint& logical );
 	void AddJob2( Job* a_Job );
 	unsigned int GetNumThreads() { return m_NumThreads; }
@@ -137,9 +173,10 @@ protected:
 	Job* FindNextJob();
 	static JobManager* m_JobManager;
 	Job* m_JobList[256];
-	CRITICAL_SECTION m_CS;
-	HANDLE m_ThreadDone[64];
-	unsigned int m_NumThreads, m_JobCount;
+	std::mutex m_CS;
+	std::condition_variable m_Done;
+	std::atomic<int> m_JobCount, m_JobsToComplete;
+	unsigned int m_NumThreads;
 	JobThread* m_JobThreadList;
 };
 

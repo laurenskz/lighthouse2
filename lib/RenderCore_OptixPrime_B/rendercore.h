@@ -148,8 +148,6 @@ private:
 	// timing
 	cudaEvent_t shadeStart[MAXPATHLENGTH], shadeEnd[MAXPATHLENGTH];	// events for timing CUDA code
 protected:
-	// events
-	HANDLE startEvent, doneEvent;
 	// worker thread
 	RenderThread* renderThread;
 public:
@@ -161,7 +159,7 @@ public:
 //  |  RenderThread                                                               |
 //  |  Worker thread for asynchronous rendering.                            LH2'20|
 //  +-----------------------------------------------------------------------------+
-class RenderThread : public WinThread
+class RenderThread : public LoopThread
 {
 public:
 	void Init( RenderCore* core )
@@ -173,7 +171,7 @@ public:
 		coreState = *core;
 		view = pyramid;
 	}
-	void run();
+	void step() override;
 	RenderCore coreState; // frozen copy of the state at render start
 	ViewPyramid view;
 };
