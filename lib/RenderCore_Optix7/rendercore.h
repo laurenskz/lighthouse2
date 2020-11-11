@@ -50,7 +50,7 @@ public:
 	// property of the caller, and can be safely deleted or modified as soon as these calls return.
 	void SetTextures( const CoreTexDesc* tex, const int textureCount );
 	void SetMaterials( CoreMaterial* mat, const int materialCount ); // textures must be in sync when calling this
-	void SetLights( const CoreLightTri* areaLights, const int areaLightCount,
+	void SetLights( const CoreLightTri* triLights, const int triLightCount,
 		const CorePointLight* pointLights, const int pointLightCount,
 		const CoreSpotLight* spotLights, const int spotLightCount,
 		const CoreDirectionalLight* directionalLights, const int directionalLightCount );
@@ -70,6 +70,9 @@ private:
 	void FinalizeRender();
 	template <class T> T* StagedBufferResize( CoreBuffer<T>*& lightBuffer, const int newCount, const T* sourceData );
 	void UpdateToplevel();
+	int FindBestMatch( int* todo, const int idx, const int N );
+	void UpdateLightTreeNormals( const int node );
+	void UpdateLightTree();
 	void SyncStorageType( const TexelStorage storage );
 	void CreateOptixContext( int cc );
 	// helpers
@@ -94,9 +97,10 @@ private:
 	InteropTexture renderTarget;					// CUDA will render to this texture
 	CoreBuffer<CUDAMaterial>* materialBuffer = 0;	// material array
 	CUDAMaterial* hostMaterialBuffer = 0;			// core-managed copy of the materials
-	CoreBuffer<CoreLightTri>* areaLightBuffer;		// area lights
+	CoreBuffer<CoreLightTri>* triLightBuffer;		// tri lights
 	CoreBuffer<CorePointLight>* pointLightBuffer;	// point lights
 	CoreBuffer<CoreSpotLight>* spotLightBuffer;		// spot lights
+	CoreBuffer<LightCluster>* lightTree = 0;		// light tree for stochastic lightcuts
 	CoreBuffer<CoreDirectionalLight>* directionalLightBuffer;	// directional lights
 	CoreBuffer<float4>* texel128Buffer = 0;			// texel buffer 1: hdr ARGB128 texture data
 	CoreBuffer<uint>* normal32Buffer = 0;			// texel buffer 2: integer-encoded normals

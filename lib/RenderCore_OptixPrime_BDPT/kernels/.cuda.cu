@@ -21,7 +21,7 @@ namespace lh2core
 // path tracing buffers and global variables
 __constant__ CoreInstanceDesc* instanceDescriptors;
 __constant__ CUDAMaterial* materials;
-__constant__ CoreLightTri* areaLights;
+__constant__ CoreLightTri* triLights;
 __constant__ CorePointLight* pointLights;
 __constant__ CoreSpotLight* spotLights;
 __constant__ CoreDirectionalLight* directionalLights;
@@ -33,6 +33,7 @@ __constant__ float4* skyPixels;
 __constant__ int skywidth;
 __constant__ int skyheight;
 __constant__ float4* debugData;
+__constant__ LightCluster* lightTree;
 
 __constant__ mat4 worldToSky;
 
@@ -46,13 +47,14 @@ __constant__ __device__ float clampValue;
 // staged render state access
 __host__ void stageInstanceDescriptors( CoreInstanceDesc* p ) { stagedcpy( instanceDescriptors, p ); }
 __host__ void stageMaterialList( CUDAMaterial* p ) { stagedcpy( materials, p ); }
-__host__ void stageAreaLights( CoreLightTri* p ) { stagedcpy( areaLights, p ); }
+__host__ void stageTriLights( CoreLightTri* p ) { stagedcpy( triLights, p ); }
 __host__ void stagePointLights( CorePointLight* p ) { stagedcpy( pointLights, p ); }
 __host__ void stageSpotLights( CoreSpotLight* p ) { stagedcpy( spotLights, p ); }
 __host__ void stageDirectionalLights( CoreDirectionalLight* p ) { stagedcpy( directionalLights, p ); }
-__host__ void stageLightCounts( int area, int point, int spot, int directional )
+__host__ void stageLightTree( LightCluster* t ) { stagedcpy( lightTree, t ); }
+__host__ void stageLightCounts( int tri, int point, int spot, int directional )
 {
-	const int4 counts = make_int4( area, point, spot, directional );
+	const int4 counts = make_int4( tri, point, spot, directional );
 	stagedcpy( lightCounts, counts );
 }
 __host__ void stageARGB32Pixels( uint* p ) { stagedcpy( argb32, p ); }

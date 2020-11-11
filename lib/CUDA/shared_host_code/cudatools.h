@@ -87,7 +87,7 @@ public:
 	}
 	static const char* decodeError( cudaError_t res )
 	{
-		switch ((cudaError_enum)res)
+		switch (res)
 		{
 		default:                                        return "Unknown cudaError_t";
 		case CUDA_SUCCESS:                              return "No error";
@@ -261,7 +261,7 @@ public:
 			}
 		}
 	}
-	void* CopyToDevice()
+	T* CopyToDevice()
 	{
 		if (sizeInBytes > 0)
 		{
@@ -275,7 +275,7 @@ public:
 		}
 		return devPtr;
 	}
-	void* StageCopyToDevice()
+	T* StageCopyToDevice()
 	{
 		if (sizeInBytes > 0)
 		{
@@ -289,7 +289,7 @@ public:
 		}
 		return devPtr;
 	}
-	void* MoveToDevice()
+	T* MoveToDevice()
 	{
 		CopyToDevice();
 		if (sizeInBytes > 0) FREE64( hostPtr );

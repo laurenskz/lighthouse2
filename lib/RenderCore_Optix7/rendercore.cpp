@@ -193,7 +193,6 @@ void RenderCore::CreateOptixContext( int cc )
 	OptixPipelineLinkOptions linkOptions = {};
 	linkOptions.maxTraceDepth = 1;
 	linkOptions.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_NONE;
-	linkOptions.overrideUsesMotionBlur = false;
 	logSize = sizeof( log );
 	CHK_OPTIX_LOG( optixPipelineCreate( optixContext, &pipeCompileOptions, &linkOptions, progGroup, 5, log, &logSize, &pipeline ) );
 	// calculate the stack sizes, so we can specify all parameters to optixPipelineSetStackSize
@@ -510,7 +509,11 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 	// Notes:
 	// Call this after the textures have been set; CoreMaterials store the offset of each texture
 	// in the continuous arrays; this data is valid only when textures are in sync.
+	if (materialBuffer == 0 || materialCount > materialBuffer->GetSize())
+	{
+		delete hostMaterialBuffer;
 	hostMaterialBuffer = new CUDAMaterial[materialCount];
+	}
 	for (int i = 0; i < materialCount; i++)
 	{
 		// perform conversion to internal material format
@@ -539,18 +542,138 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 			(m.roughness.textureID != -1 ? HASROUGHNESSMAP : 0) +
 			(m.detailNormals.textureID != -1 ? HAS2NDNORMALMAP : 0) +
 			(m.detailColor.textureID != -1 ? HAS2NDDIFFUSEMAP : 0) +
-			((m.flags & 1) ? HASSMOOTHNORMALS : 0);
+			((m.flags & 1) ? HASSMOOTHNORMALS : 0) + ((m.flags & 2) ? HASALPHA : 0);
 	}
 	if (!materialBuffer)
 	{
 		materialBuffer = new CoreBuffer<CUDAMaterial>( materialCount, ON_HOST | ON_DEVICE | STAGED, hostMaterialBuffer );
 	}
-	else if (materialCount > materialBuffer->GetSize())
+	else if (materialCount <= materialBuffer->GetSize())
+	{
+		// just set the new material data
+		materialBuffer->SetHostData( hostMaterialBuffer );
+	}
+	else /* if (materialCount > materialBuffer->GetSize()) */
 	{
 		// TODO: realloc
 	}
 	materialBuffer->StageCopyToDevice();
 	stageMaterialList( materialBuffer->DevPtr() );
+}
+
+//  +-----------------------------------------------------------------------------+
+//  |  RenderCore::UpdateLightTree                                                |
+//  |  Prepare the light BVH for stochastic lightcuts.                      LH2'20|
+//  +-----------------------------------------------------------------------------+
+void RenderCore::UpdateLightTreeNormals( const int node )
+{
+	LightCluster* treeData = lightTree->HostPtr();
+	if (treeData[node].left > -1)
+	{
+		UpdateLightTreeNormals( treeData[node].left );
+		UpdateLightTreeNormals( treeData[node].right );
+		// check normals of children
+		const float3 Nl = treeData[treeData[node].left].N;
+		const float3 Nr = treeData[treeData[node].right].N;
+		if (dot( Nl, Nr ) > 0.9f)
+		{
+			// left and right normals are similar enough to be useful
+			treeData[node].N = normalize( Nl + Nr );
+		}
+		else
+		{
+			// store an impossible normal
+			treeData[node].N = make_float3( 0 );
+		}
+		// store parent index in children
+		treeData[treeData[node].left].parent = treeData[treeData[node].right].parent = node;
+	}
+	else
+	{
+		// get normal from light source
+		const int lightIdx = treeData[node].light;
+		if (lightIdx & ((1 << 30) + (1 << 29)))
+		{
+			// point or spot light
+			treeData[node].N = make_float3( 0 );
+		}
+		else
+		{
+			// triangle light
+			CoreLightTri& light = triLightBuffer->HostPtr()[lightIdx];
+			treeData[node].N = light.N;
+		}
+	}
+}
+int RenderCore::FindBestMatch( int* todo, const int idx, const int N )
+{
+	float bestCost = 1e34f, bestIdx = 0;
+	LightCluster* treeData = lightTree->HostPtr();
+	for (int i = 0; i < N; i++) if (i != idx)
+	{
+		LightCluster tmp = treeData[todo[idx]];
+		tmp.bounds.Grow( treeData[todo[i]].bounds );
+		tmp.intensity += treeData[todo[i]].intensity;
+		float cost = tmp.Cost();
+		if (cost < bestCost) bestCost = cost, bestIdx = i;
+	}
+	return bestIdx;
+}
+void RenderCore::UpdateLightTree()
+{
+	// create an array of triLights
+	delete lightTree;
+	int N = triLightBuffer->GetSize(), remaining = N;
+	int M = pointLightBuffer->GetSize();
+	int O = spotLightBuffer->GetSize();
+	lightTree = new CoreBuffer<LightCluster>( (N + M + O) * 2, ON_HOST | ON_DEVICE | STAGED );
+	LightCluster* treeData = lightTree->HostPtr();
+	int* todo = new int[N + M + O];
+	for (int i = 0; i < N; i++)
+		treeData[i + 1] = LightCluster( triLightBuffer->HostPtr()[i], i ), // leaf for light i has index i + 1
+		todo[i] = i + 1;
+	for( int i = 0; i < M; i++ )
+		treeData[i + 1 + N] = LightCluster( pointLightBuffer->HostPtr()[i], i ),
+		todo[i + N] = i + 1 + N;
+	for( int i = 0; i < O; i++ )
+		treeData[i + 1 + N + M] = LightCluster( spotLightBuffer->HostPtr()[i], i ),
+		todo[i + N + M] = i + 1 + N + M;
+	remaining += M + O;
+	N += M + O;
+	// build the BVH, agglomerative
+	int A = 0;
+	int B = FindBestMatch( todo, A, remaining );
+	while (remaining > 1)
+	{
+		int C = FindBestMatch( todo, B, remaining );
+		if (A == C)
+		{
+			// create a new cluster
+			treeData[N + 1] = treeData[todo[A]];
+			treeData[N + 1].bounds.Grow( treeData[todo[B]].bounds );
+			treeData[N + 1].intensity += treeData[todo[B]].intensity;
+			treeData[N + 1].left = todo[A];
+			treeData[N + 1].right = todo[B];
+			// delete A and B cluster indices from 'todo'
+			for (int i = A; i < remaining - 1; i++) todo[i] = todo[i + 1]; // remove A
+			if (B > A) B--;
+			for (int i = B; i < remaining - 2; i++) todo[i] = todo[i + 1]; // remove B
+			remaining -= 2;
+			// add the new cluster index to 'todo'
+			todo[remaining] = ++N;
+			// prepare search for next couple
+			A = remaining++;
+			B = FindBestMatch( todo, A, remaining );
+		}
+		else A = B, B = C;
+	}
+	// finalize
+	treeData[0] = treeData[todo[0]]; // put root in convenient place
+	delete[] todo;
+	UpdateLightTreeNormals( 0 );
+	// copy to device
+	stageLightTree( lightTree->DevPtr() );
+	lightTree->StageCopyToDevice();
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -569,17 +692,18 @@ template <class T> T* RenderCore::StagedBufferResize( CoreBuffer<T>*& lightBuffe
 	lightBuffer->StageCopyToDevice();
 	return lightBuffer->DevPtr();
 }
-void RenderCore::SetLights( const CoreLightTri* areaLights, const int areaLightCount,
+void RenderCore::SetLights( const CoreLightTri* triLights, const int triLightCount,
 	const CorePointLight* pointLights, const int pointLightCount,
 	const CoreSpotLight* spotLights, const int spotLightCount,
 	const CoreDirectionalLight* directionalLights, const int directionalLightCount )
 {
-	stageAreaLights( StagedBufferResize<CoreLightTri>( areaLightBuffer, areaLightCount, areaLights ) );
+	stageTriLights( StagedBufferResize<CoreLightTri>( triLightBuffer, triLightCount, triLights ) );
 	stagePointLights( StagedBufferResize<CorePointLight>( pointLightBuffer, pointLightCount, pointLights ) );
 	stageSpotLights( StagedBufferResize<CoreSpotLight>( spotLightBuffer, spotLightCount, spotLights ) );
 	stageDirectionalLights( StagedBufferResize<CoreDirectionalLight>( directionalLightBuffer, directionalLightCount, directionalLights ) );
-	stageLightCounts( areaLightCount, pointLightCount, spotLightCount, directionalLightCount );
-	noDirectLightsInScene = (areaLightCount + pointLightCount + spotLightCount + directionalLightCount) == 0;
+	stageLightCounts( triLightCount, pointLightCount, spotLightCount, directionalLightCount );
+	noDirectLightsInScene = (triLightCount + pointLightCount + spotLightCount + directionalLightCount) == 0;
+	UpdateLightTree();
 }
 
 //  +-----------------------------------------------------------------------------+
