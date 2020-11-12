@@ -24,6 +24,7 @@ using namespace lh2core;
 void RenderCore::Init()
 {
 	// initialize core
+	rayTracer = RayTracer();
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -34,7 +35,7 @@ void RenderCore::SetTarget( GLTexture* target, const uint )
 {
 	// synchronize OpenGL viewport
 	targetTextureID = target->ID;
-	if (screen != 0 && target->width == screen->width && target->height == screen->height) return; // nothing changed
+	if ( screen != 0 && target->width == screen->width && target->height == screen->height ) return; // nothing changed
 	delete screen;
 	screen = new Bitmap( target->width, target->height );
 }
@@ -53,7 +54,7 @@ void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const
 	memcpy( newMesh.vertices, vertexData, vertexCount * sizeof( float4 ) );
 	// copy the supplied 'fat triangles'
 	newMesh.triangles = new CoreTri[vertexCount / 3];
-	memcpy( newMesh.triangles, triangleData, (vertexCount / 3) * sizeof( CoreTri ) );
+	memcpy( newMesh.triangles, triangleData, ( vertexCount / 3 ) * sizeof( CoreTri ) );
 	meshes.push_back( newMesh );
 }
 
@@ -65,15 +66,17 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 {
 	// render
 	screen->Clear();
-	for(int x = 0 ; x< screen->width ;x++)
-		for(int y = 0 ; y< screen->height ;y++)
-			screen->Plot( x, y, 0x00ff00 /* white */ );
-	for (Mesh& mesh : meshes) for (int i = 0; i < mesh.vcount; i++)
+	for ( int y = 0; y < screen->height; ++y )
 	{
-		// convert a vertex position to a screen coordinate
-		int screenx = mesh.vertices[i].x / 80 * (float)screen->width + screen->width / 2;
-		int screeny = mesh.vertices[i].z / 80 * (float)screen->height + screen->height / 2;
-		screen->Plot( screenx, screeny, 0x0000ff /* white */ );
+		for ( int x = 0; x < screen->width; ++x )
+		{
+			const float3& rayDirection = RayTracer::rayDirection( ( (float)screen->width ) / x, ( (float)screen->height ) / y, view );
+			const float3& fColor = rayTracer.trace( view.pos, rayDirection );
+			int r = clamp( (int)( fColor.x * 256 ), 0, 255 );
+			int g = clamp( (int)( fColor.y * 256 ), 0, 255 );
+			int b = clamp( (int)( fColor.z * 256 ), 0, 255 );
+			screen->Plot( x, y, ( r << 16 ) + ( g << 8 ) + ( b ) );
+		}
 	}
 	// copy pixel buffer to OpenGL render target texture
 	glBindTexture( GL_TEXTURE_2D, targetTextureID );

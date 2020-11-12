@@ -25,6 +25,7 @@
 using namespace lighthouse2;
 
 #include "core_api_base.h"
+#include "raytracer.h"
 #include "rendercore.h"
 
 using namespace lh2core;
