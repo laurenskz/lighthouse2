@@ -115,6 +115,7 @@ endif()
 # Include default RenderCores:
 add_render_core("${CMAKE_SOURCE_DIR}/lib/RenderCore_SoftRasterizer")
 add_render_core("${CMAKE_SOURCE_DIR}/lib/RenderCore_Minimal")
+add_render_core("${CMAKE_SOURCE_DIR}/lib/RenderCore_Custom")
 
 message(STATUS "Found RenderCores: ${render_cores}")
 
