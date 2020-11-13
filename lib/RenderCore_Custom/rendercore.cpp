@@ -66,12 +66,16 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 {
 	// render
 	screen->Clear();
+	Ray ray{};
+	ray.start = view.pos;
 	for ( int y = 0; y < screen->height; ++y )
 	{
 		for ( int x = 0; x < screen->width; ++x )
 		{
-			const float3& rayDirection = RayTracer::rayDirection( ( (float)screen->width ) / x, ( (float)screen->height ) / y, view );
-			const float3& fColor = rayTracer.trace( view.pos, rayDirection );
+			ray.t = -1;
+			const float3& rayDirection = RayTracer::rayDirection( ( x/ (float)screen->width ), ( y/(float)screen->height ), view );
+			ray.direction = rayDirection;
+			const float3& fColor = rayTracer.trace( ray );
 			int r = clamp( (int)( fColor.x * 256 ), 0, 255 );
 			int g = clamp( (int)( fColor.y * 256 ), 0, 255 );
 			int b = clamp( (int)( fColor.z * 256 ), 0, 255 );
