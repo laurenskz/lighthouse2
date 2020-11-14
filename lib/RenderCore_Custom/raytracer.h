@@ -44,7 +44,7 @@ class Sphere : public Intersectable
 {
 
   public:
-	float3 pos = { 1, 1, 1 };
+	float3 pos = { 1, 0, 1 };
 	float r2 = 1;
 	int material = 0; //Material index
 	float distanceTo( Ray r ) override;

@@ -12,7 +12,6 @@ float3 RayTracer::rayDirection( float u, float v, const ViewPyramid& view )
 float3 RayTracer::trace( Ray r )
 {
 	auto intersection = scene.nearestIntersection( r );
-	if ( intersection.location.x == 0 ) return make_float3( 0 );
 	auto illumination = scene.directIllumination( intersection.location, intersection.normal );
 	return illumination * intersection.mat.color;
 }
@@ -62,17 +61,18 @@ Intersection Scene::nearestIntersectionWith( Ray r, Intersectable* objects[], in
 }
 float Scene::directIllumination( const float3& pos, float3 normal )
 {
-	return illuminationFrom( make_float3( 1, 2.3, 1 ), 2, pos, normal );
-//		illuminationFrom( make_float3( 2, 1, 1 ), 2, pos, normal );
-	//		   illuminationFrom( make_float3( 3, 1, 1 ), 0, pos, normal );
+	return illuminationFrom( make_float3( 1, 5, 1 ), 10, pos, normal )+
+		illuminationFrom( make_float3( 1, -5, 1 ), 10, pos, normal );
+//		illuminationFrom( make_float3( 2, 3, 1 ), 3, pos, normal )+
+//			   illuminationFrom( make_float3( 2, 10, 2 ), 50, pos, normal );
 }
 float Scene::illuminationFrom( const float3& lightSource, float lightIntensity, const float3& pos, const float3& normal )
 {
-	if ( pos.x == 0 ) return 0;
-	const float3& lightDirection = lightSource - pos;
+//	if ( pos.x ==  ) return 0;
+	const float3& lightDirection = pos - lightSource;
 	float d = length( lightDirection );
 	float lightnormal = clamp( dot( normalize( lightDirection ), normalize( normal ) ), 0.0, 1.0 );
-	return lightIntensity / ( d * d );
+	return lightnormal*lightIntensity / ( d * d );
 }
 
 float Sphere::distanceTo( Ray r )
