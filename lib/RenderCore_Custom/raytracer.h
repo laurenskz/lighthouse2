@@ -36,10 +36,10 @@ class Intersectable
 class Plane : public Intersectable
 {
   public:
-	float3 direction{};
+	float3 normal{};
 	float d{};
 	int material{};
-	Plane( float3 dir, float d, int material ) : direction( dir ), d( d ), material( material ) {}
+	Plane( float3 normal, float d, int material ) : normal( normal ), d( d ), material( material ) {}
 	Plane() = default;
 	float distanceTo( Ray r ) override;
 	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;

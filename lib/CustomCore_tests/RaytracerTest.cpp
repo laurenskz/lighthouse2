@@ -66,3 +66,12 @@ TEST_F( RayFixture, Illumination )
 	ASSERT_NEAR( 0.196, scene->illuminationFrom( light, make_float3( 0 ), normalize( make_float3( 5, 1, 0 ) ) ), 1e-3 );
 	ASSERT_NEAR( 0, scene->illuminationFrom( light, make_float3( 0 ), normalize( make_float3( 1, 0, 0 ) ) ), 1e-3 );
 }
+
+TEST_F( RayFixture, PlaneIntersects )
+{
+	Plane plane = Plane( make_float3( 0, 1, 0 ), 2, 0 );
+	const Ray& r = Ray{ make_float3( 0, 2, 0 ), normalize( make_float3( -2, -1, 0 ) ) };
+	auto t = plane.distanceTo( r );
+	auto intersection = locationAt( t, r );
+	cout << intersection;
+}
