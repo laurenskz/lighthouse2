@@ -72,7 +72,6 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 	{
 		for ( int x = 0; x < screen->width; ++x )
 		{
-			ray.t = -1;
 			const float3& rayDirection = RayTracer::rayDirection( ( x / (float)screen->width ), ( y / (float)screen->height ), view );
 			ray.direction = rayDirection;
 			const float3& fColor = rayTracer.trace( ray );

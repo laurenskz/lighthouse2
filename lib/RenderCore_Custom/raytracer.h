@@ -10,8 +10,9 @@ struct Ray
 {
 	float3 start;
 	float3 direction;
-	float t;
 };
+
+inline float3 locationAt( float t, Ray r ) { return r.start + t * r.direction; };
 
 struct Material
 {
@@ -44,9 +45,11 @@ class Sphere : public Intersectable
 {
 
   public:
-	float3 pos = { 1, 0, 1 };
-	float r2 = 1;
-	int material = 0; //Material index
+	float3 pos{};
+	float r2{};
+	int material{}; //Material index
+	Sphere( float3 p, float r, int material ) : pos( p ), r2( r * r ), material( material ) {}
+	Sphere() = default;
 	float distanceTo( Ray r ) override;
 	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
 };

@@ -61,18 +61,18 @@ Intersection Scene::nearestIntersectionWith( Ray r, Intersectable* objects[], in
 }
 float Scene::directIllumination( const float3& pos, float3 normal )
 {
-	return illuminationFrom( make_float3( 1, 5, 1 ), 10, pos, normal )+
-		illuminationFrom( make_float3( 1, -5, 1 ), 10, pos, normal );
-//		illuminationFrom( make_float3( 2, 3, 1 ), 3, pos, normal )+
-//			   illuminationFrom( make_float3( 2, 10, 2 ), 50, pos, normal );
+	return illuminationFrom( make_float3( -8, 6, -3 ), 100, pos, normal ) + illuminationFrom( make_float3( 8, 6, -3 ), 50, pos, normal );
+	//		illuminationFrom( make_float3( -2, -5, -3 ), 10, pos, normal );
+	//		illuminationFrom( make_float3( 2, 3, 1 ), 3, pos, normal )+
+	//			   illuminationFrom( make_float3( 2, 10, 2 ), 50, pos, normal );
 }
 float Scene::illuminationFrom( const float3& lightSource, float lightIntensity, const float3& pos, const float3& normal )
 {
-//	if ( pos.x ==  ) return 0;
+	//	if ( pos.x ==  ) return 0;
 	const float3& lightDirection = pos - lightSource;
 	float d = length( lightDirection );
 	float lightnormal = clamp( dot( normalize( lightDirection ), normalize( normal ) ), 0.0, 1.0 );
-	return lightnormal*lightIntensity / ( d * d );
+	return lightnormal * lightIntensity / ( d * d );
 }
 
 float Sphere::distanceTo( Ray r )
@@ -82,12 +82,12 @@ float Sphere::distanceTo( Ray r )
 	float3 Q = C - t * r.direction;
 	float p2 = dot( Q, Q );
 	if ( p2 > r2 ) return -1;
-	t -= sqr( r2 - p2 );
+	t -= sqrt( r2 - p2 );
 	return t;
 }
 Intersection Sphere::intersectionAt( float3 intersectionPoint, Material* materials )
 {
-	return Intersection{ intersectionPoint, normalize( pos - intersectionPoint ), materials[material] };
+	return Intersection{ intersectionPoint, normalize( intersectionPoint - pos ), materials[material] };
 }
 Intersection Plane::intersectionAt( float3 intersectionPoint, Material* materials )
 {
