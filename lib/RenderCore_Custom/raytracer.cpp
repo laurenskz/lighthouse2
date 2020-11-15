@@ -32,6 +32,7 @@ Scene::Scene()
 	spheres = new Sphere[sphereCount];
 	spheres[0] = Sphere( make_float3( 0, 0, 5 ), 1, 0 );
 	planes = new Plane[1];
+	planes[0] = Plane( make_float3( 1, 0, 1 ), 3, 0 );
 	materials = new Material[1];
 	materials[0].color = make_float3( 0, 0, 1 );
 }
@@ -39,7 +40,7 @@ Intersection Scene::nearestIntersection( Ray r )
 {
 	Intersectable* objects[] = { spheres, planes };
 	int counts[] = { sphereCount, 1 };
-	return Scene::nearestIntersectionWith( r, objects, 1, counts );
+	return Scene::nearestIntersectionWith( r, objects, 2, counts );
 }
 Intersection Scene::nearestIntersectionWith( Ray r, Intersectable* objects[], int count, const int counts[] )
 {

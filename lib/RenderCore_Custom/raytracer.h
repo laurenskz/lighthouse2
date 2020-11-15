@@ -35,8 +35,12 @@ class Intersectable
 
 class Plane : public Intersectable
 {
-	float3 direction{  };
-	float d = 0;
+  public:
+	float3 direction{};
+	float d{};
+	int material{};
+	Plane( float3 dir, float d, int material ) : direction( dir ), d( d ), material( material ) {}
+	Plane() = default;
 	float distanceTo( Ray r ) override;
 	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
 };
@@ -54,7 +58,8 @@ class Sphere : public Intersectable
 	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
 };
 
-struct PointLight{
+struct PointLight
+{
 	float3 location;
 	float intensity;
 };
