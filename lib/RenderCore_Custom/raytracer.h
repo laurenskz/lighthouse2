@@ -35,7 +35,7 @@ class Intersectable
 
 class Plane : public Intersectable
 {
-	float3 direction = { 0, 1, 0 };
+	float3 direction{  };
 	float d = 0;
 	float distanceTo( Ray r ) override;
 	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
@@ -54,6 +54,11 @@ class Sphere : public Intersectable
 	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
 };
 
+struct PointLight{
+	float3 location;
+	float intensity;
+};
+
 class Scene
 {
   public:
@@ -61,11 +66,12 @@ class Scene
 	Sphere* spheres;
 	Plane* planes;
 	Material* materials;
+	int sphereCount;
 	Intersection nearestIntersection( Ray r );
 	float directIllumination( const float3& pos, float3 normal );
+	float illuminationFrom( const PointLight& light, const float3& pos, const float3& normal );
 
   private:
-	float illuminationFrom( const float3& lightSource, float lightIntensity, const float3& pos, const float3& normal );
 	Intersection nearestIntersectionWith( Ray r, Intersectable* objects[], int count, const int counts[] );
 };
 

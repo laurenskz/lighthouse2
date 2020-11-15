@@ -55,6 +55,14 @@ TEST_F( RayFixture, SphereIntersects )
 	auto intersectionPoint = locationAt( t, ray2 );
 	ASSERT_NEAR( 1, length( intersectionPoint ), 1e-3 );
 	auto intersection = sphere.intersectionAt( intersectionPoint, materials );
-	EXPECT_VEC_EQ(intersection.location,intersectionPoint);
-	EXPECT_VEC_EQ(intersectionPoint,intersection.location);
+	EXPECT_VEC_EQ( intersection.location, intersectionPoint );
+	EXPECT_VEC_EQ( intersectionPoint, intersection.location );
+}
+
+TEST_F( RayFixture, Illumination )
+{
+	const PointLight& light = PointLight{ make_float3( 0, 1, 0 ), 1 };
+	ASSERT_NEAR( 1, scene->illuminationFrom( light, make_float3( 0 ), make_float3( 0, 1, 0 ) ), 1e-3 );
+	ASSERT_NEAR( 0.196, scene->illuminationFrom( light, make_float3( 0 ), normalize( make_float3( 5, 1, 0 ) ) ), 1e-3 );
+	ASSERT_NEAR( 0, scene->illuminationFrom( light, make_float3( 0 ), normalize( make_float3( 1, 0, 0 ) ) ), 1e-3 );
 }

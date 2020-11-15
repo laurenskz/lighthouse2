@@ -4,6 +4,11 @@
 
 #include "core_settings.h"
 
+ostream& operator<<( ostream& os, const float3& s )
+{
+	return ( os << "{" << s.x << "," << s.y << "," << s.z << "}" << std::endl );
+}
+
 float3 RayTracer::rayDirection( float u, float v, const ViewPyramid& view )
 {
 
@@ -23,7 +28,9 @@ inline float3 RayTracer::screenPos( float u, float v, const ViewPyramid& view )
 
 Scene::Scene()
 {
-	spheres = new Sphere[1];
+	sphereCount = 1;
+	spheres = new Sphere[sphereCount];
+	spheres[0] = Sphere( make_float3( 0, 0, 5 ), 1, 0 );
 	planes = new Plane[1];
 	materials = new Material[1];
 	materials[0].color = make_float3( 0, 0, 1 );
@@ -31,7 +38,7 @@ Scene::Scene()
 Intersection Scene::nearestIntersection( Ray r )
 {
 	Intersectable* objects[] = { spheres, planes };
-	int counts[] = { 1, 1 };
+	int counts[] = { sphereCount, 1 };
 	return Scene::nearestIntersectionWith( r, objects, 1, counts );
 }
 Intersection Scene::nearestIntersectionWith( Ray r, Intersectable* objects[], int count, const int counts[] )
@@ -57,22 +64,23 @@ Intersection Scene::nearestIntersectionWith( Ray r, Intersectable* objects[], in
 	{
 		return Intersection();
 	}
-	return objects[minObject][minIndex].intersectionAt( r.start + ( minDistance * r.direction ), materials );
+	auto intersectionLocation = locationAt( minDistance, r );
+	return objects[minObject][minIndex].intersectionAt( intersectionLocation, materials );
 }
 float Scene::directIllumination( const float3& pos, float3 normal )
 {
-	return illuminationFrom( make_float3( -8, 6, -3 ), 100, pos, normal ) + illuminationFrom( make_float3( 8, 6, -3 ), 50, pos, normal );
+	return illuminationFrom( PointLight{ make_float3( 0, 5, 0 ), 35 }, pos, normal );
+	//		+ illuminationFrom( make_float3( 8, 6, -3 ), 50, pos, normal );
 	//		illuminationFrom( make_float3( -2, -5, -3 ), 10, pos, normal );
 	//		illuminationFrom( make_float3( 2, 3, 1 ), 3, pos, normal )+
 	//			   illuminationFrom( make_float3( 2, 10, 2 ), 50, pos, normal );
 }
-float Scene::illuminationFrom( const float3& lightSource, float lightIntensity, const float3& pos, const float3& normal )
+float Scene::illuminationFrom( const PointLight& light, const float3& pos, const float3& normal )
 {
-	//	if ( pos.x ==  ) return 0;
-	const float3& lightDirection = pos - lightSource;
+	const float3& lightDirection = light.location - pos;
 	float d = length( lightDirection );
 	float lightnormal = clamp( dot( normalize( lightDirection ), normalize( normal ) ), 0.0, 1.0 );
-	return lightnormal * lightIntensity / ( d * d );
+	return lightnormal * light.intensity / ( d * d );
 }
 
 float Sphere::distanceTo( Ray r )
