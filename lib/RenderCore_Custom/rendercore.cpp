@@ -78,7 +78,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 			int r = clamp( (int)( fColor.x * 256 ), 0, 255 );
 			int g = clamp( (int)( fColor.y * 256 ), 0, 255 );
 			int b = clamp( (int)( fColor.z * 256 ), 0, 255 );
-			screen->Plot( x, y, ( r << 16 ) + ( g << 8 ) + ( b ) );
+			screen->Plot( x, y, ( b<< 16 ) + ( g << 8 ) + ( r ) );
 		}
 	}
 	// copy pixel buffer to OpenGL render target texture

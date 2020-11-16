@@ -24,7 +24,9 @@
 
 using namespace lighthouse2;
 
+#include "base_definitions.h"
 #include "core_api_base.h"
+#include "intersections.h"
 #include "raytracer.h"
 #include "rendercore.h"
 
