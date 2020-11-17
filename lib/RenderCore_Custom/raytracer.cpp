@@ -33,15 +33,11 @@ Scene::Scene()
 	spheres.materials = new Material[1];
 	spheres.materials[0].color = make_float3( 0, 0, 1 );
 	spheres.count = 1;
-	spheres.spheres[0] = Sphere( make_float3( 0, -3, 5 ), 1, 0 );
+	spheres.spheres[0] = Sphere( make_float3( 0, -2, 5 ), 1, 0 );
 	planes = Planes();
 	planes.planes = new Plane[1];
 	planes.count = 1;
 	planes.planes[0] = Plane( make_float3( 0, 1, 0 ), 4, 1 );
-	mesh = new Mesh( 3 );
-	mesh->positions[0] = make_float3( 0, -4, 5 );
-	mesh->positions[1] = make_float3( 1, -4, 5 );
-	mesh->positions[1] = make_float3( 0, -4, 6 );
 }
 Intersection Scene::nearestIntersection( Ray r )
 {

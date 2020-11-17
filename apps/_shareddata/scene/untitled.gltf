@@ -19,9 +19,9 @@
             "mesh" : 0,
             "name" : "Cube",
             "translation" : [
-                0,
-                4,
-                3
+                2,
+                -2,
+                5
             ]
         },
         {

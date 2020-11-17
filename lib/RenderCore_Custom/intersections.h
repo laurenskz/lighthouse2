@@ -33,8 +33,9 @@ class Mesh
 {
   public:
 	explicit Mesh( int vertexCount );
-	float3* positions;
+	float4* positions;
 	float3* normals;
+	mat4 transform = mat4::Identity();
 	int vertexCount;
 	int triangleCount;
 	CoreTri* triangles = nullptr; // 'fat' triangle data

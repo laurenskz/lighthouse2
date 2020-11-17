@@ -40,6 +40,11 @@ void RenderCore::SetTarget( GLTexture* target, const uint )
 	screen = new Bitmap( target->width, target->height );
 }
 
+void RenderCore::SetInstance( const int instanceIdx, const int meshIdx, const mat4& matrix )
+{
+	if ( meshIdx < 0 ) return;
+	rayTracer.scene.mesh->transform = matrix;
+}
 //  +-----------------------------------------------------------------------------+
 //  |  RenderCore::SetGeometry                                                    |
 //  |  Set the geometry data for a model.                                   LH2'19|
@@ -49,7 +54,7 @@ void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const
 	Mesh* newMesh = new Mesh( vertexCount );
 	for ( int i = 0; i < vertexCount; ++i )
 	{
-		newMesh->positions[i] = make_float3( vertexData[i] );
+		newMesh->positions[i] =vertexData[i] ;
 	}
 	for ( int i = 0; i < triangleCount; i++ )
 	{
@@ -57,7 +62,7 @@ void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const
 		newMesh->normals[i * 3 + 1] = triangles[i].vN1;
 		newMesh->normals[i * 3 + 2] = triangles[i].vN2;
 	}
-//	rayTracer.scene.mesh = newMesh;
+	rayTracer.scene.mesh = newMesh;
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -83,6 +88,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 			screen->Plot( x, y, ( b << 16 ) + ( g << 8 ) + ( r ) );
 		}
 	}
+	cout << "Done with frame" << endl;
 	// copy pixel buffer to OpenGL render target texture
 	glBindTexture( GL_TEXTURE_2D, targetTextureID );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, screen->width, screen->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screen->pixels );

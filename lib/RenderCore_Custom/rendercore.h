@@ -31,6 +31,7 @@ public:
 	void SetGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
 	void Render( const ViewPyramid& view, const Convergence converge, bool async );
 	void WaitForRender() { /* this core does not support asynchronous rendering yet */ }
+	void SetInstance( const int instanceIdx, const int modelIdx, const mat4& transform );
 	CoreStats GetCoreStats() const override;
 	void Shutdown();
 
@@ -46,7 +47,6 @@ public:
 	{
 	}
 	inline void SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& worldToLight ) override {}
-	inline void SetInstance( const int instanceIdx, const int modelIdx, const mat4& transform ) override {}
 	inline void FinalizeInstances() override {}
 
 	// internal methods

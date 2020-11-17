@@ -71,47 +71,36 @@ Intersection Planes::intersectionWith( int index, float3 origin, float3 intersec
 Mesh::Mesh( int vertexCount )
 {
 	normals = new float3[vertexCount];
-	positions = new float3[vertexCount];
+	positions = new float4[vertexCount];
 	triangleCount = vertexCount / 3;
 	this->vertexCount = vertexCount;
 }
-float Mesh::distanceTo( Ray r, float3 v0, float3 v1, float3 v2 )
+float Mesh::distanceTo( Ray r, float3 vertex0, float3 vertex1, float3 vertex2 )
 {
-	float3 v0v1 = v1 - v0;
-	float3 v0v2 = v2 - v0;
-	float3 triangleNormal = cross( v0v1, v0v2 ); // N
-
-	float NdotRayDirection = dot( triangleNormal, r.direction );
-	//	Check if ray and triangle are parallel
-	if ( fabs( NdotRayDirection ) < 1e-5 )
+	float3 edge1, edge2, h, s, q;
+	float a, f, u, v;
+	edge1 = vertex1 - vertex0;
+	edge2 = vertex2 - vertex0;
+	h = cross( r.direction, edge2 );
+	a = dot( edge1, h );
+	if ( a > -EPSILON && a < EPSILON )
+		return -1; // This ray is parallel to this triangle.
+	f = 1.0 / a;
+	s = r.start - vertex0;
+	u = f * dot( s, h );
+	if ( u < 0.0 || u > 1.0 )
 		return -1;
-
-	float d = dot( v0, triangleNormal );
-
-	float t = ( dot( triangleNormal, r.start ) + d ) / NdotRayDirection;
-	if ( t < 0 ) return -1;
-
-	float3 P = locationAt( t, r );
-
-	float3 C{};
-
-	float3 edge0 = v1 - v0;
-	float3 vp0 = P - v0;
-	C = cross( edge0, vp0 );
-	if ( dot( triangleNormal, C ) < 0 ) return -1;
-
-	float3 edge1 = v2 - v1;
-	float3 vp1 = P - v1;
-	C = cross( edge1, vp1 );
-	if ( dot( triangleNormal, C ) < 0 ) return -1;
-
-	float3 edge2 = v0 - v2;
-	float3 vp2 = P - v2;
-	C = cross( edge2, vp2 );
-
-	if ( dot( triangleNormal, C ) < 0 ) return -1;
-
-	return t;
+	q = cross( s, edge1 );
+	v = f * dot( r.direction, q );
+	if ( v < 0.0 || u + v > 1.0 )
+		return -1;
+	// At this stage we can compute t to find out where the intersection point is on the line.
+	float t = f * dot( edge2, q );
+	if ( t > EPSILON ) // ray intersection
+	{
+		return t;
+	}
+	return -1;
 }
 ShortestDistance Mesh::distanceTo( Ray r ) const
 {
@@ -119,7 +108,10 @@ ShortestDistance Mesh::distanceTo( Ray r ) const
 	float minDistance = -1;
 	for ( int i = 0; i < triangleCount; ++i )
 	{
-		float d = Mesh::distanceTo( r, positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2] );
+		float d = Mesh::distanceTo( r,
+									make_float3( transform * positions[i * 3] ),
+									make_float3( transform * positions[i * 3 + 1] ),
+									make_float3( transform * positions[i * 3 + 2] ) );
 		if ( d > 0 && ( minDistance < 0 || d < minDistance ) )
 		{
 			minDistance = d;
@@ -130,21 +122,21 @@ ShortestDistance Mesh::distanceTo( Ray r ) const
 }
 Intersection Mesh::intersectionAt( float3 intersectionPoint, int triangleIndex )
 {
-	float3 v0 = positions[triangleIndex * 3];
-	float3 v1 = positions[triangleIndex * 3 + 1];
-	float3 v2 = positions[triangleIndex * 3 + 2];
+	float3 v0 = make_float3( positions[triangleIndex * 3] );
+	float3 v1 = make_float3( positions[triangleIndex * 3 + 1] );
+	float3 v2 = make_float3( positions[triangleIndex * 3 + 2] );
 	float3 v0v1 = v1 - v0;
 	float3 v0v2 = v2 - v0;
 	float3 triangleNormal = cross( v0v1, v0v2 ); // N
 
-	return Intersection{ intersectionPoint, make_float3( 0, 1, 0 ), make_float3( 0, 1, 0 ) };
+	return Intersection{ intersectionPoint, triangleNormal, make_float3( 0, 1, 0 ) };
 }
 
 float minPositive( float first, float second )
 {
-	if(first>0&&second>0)return min(first,second);
-	if(first>0)return first;
-	if(second>0)return second;
+	if ( first > 0 && second > 0 ) return min( first, second );
+	if ( first > 0 ) return first;
+	if ( second > 0 ) return second;
 	return -1;
 }
 } // namespace lh2core
