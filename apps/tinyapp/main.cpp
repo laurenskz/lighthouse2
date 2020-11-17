@@ -34,12 +34,12 @@ static std::bitset<1024> keystates;
 void PrepareScene()
 {
 	// initialize scene
-	renderer->AddScene( "scene.gltf", "../_shareddata/pica/" );
-	renderer->SetNodeTransform( renderer->FindNode( "RootNode (gltf orientation matrix)" ), mat4::RotateX( -PI / 2 ) );
-	int lightMat = renderer->AddMaterial( make_float3( 100, 100, 80 ) );
-	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 26.0f, 0 ), 6.9f, 6.9f, lightMat );
-	renderer->AddInstance( lightQuad );
-	car = renderer->AddInstance( renderer->AddMesh( "legocar.obj", "../_shareddata/", 10.0f ) );
+	renderer->AddScene( "untitled.gltf", "../_shareddata/scene/" );
+//	renderer->SetNodeTransform( renderer->FindNode( "RootNode (gltf orientation matrix)" ), mat4::RotateX( -PI / 2 ) );
+//	int lightMat = renderer->AddMaterial( make_float3( 100, 100, 80 ) );
+//	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 26.0f, 0 ), 6.9f, 6.9f, lightMat );
+//	renderer->AddInstance( lightQuad );
+//	car = renderer->AddInstance( renderer->AddMesh( "legocar.obj", "../_shareddata/", 10.0f ) );
 }
 
 //  +-----------------------------------------------------------------------------+

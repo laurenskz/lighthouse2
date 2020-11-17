@@ -38,16 +38,32 @@ Scene::Scene()
 	planes.planes = new Plane[1];
 	planes.count = 1;
 	planes.planes[0] = Plane( make_float3( 0, 1, 0 ), 4, 1 );
+	mesh = new Mesh( 3 );
+	mesh->positions[0] = make_float3( 0, -4, 5 );
+	mesh->positions[1] = make_float3( 1, -4, 5 );
+	mesh->positions[1] = make_float3( 0, -4, 6 );
 }
 Intersection Scene::nearestIntersection( Ray r )
 {
+	const ShortestDistance& meshDistance = mesh->distanceTo( r );
 	const ShortestDistance& sphereDistance = spheres.minDistanceTo( r );
 	const ShortestDistance& planeDistance = planes.minDistanceTo( r );
-	if ( sphereDistance.minDistance < 0 || sphereDistance.minDistance > planeDistance.minDistance )
+	const float nearest = minPositive( meshDistance.minDistance, minPositive( sphereDistance.minDistance, planeDistance.minDistance ) );
+	if ( nearest < 0 ) return Intersection{};
+	if ( sphereDistance.minDistance == nearest )
+	{
+		return spheres.intersectionWith( sphereDistance.index, r.start, locationAt( sphereDistance.minDistance, r ) );
+	}
+	if ( planeDistance.minDistance == nearest )
 	{
 		return planes.intersectionWith( planeDistance.index, r.start, locationAt( planeDistance.minDistance, r ) );
 	}
-	return spheres.intersectionWith( sphereDistance.index, r.start, locationAt( sphereDistance.minDistance, r ) );
+	if ( meshDistance.minDistance == nearest )
+	{
+		return mesh->intersectionAt( locationAt( meshDistance.minDistance, r ), meshDistance.index );
+	}
+
+	return Intersection{};
 }
 
 float Scene::directIllumination( const float3& pos, float3 normal )

@@ -44,18 +44,20 @@ void RenderCore::SetTarget( GLTexture* target, const uint )
 //  |  RenderCore::SetGeometry                                                    |
 //  |  Set the geometry data for a model.                                   LH2'19|
 //  +-----------------------------------------------------------------------------+
-void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangleData )
+void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles )
 {
-	Mesh newMesh;
-	// copy the supplied vertices; we cannot assume that the render system does not modify
-	// the original data after we leave this function.
-	newMesh.vertices = new float4[vertexCount];
-	newMesh.vcount = vertexCount;
-	memcpy( newMesh.vertices, vertexData, vertexCount * sizeof( float4 ) );
-	// copy the supplied 'fat triangles'
-	newMesh.triangles = new CoreTri[vertexCount / 3];
-	memcpy( newMesh.triangles, triangleData, ( vertexCount / 3 ) * sizeof( CoreTri ) );
-	meshes.push_back( newMesh );
+	Mesh* newMesh = new Mesh( vertexCount );
+	for ( int i = 0; i < vertexCount; ++i )
+	{
+		newMesh->positions[i] = make_float3( vertexData[i] );
+	}
+	for ( int i = 0; i < triangleCount; i++ )
+	{
+		newMesh->normals[i * 3 + 0] = triangles[i].vN0;
+		newMesh->normals[i * 3 + 1] = triangles[i].vN1;
+		newMesh->normals[i * 3 + 2] = triangles[i].vN2;
+	}
+//	rayTracer.scene.mesh = newMesh;
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -78,7 +80,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 			int r = clamp( (int)( fColor.x * 256 ), 0, 255 );
 			int g = clamp( (int)( fColor.y * 256 ), 0, 255 );
 			int b = clamp( (int)( fColor.z * 256 ), 0, 255 );
-			screen->Plot( x, y, ( b<< 16 ) + ( g << 8 ) + ( r ) );
+			screen->Plot( x, y, ( b << 16 ) + ( g << 8 ) + ( r ) );
 		}
 	}
 	// copy pixel buffer to OpenGL render target texture

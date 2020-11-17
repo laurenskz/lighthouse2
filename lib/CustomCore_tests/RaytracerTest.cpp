@@ -75,3 +75,28 @@ TEST_F( RayFixture, PlaneIntersects )
 	auto intersection = locationAt( t, r );
 	cout << intersection;
 }
+
+TEST_F( RayFixture, TriangleIntersects )
+{
+	Ray r{ make_float3( 0 ), make_float3( 0, -1, 0 ) };
+	ASSERT_NEAR(1,Mesh::distanceTo( r,
+					  make_float3( -1, -1, -1 ),
+					  make_float3( -1, -1, 1 ),
+					  make_float3( 1, -1, 0 ) )
+						,1e-5);
+	ASSERT_NEAR(0.5,Mesh::distanceTo( r,
+					  make_float3( -1, -0.5, -1 ),
+					  make_float3( -1, -0.5, 1 ),
+					  make_float3( 1, -0.5, 0 ) )
+						,1e-5);
+	ASSERT_NEAR(0.25,Mesh::distanceTo( r,
+					  make_float3( -1, 0, -1 ),
+					  make_float3( -1, 0, 1 ),
+					  make_float3( 1, -0.5, 0 ) )
+						,1e-5);
+	ASSERT_NEAR(-1,Mesh::distanceTo( r,
+					  make_float3( -1, -1, -1 ),
+					  make_float3( -1, -1, 1 ),
+					  make_float3( 1, 2.1, 0 ) )
+						,1e-5);
+}

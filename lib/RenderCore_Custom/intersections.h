@@ -29,6 +29,20 @@ class Sphere : public Intersectable
 	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
 };
 
+class Mesh
+{
+  public:
+	explicit Mesh( int vertexCount );
+	float3* positions;
+	float3* normals;
+	int vertexCount;
+	int triangleCount;
+	CoreTri* triangles = nullptr; // 'fat' triangle data
+	ShortestDistance distanceTo( Ray r ) const;
+	Intersection intersectionAt( float3 intersectionPoint, int triangleIndex );
+	static float distanceTo( Ray r, float3 v0, float3 v1, float3 v2 );
+};
+
 class Plane : public Intersectable
 {
   public:
@@ -66,5 +80,8 @@ class Environment
 	Spheres spheres;
 	Planes planes;
 };
+
+float minPositive( float first, float second );
+
 
 } // namespace lh2core
