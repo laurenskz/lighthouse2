@@ -23,12 +23,12 @@
 #include "platform.h"
 
 using namespace lighthouse2;
-
-#include "base_definitions.h"
 #include "core_api_base.h"
-#include "intersections.h"
-#include "raytracer.h"
-#include "rendercore.h"
+
+#include "core/base_definitions.h"
+#include "environment/intersections.h"
+#include "graphics/raytracer.h"
+#include "core/rendercore.h"
 
 using namespace lh2core;
 

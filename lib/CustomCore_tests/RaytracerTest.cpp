@@ -1,7 +1,7 @@
 //
 // Created by laurens on 11/15/20.
 //
-#include "core_settings.h"
+#include "include/core_settings.h"
 #include "gtest/gtest.h"
 
 #define EXPECT_VEC_EQ( expected, actual )      \
