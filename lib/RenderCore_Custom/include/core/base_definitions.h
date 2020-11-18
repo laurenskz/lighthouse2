@@ -1,12 +1,11 @@
 //
 // Created by laurens on 11/16/20.
 //
-
+#include <cfloat>
 #pragma once
 namespace lh2core
 {
-
-
+#define MAX_DISTANCE FLT_MAX
 struct Material
 {
 	float3 color;
@@ -25,6 +24,6 @@ struct Ray
 	float3 direction;
 };
 
-inline float3 locationAt( float t, Ray r ) { return r.start + t * r.direction; };
 
-}
+
+} // namespace lh2core

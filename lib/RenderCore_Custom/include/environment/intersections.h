@@ -6,87 +6,30 @@
 
 using namespace lighthouse2;
 #include "core/base_definitions.h"
-
+#include "environment/primitives.h"
 namespace lh2core
 {
 struct ShortestDistance
 {
 	float minDistance;
-	int index;
+	Primitive* primitive;
 };
 
-class Intersectable
+class Intersector
 {
   public:
-	virtual float distanceTo( Ray r ) = 0;
-	virtual Intersection intersectionAt( float3, Material* materials ) = 0;
-};
-class Sphere : public Intersectable
-{
-
-  public:
-	float3 pos{};
-	float r2{};
-	int material{}; //Material index
-	Sphere( float3 p, float r, int material ) : pos( p ), r2( r * r ), material( material ) {}
-	Sphere() = default;
-	float distanceTo( Ray r ) override;
-	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
+	virtual void setPrimitives( Primitive* primitives, int count ) = 0;
+	virtual ShortestDistance nearest( const Ray& r ) = 0;
 };
 
-class Mesh
-{
-  public:
-	explicit Mesh( int vertexCount );
-	float4* positions;
-	float3* normals;
-	mat4 transform = mat4::Identity();
-	int vertexCount;
-	int triangleCount;
-	CoreTri* triangles = nullptr; // 'fat' triangle data
-	ShortestDistance distanceTo( Ray r ) const;
-	Intersection intersectionAt( float3 intersectionPoint, int triangleIndex );
-	static float distanceTo( Ray r, float3 v0, float3 v1, float3 v2 );
-};
+class BruteForceIntersector:public Intersector{
+  private:
+	Primitive* primitives;
+	int count;
 
-class Plane : public Intersectable
-{
   public:
-	float3 normal{};
-	float d{};
-	int material{};
-	Plane( float3 normal, float d, int material ) : normal( normal ), d( d ), material( material ) {}
-	Plane() = default;
-	float distanceTo( Ray r ) override;
-	Intersection intersectionAt( float3 intersectionPoint, Material* materials ) override;
+	void setPrimitives( Primitive* primitives, int count ) override;
+	ShortestDistance nearest( const Ray& r ) override;
 };
-
-class Spheres
-{
-  public:
-	Sphere* spheres{};
-	Material* materials{};
-	int count{};
-	ShortestDistance minDistanceTo( Ray r );
-	Intersection intersectionWith( int index, float3 origin, float3 intersection );
-};
-class Planes
-{
-  public:
-	Plane* planes{};
-	Material* materials{};
-	int count{};
-	ShortestDistance minDistanceTo( Ray r );
-	Intersection intersectionWith( int index, float3 origin, float3 intersection );
-};
-
-class Environment
-{
-  public:
-	Spheres spheres;
-	Planes planes;
-};
-
-float minPositive( float first, float second );
 
 } // namespace lh2core

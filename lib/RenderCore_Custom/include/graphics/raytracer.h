@@ -1,36 +1,22 @@
-//
-// Created by laurens on 11/12/20.
-//
-
 #pragma once
+#include "platform.h"
+
+using namespace lighthouse2;
+#include "core/base_definitions.h"
+#include "environment/environment.h"
+#include "graphics/lighting.h"
 namespace lh2core
 {
-
-struct PointLight
-{
-	float3 location;
-	float intensity;
-};
-
-class Scene
-{
-  public:
-	Scene();
-	Spheres spheres;
-	Planes planes;
-	Mesh* mesh = nullptr;
-	Intersection nearestIntersection( Ray r );
-	float directIllumination( const float3& pos, float3 normal );
-	float illuminationFrom( const PointLight& light, const float3& pos, const float3& normal );
-};
 
 class RayTracer
 {
 
   public:
-	Scene scene;
+	Environment* environment;
+	Lighting* lighting;
+	RayTracer( Environment* environment, Lighting* lighting ) : environment( environment ), lighting( lighting ){};
 	static float3 rayDirection( float u, float v, const ViewPyramid& view );
-	float3 trace( Ray r );
+	[[nodiscard]] float3 trace( Ray r ) const;
 
   private:
 	inline static float3 screenPos( float u, float v, const ViewPyramid& view );

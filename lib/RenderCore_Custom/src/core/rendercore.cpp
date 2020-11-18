@@ -24,7 +24,11 @@ using namespace lh2core;
 void RenderCore::Init()
 {
 	// initialize core
-	rayTracer = RayTracer();
+	geometry = new Geometry();
+	intersector = new BruteForceIntersector();
+	auto* env = new Environment( geometry, intersector );
+	lighting = new Lighting( intersector );
+	rayTracer = new RayTracer( env, lighting );
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -42,8 +46,19 @@ void RenderCore::SetTarget( GLTexture* target, const uint )
 
 void RenderCore::SetInstance( const int instanceIdx, const int meshIdx, const mat4& matrix )
 {
-	if ( meshIdx < 0 ) return;
-	rayTracer.scene.mesh->transform = matrix;
+	geometry->setInstance( instanceIdx, meshIdx, matrix );
+}
+
+void RenderCore::SetLights( const CoreLightTri* triLights, const int triLightCount,
+							const CorePointLight* pointLights, const int pointLightCount,
+							const CoreSpotLight* spotLights, const int spotLightCount,
+							const CoreDirectionalLight* directionalLights, const int directionalLightCount )
+{
+	lighting->SetLights( triLights, triLightCount, pointLights, pointLightCount, spotLights, spotLightCount, directionalLights, directionalLightCount );
+}
+void RenderCore::FinalizeInstances()
+{
+	geometry->finalizeInstances();
 }
 //  +-----------------------------------------------------------------------------+
 //  |  RenderCore::SetGeometry                                                    |
@@ -51,18 +66,7 @@ void RenderCore::SetInstance( const int instanceIdx, const int meshIdx, const ma
 //  +-----------------------------------------------------------------------------+
 void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles )
 {
-	Mesh* newMesh = new Mesh( vertexCount );
-	for ( int i = 0; i < vertexCount; ++i )
-	{
-		newMesh->positions[i] =vertexData[i] ;
-	}
-	for ( int i = 0; i < triangleCount; i++ )
-	{
-		newMesh->normals[i * 3 + 0] = triangles[i].vN0;
-		newMesh->normals[i * 3 + 1] = triangles[i].vN1;
-		newMesh->normals[i * 3 + 2] = triangles[i].vN2;
-	}
-	rayTracer.scene.mesh = newMesh;
+	geometry->setGeometry( meshIdx, vertexData, vertexCount, triangleCount, triangles );
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -71,6 +75,8 @@ void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const
 //  +-----------------------------------------------------------------------------+
 void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bool async )
 {
+	auto primitives = geometry->getPrimitives();
+	intersector->setPrimitives( primitives.data, primitives.size );
 	// render
 	screen->Clear();
 	Ray ray{};
@@ -81,7 +87,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 		{
 			const float3& rayDirection = RayTracer::rayDirection( ( x / (float)screen->width ), ( y / (float)screen->height ), view );
 			ray.direction = rayDirection;
-			const float3& fColor = rayTracer.trace( ray );
+			const float3& fColor = rayTracer->trace( ray );
 			int r = clamp( (int)( fColor.x * 256 ), 0, 255 );
 			int g = clamp( (int)( fColor.y * 256 ), 0, 255 );
 			int b = clamp( (int)( fColor.z * 256 ), 0, 255 );

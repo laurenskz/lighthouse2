@@ -20,7 +20,7 @@ class RayFixture : public ::testing::Test
   protected:
 	void SetUp() override
 	{
-		rayTracer = new RayTracer();
+		rayTracer = new RayTracer( nullptr, nullptr );
 		scene = new Scene();
 		materials = new Material[1];
 		materials[0].color = make_float3( 1, 0, 0 );

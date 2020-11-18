@@ -25,7 +25,7 @@ namespace lh2core
 class RenderCore : public CoreAPI_Base
 {
 public:
-	// methods
+	RenderCore() {} // methods
 	void Init();
 	void SetTarget( GLTexture* target, const uint spp );
 	void SetGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
@@ -40,14 +40,12 @@ public:
 	inline void Setting( const char* name, float value ) override {}
 	inline void SetTextures( const CoreTexDesc* tex, const int textureCount ) override {}
 	inline void SetMaterials( CoreMaterial* mat, const int materialCount ) override {}
-	inline void SetLights( const CoreLightTri* triLights, const int triLightCount,
+	void SetLights( const CoreLightTri* triLights, const int triLightCount,
 		const CorePointLight* pointLights, const int pointLightCount,
 		const CoreSpotLight* spotLights, const int spotLightCount,
-		const CoreDirectionalLight* directionalLights, const int directionalLightCount ) override
-	{
-	}
+		const CoreDirectionalLight* directionalLights, const int directionalLightCount ) override;
 	inline void SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& worldToLight ) override {}
-	inline void FinalizeInstances() override {}
+	void FinalizeInstances() override;
 
 	// internal methods
 private:
@@ -56,7 +54,10 @@ private:
 	Bitmap* screen = 0;								// temporary storage of RenderCore output; will be copied to render target
 	int targetTextureID = 0;						// ID of the target OpenGL texture
 	vector<Mesh> meshes;							// mesh data storage
-	RayTracer rayTracer;
+	RayTracer* rayTracer;
+	Geometry* geometry;
+	Intersector* intersector;
+	Lighting* lighting;
 public:
 	CoreStats coreStats;							// rendering statistics
 };
