@@ -16,6 +16,7 @@ struct Intersection
 	float3 location;
 	float3 normal;
 	Material mat;
+	bool hitObject = false;
 };
 
 struct Ray

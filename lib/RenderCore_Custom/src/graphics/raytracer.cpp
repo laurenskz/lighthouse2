@@ -12,11 +12,13 @@ ostream& operator<<( ostream& os, const float3& s )
 float3 RayTracer::rayDirection( float u, float v, const ViewPyramid& view )
 {
 
-	return normalize( ( screenPos( u, v, view ) ) );
+	return normalize( ( screenPos( u, v, view ) - view.pos ) );
 }
 float3 RayTracer::trace( Ray r ) const
 {
 	auto intersection = environment->intersect( r );
+	if ( !intersection.hitObject )
+		return make_float3( 0 ); //Black if nothing hit
 	auto illumination = lighting->directIllumination( intersection.location, intersection.normal );
 	return illumination * intersection.mat.color;
 }

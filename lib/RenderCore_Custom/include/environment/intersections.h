@@ -24,8 +24,8 @@ class Intersector
 
 class BruteForceIntersector:public Intersector{
   private:
-	Primitive* primitives;
-	int count;
+	Primitive* primitives{};
+	int count{};
 
   public:
 	void setPrimitives( Primitive* primitives, int count ) override;

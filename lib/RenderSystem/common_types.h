@@ -127,7 +127,7 @@ inline uchar4 make_uchar4( uchar a, uchar b, uchar c, uchar d ) { uchar4 c4; c4.
 
 inline float2 operator-( float2& a ) { return make_float2( -a.x, -a.y ); }
 inline int2 operator-( int2& a ) { return make_int2( -a.x, -a.y ); }
-inline float3 operator-( float3& a ) { return make_float3( -a.x, -a.y, -a.z ); }
+inline float3 operator-(const float3& a ) { return make_float3( -a.x, -a.y, -a.z ); }
 inline int3 operator-( int3& a ) { return make_int3( -a.x, -a.y, -a.z ); }
 inline float4 operator-( float4& a ) { return make_float4( -a.x, -a.y, -a.z, -a.w ); }
 inline int4 operator-( int4& a ) { return make_int4( -a.x, -a.y, -a.z, -a.w ); }

@@ -18,7 +18,7 @@ ShortestDistance BruteForceIntersector::nearest( const Ray& r )
 	for ( int i = 0; i < count; ++i )
 	{
 		float d = distanceToPrimitive( primitives[i], r );
-		if ( d < nearest )
+		if ( d > 0 && d < nearest )
 		{
 			nearest = d;
 			minIndex = i;

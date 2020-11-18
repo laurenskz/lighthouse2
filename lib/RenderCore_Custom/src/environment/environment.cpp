@@ -9,6 +9,8 @@ Intersection Environment::intersect( const Ray& r )
 	{
 		return Intersection(); //We hit nothing
 	}
-	return geometry->intersectionInformation( *nearest.primitive, nearest.minDistance, r );
+	Intersection intersection = geometry->intersectionInformation( *nearest.primitive, nearest.minDistance, r );
+	intersection.hitObject = true;
+	return intersection;
 }
 } // namespace lh2core
