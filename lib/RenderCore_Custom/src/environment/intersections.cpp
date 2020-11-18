@@ -1,7 +1,7 @@
 //
 // Created by laurens on 11/16/20.
 //
-#include "core_settings.h"
+#include "environment/intersections.h"
 
 namespace lh2core
 {

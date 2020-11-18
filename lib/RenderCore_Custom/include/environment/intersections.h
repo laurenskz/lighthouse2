@@ -2,6 +2,11 @@
 // Created by laurens on 11/16/20.
 //
 #pragma once
+#include "platform.h"
+
+using namespace lighthouse2;
+#include "core/base_definitions.h"
+
 namespace lh2core
 {
 struct ShortestDistance
@@ -83,6 +88,5 @@ class Environment
 };
 
 float minPositive( float first, float second );
-
 
 } // namespace lh2core
