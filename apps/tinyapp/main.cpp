@@ -83,7 +83,7 @@ int main()
 																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" );	// RASTERIZER, your only option if not on NVidia
 																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
-	renderer->GetCamera()->LookAt(make_float3( -4, 10, 15 ), make_float3( 0 ));
+	renderer->GetCamera()->LookAt(make_float3( -4, 10, 10 ), make_float3( 0 ));
 //	renderer->DeserializeCamera( "camera.xml" );
 	// initialize scene
 	PrepareScene();

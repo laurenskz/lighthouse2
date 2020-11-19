@@ -72,11 +72,11 @@ Intersection planeIntersection( const Primitive& primitive, const Material& mat,
 {
 	auto intersectionPoint = locationAt( t, r );
 	int sum = floor( intersectionPoint.x ) + floor( intersectionPoint.z );
-	if ( sum % 2 == 0 ) return Intersection{ intersectionPoint, primitive.v1, Material{ make_float3( 0.6, 0.3, 0.2 ), 0.4 } };
+	if ( sum % 2 == 0 ) return Intersection{ intersectionPoint, primitive.v1, Material{ make_float3( 0.6, 0.3, 0.2 ) } };
 	return Intersection{
 		intersectionPoint,
 		primitive.v1,
-		Material{ make_float3( 1, 0.9, 0.7 ), 0.4 },
+		Material{ make_float3( 1, 0.9, 0.7 ) },
 	};
 }
 } // namespace lh2core

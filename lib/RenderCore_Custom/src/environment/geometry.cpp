@@ -128,6 +128,6 @@ Intersection Geometry::triangleIntersection( const Primitive& primitive, float t
 	float3 v0v2 = primitive.v3 - primitive.v1;
 	float3 triangleNormal = cross( v0v1, v0v2 ); // N
 
-	return Intersection{ locationAt( t, r ), normalize( triangleNormal ), Material{ make_float3( 0, 1, 0 ) } };
+	return Intersection{ locationAt( t, r ), normalize( triangleNormal ), Material{ make_float3( 0, 1, 0 ), 0.5 } };
 }
 } // namespace lh2core

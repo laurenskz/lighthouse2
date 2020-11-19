@@ -26,7 +26,8 @@ float3 RayTracer::trace( Ray r, int count = 3 ) const
 	auto diffuseColor = illumination * intersection.mat.color;
 	if ( intersection.mat.specularity > 0 )
 	{
-		const Ray& reflectedRay = Ray{ intersection.location, reflect( r.direction, intersection.normal ) };
+		const float3& direction = reflect( r.direction, intersection.normal );
+		const Ray& reflectedRay = Ray{ intersection.location + ( 1e-3 * direction ), direction };
 		const float3& reflectionColor = trace( reflectedRay, count - 1 );
 		return ( 1 - intersection.mat.specularity ) * diffuseColor +
 			   ( intersection.mat.specularity ) *
