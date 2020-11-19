@@ -26,6 +26,7 @@ void RenderCore::Init()
 	// initialize core
 	geometry = new Geometry();
 	geometry->addSphere( make_float3( 0 ), 1, Material{ make_float3( 1, 0, 0 ) } );
+	geometry->addPlane( make_float3( 0, 1, 0 ), 3 );
 	intersector = new BruteForceIntersector();
 	auto* env = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
@@ -88,7 +89,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 		{
 			const float3& rayDirection = RayTracer::rayDirection( ( x / (float)screen->width ), ( y / (float)screen->height ), view );
 			ray.direction = rayDirection;
-			const float3& fColor = rayTracer->trace( ray );
+			const float3& fColor = rayTracer->trace( ray, 3 );
 			int r = clamp( (int)( fColor.x * 256 ), 0, 255 );
 			int g = clamp( (int)( fColor.y * 256 ), 0, 255 );
 			int b = clamp( (int)( fColor.z * 256 ), 0, 255 );

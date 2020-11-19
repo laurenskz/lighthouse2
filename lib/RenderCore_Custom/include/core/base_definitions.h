@@ -9,6 +9,7 @@ namespace lh2core
 struct Material
 {
 	float3 color;
+	float specularity = 0;
 };
 
 struct Intersection
@@ -24,7 +25,5 @@ struct Ray
 	float3 start;
 	float3 direction;
 };
-
-
 
 } // namespace lh2core
