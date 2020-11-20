@@ -4,12 +4,12 @@
 #include "environment/primitives.h"
 namespace lh2core
 {
-float distanceToPrimitive( const Primitive& primitive, Ray r )
+Distance distanceToPrimitive( const Primitive& primitive, Ray r )
 {
 	if ( isTriangle( primitive ) ) return distanceToTriangle( primitive, r );
-	if ( isPlane( primitive ) ) return distanceToPlane( primitive, r );
-	if ( isSphere( primitive ) ) return distanceToSphere( primitive, r );
-	return MAX_DISTANCE;
+	if ( isPlane( primitive ) ) return Distance{ distanceToPlane( primitive, r ) };
+	if ( isSphere( primitive ) ) return Distance{ distanceToSphere( primitive, r ) };
+	return Distance{ MAX_DISTANCE };
 }
 float distanceToSphere( const Primitive& primitive, Ray r )
 {
@@ -36,7 +36,7 @@ float distanceToPlane( const Primitive& primitive, Ray r )
 	if ( t <= 1e-4 ) { return MAX_DISTANCE; }
 	return t;
 }
-float distanceToTriangle( const Primitive& primitive, Ray r )
+Distance distanceToTriangle( const Primitive& primitive, Ray r )
 {
 	float3 edge1, edge2, h, s, q;
 	float a, f, u, v;
@@ -45,23 +45,22 @@ float distanceToTriangle( const Primitive& primitive, Ray r )
 	h = cross( r.direction, edge2 );
 	a = dot( edge1, h );
 	if ( a > -EPSILON && a < EPSILON )
-		return MAX_DISTANCE; // This ray is parallel to this triangle.
+		return Distance{ MAX_DISTANCE }; // This ray is parallel to this triangle.
 	f = 1.0 / a;
 	s = r.start - primitive.v1;
 	u = f * dot( s, h );
 	if ( u < 0.0 || u > 1.0 )
-		return MAX_DISTANCE;
+		return Distance{ MAX_DISTANCE };
 	q = cross( s, edge1 );
 	v = f * dot( r.direction, q );
 	if ( v < 0.0 || u + v > 1.0 )
-		return MAX_DISTANCE;
-	// At this stage we can compute t to find out where the intersection point is on the line.
+		return Distance{ MAX_DISTANCE };
 	float t = f * dot( edge2, q );
 	if ( t > EPSILON ) // ray intersection
 	{
-		return t;
+		return Distance{ t, u, v };
 	}
-	return MAX_DISTANCE;
+	return Distance{ MAX_DISTANCE };
 }
 Intersection sphereIntersection( const Primitive& primitive, const Material& mat, Ray r, float t )
 {

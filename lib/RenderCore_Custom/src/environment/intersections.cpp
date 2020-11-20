@@ -13,17 +13,29 @@ void BruteForceIntersector::setPrimitives( Primitive* primitives, int count )
 }
 ShortestDistance BruteForceIntersector::nearest( const Ray& r )
 {
-	float nearest = MAX_DISTANCE;
+	Distance nearest = Distance{ MAX_DISTANCE };
 	int minIndex = -1;
 	for ( int i = 0; i < count; ++i )
 	{
-		float d = distanceToPrimitive( primitives[i], r );
-		if ( d > 0 && d < nearest )
+		auto d = distanceToPrimitive( primitives[i], r );
+		if ( d.d > 0 && d.d < nearest.d )
 		{
 			nearest = d;
 			minIndex = i;
 		}
 	}
 	return ShortestDistance{ nearest, &primitives[minIndex] };
+}
+bool BruteForceIntersector::isOccluded( const Ray& r, float object )
+{
+	for ( int i = 0; i < count; ++i )
+	{
+		auto d = distanceToPrimitive( primitives[i], r );
+		if ( d.d > 0 && d.d < object )
+		{
+			return true; //Occlusion
+		}
+	}
+	return false;
 }
 } // namespace lh2core

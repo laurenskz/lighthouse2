@@ -102,6 +102,15 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, screen->width, screen->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screen->pixels );
 }
 
+void RenderCore::SetTextures( const CoreTexDesc* tex, const int textureCount )
+{
+	cout << "hi" << endl;
+}
+void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
+{
+	cout << "hi" << endl;
+}
+
 //  +-----------------------------------------------------------------------------+
 //  |  RenderCore::GetCoreStats                                                   |
 //  |  Get a copy of the counters.                                          LH2'19|

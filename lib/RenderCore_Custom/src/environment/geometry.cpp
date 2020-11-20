@@ -4,7 +4,6 @@ namespace lh2core
 
 Mesh::Mesh( int vertexCount )
 {
-	normals = new float3[vertexCount];
 	positions = new float4[vertexCount];
 	triangleCount = vertexCount / 3;
 	this->vertexCount = vertexCount;
@@ -20,12 +19,8 @@ void Geometry::setGeometry( const int meshIdx, const float4* vertexData, const i
 	{
 		mesh->positions[i] = vertexData[i];
 	}
-	for ( int i = 0; i < triangleCount; i++ )
-	{
-		mesh->normals[i * 3 + 0] = triangles[i].vN0;
-		mesh->normals[i * 3 + 1] = triangles[i].vN1;
-		mesh->normals[i * 3 + 2] = triangles[i].vN2;
-	}
+	mesh->triangles = new CoreTri[triangleCount];
+	memcpy( mesh->triangles, triangles, triangleCount * sizeof( CoreTri ) );
 }
 void Geometry::setInstance( const int instanceIdx, const int meshIdx, const mat4& transform )
 {
@@ -40,19 +35,19 @@ void Geometry::setInstance( const int instanceIdx, const int meshIdx, const mat4
 		instances[instanceIdx].transform = transform;
 	}
 }
-Intersection Geometry::intersectionInformation( const Primitive& primitive, float t, Ray r )
+Intersection Geometry::intersectionInformation( const Primitive& primitive, Distance distance, Ray r )
 {
 	if ( isSphere( primitive ) )
 	{
-		return sphereIntersection( primitive, sphereMaterials[primitive.meshIndex], r, t );
+		return sphereIntersection( primitive, sphereMaterials[primitive.meshIndex], r, distance.d );
 	}
 	if ( isPlane( primitive ) )
 	{
-		return planeIntersection( primitive, Material{}, r, t );
+		return planeIntersection( primitive, Material{}, r, distance.d );
 	}
 	if ( isTriangle( primitive ) )
 	{
-		return triangleIntersection( primitive, t, r );
+		return triangleIntersection( primitive, distance, r );
 	}
 	return Intersection();
 }
@@ -122,12 +117,10 @@ uint Geometry::computePrimitiveCount()
 	}
 	return planes.size() + spheres.size() + triangleCount;
 }
-Intersection Geometry::triangleIntersection( const Primitive& primitive, float t, Ray r )
+Intersection Geometry::triangleIntersection( const Primitive& primitive, Distance distance, Ray r )
 {
-	float3 v0v1 = primitive.v2 - primitive.v1;
-	float3 v0v2 = primitive.v3 - primitive.v1;
-	float3 triangleNormal = cross( v0v1, v0v2 ); // N
-
-	return Intersection{ locationAt( t, r ), normalize( triangleNormal ), Material{ make_float3( 0, 1, 0 ), 0.5 } };
+	const CoreTri& triangleData = meshes[primitive.meshIndex]->triangles[primitive.triangleNumber];
+	auto normal = distance.u * triangleData.vN0 + ( distance.v ) * triangleData.vN1 + ( 1 - distance.u - distance.v ) * triangleData.vN2;
+	return Intersection{ locationAt( distance.d, r ), normal, Material{ make_float3( 0, 1, 0 ), 0.5 } };
 }
 } // namespace lh2core

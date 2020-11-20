@@ -11,7 +11,6 @@ class Mesh
   public:
 	explicit Mesh( int vertexCount );
 	float4* positions;
-	float3* normals;
 	mat4 transform = mat4::Identity();
 	int vertexCount;
 	int triangleCount;
@@ -35,10 +34,10 @@ class Geometry
 	bool isDirty = true;
 	Primitive* primitives;
 	int count;
-	uint addPrimitives(int startIndex,const std::vector<Primitive>& toAdd );
+	uint addPrimitives( int startIndex, const std::vector<Primitive>& toAdd );
 	uint computePrimitiveCount();
 	void addTriangles( int primitiveIndex );
-	Intersection triangleIntersection(const Primitive& primitive,float t,Ray r);
+	Intersection triangleIntersection( const Primitive& primitive, Distance distance, Ray r );
 
   public:
 	void setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
@@ -47,6 +46,6 @@ class Geometry
 	void finalizeInstances();
 	Primitives getPrimitives();
 	void addSphere( float3 pos, float r, Material mat );
-	Intersection intersectionInformation( const Primitive& primitive, float t, Ray r );
+	Intersection intersectionInformation( const Primitive& primitive, Distance distance, Ray r );
 };
 } // namespace lh2core

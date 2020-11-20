@@ -32,14 +32,15 @@ public:
 	void Render( const ViewPyramid& view, const Convergence converge, bool async );
 	void WaitForRender() { /* this core does not support asynchronous rendering yet */ }
 	void SetInstance( const int instanceIdx, const int modelIdx, const mat4& transform );
+	void SetTextures( const CoreTexDesc* tex, const int textureCount ) override;
+	void SetMaterials( CoreMaterial* mat, const int materialCount ) override;
 	CoreStats GetCoreStats() const override;
 	void Shutdown();
 
 	// unimplemented for the minimal core
 	inline void SetProbePos( const int2 pos ) override {}
 	inline void Setting( const char* name, float value ) override {}
-	inline void SetTextures( const CoreTexDesc* tex, const int textureCount ) override {}
-	inline void SetMaterials( CoreMaterial* mat, const int materialCount ) override {}
+
 	void SetLights( const CoreLightTri* triLights, const int triLightCount,
 		const CorePointLight* pointLights, const int pointLightCount,
 		const CoreSpotLight* spotLights, const int spotLightCount,

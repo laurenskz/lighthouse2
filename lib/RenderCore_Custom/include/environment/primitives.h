@@ -27,17 +27,24 @@ struct Primitives
 	int size;
 };
 
+struct Distance
+{
+	float d{};
+	float u{};
+	float v{};
+};
+
 inline bool isSphere( const Primitive& primitive ) { return primitive.flags & SPHERE_BIT; }
 inline bool isTriangle( const Primitive& primitive ) { return primitive.flags & TRIANGLE_BIT; }
-inline bool isPlane( const Primitive& primitive ) { return  primitive.flags & PLANE_BIT; }
+inline bool isPlane( const Primitive& primitive ) { return primitive.flags & PLANE_BIT; }
 
 inline float3 locationAt( float t, Ray r ) { return r.start + t * r.direction; };
 
-float distanceToPrimitive( const Primitive& primitive, Ray r );
+Distance distanceToPrimitive( const Primitive& primitive, Ray r );
 float distanceToSphere( const Primitive& primitive, Ray r );
-float distanceToTriangle( const Primitive& primitive, Ray r );
+Distance distanceToTriangle( const Primitive& primitive, Ray r );
 float distanceToPlane( const Primitive& primitive, Ray r );
 
-Intersection sphereIntersection(const Primitive& primitive,const Material& mat,Ray r,float t);
-Intersection planeIntersection(const Primitive& primitive,const Material& mat,Ray r,float t);
+Intersection sphereIntersection( const Primitive& primitive, const Material& mat, Ray r, float t );
+Intersection planeIntersection( const Primitive& primitive, const Material& mat, Ray r, float t );
 } // namespace lh2core
