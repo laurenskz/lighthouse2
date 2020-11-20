@@ -35,8 +35,8 @@ void PrepareScene()
 {
 	// initialize scene
 	renderer->AddScene( "BoxTextured.gltf", "../_shareddata/BoxTextured/glTF" );
-	//	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
-	renderer->AddDirectionalLight( normalize( make_float3( -1, -1, 0 ) ), make_float3( 1.0 / 3 ) );
+	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
+	renderer->AddDirectionalLight( normalize( make_float3( -1, -1, 0 ) ), make_float3( 1.0 / 5 ) );
 	renderer->AddPointLight( make_float3( -3, 4, -5 ), make_float3( 13 ), true );
 	//	renderer->SetNodeTransform( renderer->FindNode( "RootNode (gltf orientation matrix)" ), mat4::RotateX( -PI / 2 ) );
 	//	int lightMat = renderer->AddMaterial( make_float3( 100, 100, 80 ) );
