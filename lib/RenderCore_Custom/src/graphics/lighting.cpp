@@ -19,6 +19,10 @@ float Lighting::directIllumination( const float3& pos, float3 normal )
 	{
 		illumination += illuminationFrom( pointLights[i], pos, normal );
 	}
+	for ( int i = 0; i < directionalLightCount; ++i )
+	{
+		illumination += illuminationFrom( directionalLights[i], pos, normal );
+	}
 	return clamp( illumination, 0.0, 1.0 );
 }
 void Lighting::SetLights( const CoreLightTri* triLights, const int triLightCount, const CorePointLight* pointLights, const int pointLightCount, const CoreSpotLight* spotLights, const int spotLightCount, const CoreDirectionalLight* directionalLights, const int directionalLightCount )
@@ -26,5 +30,19 @@ void Lighting::SetLights( const CoreLightTri* triLights, const int triLightCount
 	this->pointLights = new CorePointLight[pointLightCount];
 	memcpy( (void*)this->pointLights, pointLights, pointLightCount * sizeof( CorePointLight ) );
 	this->pointLightCount = pointLightCount;
+
+	this->directionalLights = new CoreDirectionalLight[directionalLightCount];
+	memcpy( (void*)this->directionalLights, directionalLights, directionalLightCount * sizeof( CoreDirectionalLight ) );
+	this->directionalLightCount = directionalLightCount;
+}
+float Lighting::illuminationFrom( const CoreDirectionalLight& light, const float3& pos, const float3& normal )
+{
+	auto directionToLight = -light.direction;
+	auto shadowRay = Ray{ pos + directionToLight * ( 1e-4 ), directionToLight };
+	if ( !intersector->isOccluded( shadowRay, MAX_DISTANCE ) )
+	{
+		return light.energy * dot( directionToLight, normal );
+	}
+	return 0;
 }
 } // namespace lh2core

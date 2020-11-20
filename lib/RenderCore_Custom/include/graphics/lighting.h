@@ -20,6 +20,9 @@ class Lighting
 	Intersector* intersector;
 	const CorePointLight* pointLights;
 	int pointLightCount = 0;
+	const CoreDirectionalLight* directionalLights;
+	int directionalLightCount = 0;
 	float illuminationFrom( const CorePointLight& light, const float3& pos, const float3& normal );
+	float illuminationFrom( const CoreDirectionalLight& light, const float3& pos, const float3& normal );
 };
 } // namespace lh2core
