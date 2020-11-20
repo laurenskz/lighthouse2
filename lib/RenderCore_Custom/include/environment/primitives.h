@@ -19,6 +19,7 @@ struct Primitive
 	float3 v3;
 	int meshIndex;		// The index of the mesh
 	int triangleNumber; //Number of this triangle inside the mesh
+	int instanceIndex; //The transformation
 };
 
 struct Primitives

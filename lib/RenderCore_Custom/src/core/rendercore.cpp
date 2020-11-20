@@ -25,7 +25,7 @@ void RenderCore::Init()
 {
 	// initialize core
 	geometry = new Geometry();
-	geometry->addSphere( make_float3( 0.1 ), 1, Material{ make_float3( 1, 0, 0 ) } );
+//	geometry->addSphere( make_float3( 0.1 ), 1, Material{ make_float3( 1, 0, 0 ) } );
 	geometry->addPlane( make_float3( 0, 1, 0 ), 3 );
 	intersector = new BruteForceIntersector();
 	auto* env = new Environment( geometry, intersector );
@@ -104,11 +104,11 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 
 void RenderCore::SetTextures( const CoreTexDesc* tex, const int textureCount )
 {
-	cout << "hi" << endl;
+	geometry->SetTextures( tex, textureCount );
 }
 void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 {
-	cout << "hi" << endl;
+	geometry->SetMaterials( mat, materialCount );
 }
 
 //  +-----------------------------------------------------------------------------+

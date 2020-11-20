@@ -34,7 +34,7 @@ static std::bitset<1024> keystates;
 void PrepareScene()
 {
 	// initialize scene
-	renderer->AddScene( "untitled.gltf", "../_shareddata/scene/" );
+	renderer->AddScene( "BoxTextured.gltf", "../_shareddata/BoxTextured/glTF" );
 	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13), true );
 	renderer->AddPointLight( make_float3( -3, 4, -5 ), make_float3( 13), true );
 	//	renderer->SetNodeTransform( renderer->FindNode( "RootNode (gltf orientation matrix)" ), mat4::RotateX( -PI / 2 ) );

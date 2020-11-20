@@ -31,9 +31,12 @@ class Geometry
 	std::vector<Primitive> planes = std::vector<Primitive>();
 	std::vector<Primitive> spheres = std::vector<Primitive>();
 	std::vector<Material> sphereMaterials = std::vector<Material>();
+	std::vector<mat4> transforms = std::vector<mat4>();
 	bool isDirty = true;
 	Primitive* primitives;
 	int count;
+	CoreTexDesc* textures;
+	CoreMaterial* materials;
 	uint addPrimitives( int startIndex, const std::vector<Primitive>& toAdd );
 	uint computePrimitiveCount();
 	void addTriangles( int primitiveIndex );
@@ -42,6 +45,8 @@ class Geometry
   public:
 	void setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
 	void setInstance( const int instanceIdx, const int modelIdx, const mat4& transform = mat4::Identity() );
+	void SetTextures( const CoreTexDesc* tex, const int textureCount );
+	void SetMaterials( CoreMaterial* mat, const int materialCount );
 	void addPlane( float3 normal, float d );
 	void finalizeInstances();
 	Primitives getPrimitives();
