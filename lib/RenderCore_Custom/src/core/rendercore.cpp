@@ -25,7 +25,8 @@ void RenderCore::Init()
 {
 	// initialize core
 	geometry = new Geometry();
-//	geometry->addSphere( make_float3( 0.1 ), 1, Material{ make_float3( 1, 0, 0 ) } );
+	geometry->addSphere( make_float3( 0.5, -0.9, 1.5 ), 0.5, Material{ make_float3( 1, 0, 0 ) } );
+	geometry->addSphere( make_float3( -1.5, 1, 0.5 ), 0.5, Material{ make_float3( 1, 0, 0 ), 1 } );
 	geometry->addPlane( make_float3( 0, 1, 0 ), 3 );
 	intersector = new BruteForceIntersector();
 	auto* env = new Environment( geometry, intersector );
