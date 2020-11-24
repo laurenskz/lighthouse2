@@ -28,6 +28,7 @@ using namespace lighthouse2;
 #include "core/base_definitions.h"
 #include "environment/intersections.h"
 #include "graphics/raytracer.h"
+#include "graphics/renderer.h"
 #include "core/rendercore.h"
 
 using namespace lh2core;

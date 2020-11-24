@@ -58,6 +58,7 @@ private:
 	RayTracer* rayTracer;
 	Geometry* geometry;
 	Intersector* intersector;
+	Renderer* renderer;
 	Lighting* lighting;
 public:
 	CoreStats coreStats;							// rendering statistics

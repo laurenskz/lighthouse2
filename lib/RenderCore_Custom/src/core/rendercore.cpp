@@ -32,6 +32,7 @@ void RenderCore::Init()
 	auto* env = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
 	rayTracer = new RayTracer( env, lighting );
+	renderer = new MultiThreadedRenderer( rayTracer );
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -82,22 +83,7 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 	intersector->setPrimitives( primitives.data, primitives.size );
 	// render
 	screen->Clear();
-	Ray ray{};
-	ray.start = view.pos;
-	for ( int y = 0; y < screen->height; ++y )
-	{
-		for ( int x = 0; x < screen->width; ++x )
-		{
-			const float3& rayDirection = RayTracer::rayDirection( ( x / (float)screen->width ), ( y / (float)screen->height ), view );
-			ray.direction = rayDirection;
-			const float3& fColor = rayTracer->trace( ray, 3 );
-			int r = clamp( (int)( fColor.x * 256 ), 0, 255 );
-			int g = clamp( (int)( fColor.y * 256 ), 0, 255 );
-			int b = clamp( (int)( fColor.z * 256 ), 0, 255 );
-			screen->Plot( x, y, ( b << 16 ) + ( g << 8 ) + ( r ) );
-		}
-	}
-	cout << "Done with frame" << endl;
+	renderer->renderTo( view, screen );
 	// copy pixel buffer to OpenGL render target texture
 	glBindTexture( GL_TEXTURE_2D, targetTextureID );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, screen->width, screen->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screen->pixels );
