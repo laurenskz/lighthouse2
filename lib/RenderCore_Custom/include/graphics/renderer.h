@@ -28,6 +28,7 @@ class BasePixelRenderer : public PixelRenderer
 	float3 render( const ViewPyramid& view, int x, int y, int width, int height ) override;
 };
 
+float3 renderAntialised( const ViewPyramid& view, Bitmap* screen, RayTracer* rayTracer, int x, int y );
 void plotColor( Bitmap* screen, int y, int x, const float3& fColor );
 class SingleCoreRenderer : public Renderer
 {
@@ -48,9 +49,7 @@ class MultiThreadedRenderer : public Renderer
   private:
 	ctpl::thread_pool* threadPool;
 	RayTracer* rayTracer;
-	void renderRows( const ViewPyramid& view, Bitmap* screen, int start, int end );
+	void renderRows( const ViewPyramid& view, Bitmap* screen, int start, uint end );
 };
-void renderThreadTask( int threadId,const MultiThreadedRenderer& renderer );
-
 
 } // namespace lh2core
