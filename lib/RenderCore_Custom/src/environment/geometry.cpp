@@ -127,7 +127,7 @@ Intersection Geometry::triangleIntersection( const Primitive& primitive, Distanc
 	auto normal = distance.u * triangleData.vN0 + ( distance.v ) * triangleData.vN1 + ( 1 - distance.u - distance.v ) * triangleData.vN2;
 	normal = normalize( make_float3( transforms[primitive.instanceIndex] * ( make_float4( normal ) ) ) );
 	auto mat = materials[triangleData.material];
-//	if ( true ) return Intersection{ intersectionLocation, normal, Material{ make_float3( 0 ), 0, GLASS,1.5 } };
+	if ( true ) return Intersection{ intersectionLocation, normal, Material{ make_float3( 0 ), 0, GLASS,1.5 } };
 	if ( mat.color.textureID != -1 )
 	{
 		auto texture = textures[mat.color.textureID];

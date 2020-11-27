@@ -29,25 +29,30 @@ float distanceToSphereFromInside( const Primitive& primitive, Ray r )
 	auto center = primitive.v1;
 	auto r2 = primitive.v2.x;
 	float3 oc = r.start - center;
-	float a = dot(r.direction, r.direction);
-	float b = 2.0 * dot(oc, r.direction);
-	float c = dot(oc,oc) - r2;
-	float discriminant = b*b - 4*a*c;
-	if(discriminant < 0.0){
+	float a = dot( r.direction, r.direction );
+	float b = 2.0 * dot( oc, r.direction );
+	float c = dot( oc, oc ) - r2;
+	float discriminant = b * b - 4 * a * c;
+	if ( discriminant < 0.0 )
+	{
 		return MAX_DISTANCE;
 	}
-	else{
+	else
+	{
 		float root = sqrt( discriminant );
 		float numerator = -b - root;
-		if (numerator > 0.0) {
-			return numerator / (2.0 * a);
+		if ( numerator > 0.0 )
+		{
+			return numerator / ( 2.0 * a );
 		}
 
 		numerator = -b + root;
-		if (numerator > 0.0) {
-			return numerator / (2.0 * a);
+		if ( numerator > 0.0 )
+		{
+			return numerator / ( 2.0 * a );
 		}
-		else {
+		else
+		{
 			return MAX_DISTANCE;
 		}
 	}
@@ -74,8 +79,13 @@ Distance distanceToTriangle( const Primitive& primitive, Ray r )
 	edge2 = primitive.v3 - primitive.v1;
 	h = cross( r.direction, edge2 );
 	a = dot( edge1, h );
-	if ( a > -EPSILON && a < EPSILON )
+#ifdef CULLING
+	if ( a < EPSILON )
 		return Distance{ MAX_DISTANCE }; // This ray is parallel to this triangle.
+#else
+	if ( ( a > -EPSILON ) && a < EPSILON )
+		return Distance{ MAX_DISTANCE };
+#endif
 	f = 1.0 / a;
 	s = r.start - primitive.v1;
 	u = f * dot( s, h );
