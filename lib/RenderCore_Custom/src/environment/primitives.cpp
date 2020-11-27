@@ -8,7 +8,7 @@ Distance distanceToPrimitive( const Primitive& primitive, Ray r )
 {
 	if ( isTriangle( primitive ) ) return distanceToTriangle( primitive, r );
 	if ( isPlane( primitive ) ) return Distance{ distanceToPlane( primitive, r ) };
-	if ( isSphere( primitive ) ) return Distance{ distanceToSphere( primitive, r ) };
+	if ( isSphere( primitive ) ) return Distance{ distanceToSphereFromInside( primitive, r ) };
 	return Distance{ MAX_DISTANCE };
 }
 float distanceToSphere( const Primitive& primitive, Ray r )
@@ -23,6 +23,36 @@ float distanceToSphere( const Primitive& primitive, Ray r )
 	t -= sqrt( r2 - p2 );
 	return t;
 }
+
+float distanceToSphereFromInside( const Primitive& primitive, Ray r )
+{
+	auto center = primitive.v1;
+	auto r2 = primitive.v2.x;
+	float3 oc = r.start - center;
+	float a = dot(r.direction, r.direction);
+	float b = 2.0 * dot(oc, r.direction);
+	float c = dot(oc,oc) - r2;
+	float discriminant = b*b - 4*a*c;
+	if(discriminant < 0.0){
+		return MAX_DISTANCE;
+	}
+	else{
+		float root = sqrt( discriminant );
+		float numerator = -b - root;
+		if (numerator > 0.0) {
+			return numerator / (2.0 * a);
+		}
+
+		numerator = -b + root;
+		if (numerator > 0.0) {
+			return numerator / (2.0 * a);
+		}
+		else {
+			return MAX_DISTANCE;
+		}
+	}
+}
+
 float distanceToPlane( const Primitive& primitive, Ray r )
 {
 	auto normal = primitive.v1;

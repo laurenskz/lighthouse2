@@ -45,4 +45,8 @@ float Lighting::illuminationFrom( const CoreDirectionalLight& light, const float
 	}
 	return 0;
 }
+float TestLighting::directIllumination( const float3& pos, float3 normal )
+{
+	return 1; // Everything is always lit for testing purposes
+}
 } // namespace lh2core

@@ -43,6 +43,7 @@ inline float3 locationAt( float t, Ray r ) { return r.start + t * r.direction; }
 
 Distance distanceToPrimitive( const Primitive& primitive, Ray r );
 float distanceToSphere( const Primitive& primitive, Ray r );
+float distanceToSphereFromInside(const Primitive& primitive, Ray r);
 Distance distanceToTriangle( const Primitive& primitive, Ray r );
 float distanceToPlane( const Primitive& primitive, Ray r );
 

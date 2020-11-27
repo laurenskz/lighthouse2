@@ -6,7 +6,16 @@ using namespace lighthouse2;
 #include "environment/intersections.h"
 namespace lh2core
 {
-class Lighting
+class ILighting
+{
+  public:
+	virtual float directIllumination( const float3& pos, float3 normal ) = 0;
+};
+class TestLighting : public ILighting{
+  public:
+	float directIllumination( const float3& pos, float3 normal ) override;
+};
+class Lighting : public ILighting
 {
   public:
 	void SetLights( const CoreLightTri* triLights, const int triLightCount,

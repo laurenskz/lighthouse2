@@ -6,10 +6,18 @@
 namespace lh2core
 {
 #define MAX_DISTANCE FLT_MAX
+enum MaterialKind
+{
+	DIFFUSE,
+	SPECULAR,
+	GLASS
+};
 struct Material
 {
 	float3 color;
 	float specularity = 0;
+	MaterialKind type = DIFFUSE;
+	float refractionIndex = 1;
 };
 
 struct Intersection

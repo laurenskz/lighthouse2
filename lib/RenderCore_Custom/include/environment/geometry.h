@@ -22,8 +22,11 @@ struct Instance
 	int meshIndex{};
 	mat4 transform;
 };
+class IGeometry{
+	virtual Intersection intersectionInformation( const Primitive& primitive, Distance distance, Ray r ) = 0;
 
-class Geometry
+};
+class Geometry : public IGeometry
 {
   private:
 	std::vector<Mesh*> meshes = std::vector<Mesh*>();
