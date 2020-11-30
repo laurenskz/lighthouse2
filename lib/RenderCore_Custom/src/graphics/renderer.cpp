@@ -17,15 +17,14 @@ float3 BasePixelRenderer::render( const ViewPyramid& view, float x, float y, flo
 }
 void SingleCoreRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 {
+	pixelRenderer->beforeRender( view, screen->width, screen->height );
 	Ray ray{};
 	ray.start = view.pos;
 	for ( int y = 0; y < screen->height; ++y )
 	{
 		for ( int x = 0; x < screen->width; ++x )
 		{
-			const float3& rayDirection = RayTracer::rayDirection( ( x / (float)screen->width ), ( y / (float)screen->height ), view );
-			ray.direction = rayDirection;
-			const float3& fColor = rayTracer->trace( ray, 3 );
+			const float3& fColor = pixelRenderer->render( view, x, y, screen->width, screen->height );
 			plotColor( screen, y, x, fColor );
 		}
 	}
@@ -41,6 +40,7 @@ void plotColor( Bitmap* screen, int y, int x, const float3& fColor )
 
 void MultiThreadedRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 {
+	pixelRenderer->beforeRender( view, screen->width, screen->height );
 	uint rowsPerThread = ceil( (float)screen->height / (float)threadPool->size() );
 	std::vector<std::future<void>> results( threadPool->size() );
 	for ( int i = 0; i < threadPool->size(); ++i )
@@ -80,5 +80,36 @@ float3 AntiAliasedRenderer::render( const ViewPyramid& view, float x, float y, f
 		result += color;
 	}
 	return result / 4;
+}
+float3 AveragingPixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
+{
+	int pixelIndex = floor( y * round( width ) + x );
+	pixelData[pixelIndex] += renderer->render( view, x, y, width, height );
+	return pixelData[pixelIndex] / numFrames;
+}
+
+void AveragingPixelRenderer::beforeRender( const ViewPyramid& view, int width, int height )
+{
+	renderer->beforeRender( view, width, height );
+	dirty = dirty || !feq( view.pos, lastRenderPos, 1e-4 );
+	if ( ( width * height ) != this->numPixels || dirty )
+	{
+		dirty = false;
+		numPixels = width * height;
+		numFrames = 0;
+		pixelData = new float3[numPixels];
+	}
+	lastRenderPos = view.pos;
+	numFrames += 1;
+	cout << numFrames << endl;
+}
+float3 TestPixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
+{
+	return make_float3( 1 ) * count / 10.0;
+}
+void TestPixelRenderer::beforeRender( const ViewPyramid& view, int width, int height )
+{
+	count++;
+	sleep( 1 );
 }
 } // namespace lh2core

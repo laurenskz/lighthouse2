@@ -17,6 +17,15 @@ class PixelRenderer
 {
   public:
 	virtual float3 render( const ViewPyramid& view, float x, float y, float width, float height ) = 0;
+	virtual void beforeRender( const ViewPyramid& view, int width, int height ){};
+};
+
+class TestPixelRenderer : public PixelRenderer{
+  public:
+	void beforeRender( const ViewPyramid& view, int width, int height ) override;
+	float3 render( const ViewPyramid& view, float x, float y, float width, float height ) override;
+	float count = 0;
+
 };
 class Renderer
 {
@@ -34,6 +43,22 @@ class BasePixelRenderer : public PixelRenderer
 	float3 render( const ViewPyramid& view, float x, float y, float width, float height ) override;
 };
 
+class AveragingPixelRenderer : public PixelRenderer
+{
+  public:
+	float3 render( const ViewPyramid& view, float x, float y, float width, float height ) override;
+	void beforeRender( const ViewPyramid& view, int width, int height ) override;
+	AveragingPixelRenderer( PixelRenderer* renderer ) : renderer( renderer ){};
+
+  private:
+	PixelRenderer* renderer;
+	int numPixels = 0;
+	int numFrames = 0;
+	float3* pixelData{};
+	bool dirty = true;
+	float3 lastRenderPos{};
+};
+
 class AntiAliasedRenderer : public PixelRenderer
 {
   public:
@@ -48,11 +73,11 @@ void plotColor( Bitmap* screen, int y, int x, const float3& fColor );
 class SingleCoreRenderer : public Renderer
 {
   public:
-	explicit SingleCoreRenderer( IRayTracer* rayTracer ) : rayTracer( rayTracer ){};
+	explicit SingleCoreRenderer( PixelRenderer* pixelRenderer ) : pixelRenderer( pixelRenderer ){};
 	void renderTo( const ViewPyramid& view, Bitmap* screen ) override;
 
   private:
-	IRayTracer* rayTracer;
+	PixelRenderer* pixelRenderer;
 };
 
 class MultiThreadedRenderer : public Renderer

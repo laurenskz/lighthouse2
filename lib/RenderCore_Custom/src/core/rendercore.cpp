@@ -33,7 +33,9 @@ void RenderCore::Init()
 	lighting = new Lighting( intersector );
 	rayTracer = new RayTracer( env, lighting );
 	PixelRenderer* baseRenderer = new BasePixelRenderer( rayTracer );
-	baseRenderer = new AntiAliasedRenderer( baseRenderer );
+//	PixelRenderer* baseRenderer = new TestPixelRenderer();
+//	baseRenderer = new AntiAliasedRenderer( baseRenderer );
+	baseRenderer = new AveragingPixelRenderer(baseRenderer);
 	renderer = new MultiThreadedRenderer( baseRenderer );
 }
 
