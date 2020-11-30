@@ -14,6 +14,7 @@ class IRayTracer
   public:
 	[[nodiscard]] virtual float3 trace( Ray r, int count ) const = 0;
 };
+
 class RayTracer : public IRayTracer
 {
 
@@ -35,7 +36,12 @@ class RayTracer : public IRayTracer
 	static Ray reflect( const Intersection& intersection, const float3& direction );
 };
 
-class PathTracer
+class PathTracer : public IRayTracer
 {
+  public:
+	IEnvironment* environment;
+	ILighting* lighting;
+	PathTracer( IEnvironment* environment, ILighting* lighting ) : environment( environment ), lighting( lighting ){};
+	float3 trace( Ray r, int count ) const override;
 };
 } // namespace lh2core

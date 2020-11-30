@@ -101,7 +101,6 @@ void AveragingPixelRenderer::beforeRender( const ViewPyramid& view, int width, i
 	}
 	lastRenderPos = view.pos;
 	numFrames += 1;
-	cout << numFrames << endl;
 }
 float3 TestPixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
 {

@@ -102,4 +102,10 @@ float3 RayTracer::reflect( const float3& direction, const float3& normal )
 {
 	return normalize( direction - ( ( 2 * dot( direction, normal ) ) * normal ) );
 }
+float3 PathTracer::trace( Ray r, int count ) const
+{
+	if ( count <= 0 ) return BLACK; //Recursion limit
+	auto intersection = environment->intersect( r );
+
+}
 } // namespace lh2core
