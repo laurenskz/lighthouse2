@@ -32,7 +32,9 @@ void RenderCore::Init()
 	auto* env = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
 	rayTracer = new RayTracer( env, lighting );
-	renderer = new MultiThreadedRenderer( rayTracer );
+	PixelRenderer* baseRenderer = new BasePixelRenderer( rayTracer );
+	baseRenderer = new AntiAliasedRenderer( baseRenderer );
+	renderer = new MultiThreadedRenderer( baseRenderer );
 }
 
 //  +-----------------------------------------------------------------------------+

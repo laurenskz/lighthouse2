@@ -7,9 +7,10 @@ namespace lh2core
 {
 const float2 OFFSETS[]{ make_float2( 0.1, 0.25 ), make_float2( 0.7, 0.1 ), make_float2( 0.8, 0.25 ), make_float2( 0.9, 0.7 ) };
 
-float3 BasePixelRenderer::render( const ViewPyramid& view, int x, int y, float width, float height )
+float3 BasePixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
 {
 	Ray ray{};
+	ray.start = view.pos;
 	const float3& rayDirection = RayTracer::rayDirection( ( x / width ), ( y / height ), view );
 	ray.direction = rayDirection;
 	return rayTracer->trace( ray, 3 );
@@ -37,20 +38,7 @@ void plotColor( Bitmap* screen, int y, int x, const float3& fColor )
 	int b = clamp( (int)( fColor.z * 256 ), 0, 255 );
 	screen->Plot( x, y, ( b << 16 ) + ( g << 8 ) + ( r ) );
 }
-float3 renderAntialised( const ViewPyramid& view, Bitmap* screen, IRayTracer* rayTracer, int x, int y )
-{
-	auto result = make_float3( 0 );
-	Ray ray{};
-	ray.start = view.pos;
-	for ( auto offset : OFFSETS )
-	{
-		const float3& rayDirection = RayTracer::rayDirection( ( ( x + offset.x ) / (float)screen->width ), ( ( y + offset.y ) / (float)screen->height ), view );
-		ray.direction = rayDirection;
-		const float3& color = rayTracer->trace( ray, 3 );
-		result += color;
-	}
-	return result / 4;
-}
+
 void MultiThreadedRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 {
 	uint rowsPerThread = ceil( (float)screen->height / (float)threadPool->size() );
@@ -72,15 +60,25 @@ void MultiThreadedRenderer::renderRows( const ViewPyramid& view, Bitmap* screen,
 	{
 		for ( int x = 0; x < screen->width; ++x )
 		{
-			const float3& fColor = renderAntialised( view, screen, rayTracer, x, y );
+			const float3& fColor = pixelRenderer->render( view, x, y, screen->width, screen->height );
 			plotColor( screen, y, x, fColor );
 		}
 	}
 }
-MultiThreadedRenderer::MultiThreadedRenderer( IRayTracer* rayTracer )
+MultiThreadedRenderer::MultiThreadedRenderer( PixelRenderer* pixelRenderer )
 {
-	this->rayTracer = rayTracer;
+	this->pixelRenderer = pixelRenderer;
 	auto const cpuCount = std::max( (uint)1, std::thread::hardware_concurrency() );
 	threadPool = new ctpl::thread_pool( cpuCount );
+}
+float3 AntiAliasedRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
+{
+	auto result = make_float3( 0 );
+	for ( auto offset : OFFSETS )
+	{
+		const float3& color = renderer->render( view, x + offset.x, y + offset.y, width, height );
+		result += color;
+	}
+	return result / 4;
 }
 } // namespace lh2core
