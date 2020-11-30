@@ -6,14 +6,23 @@ using namespace lighthouse2;
 #include "environment/intersections.h"
 namespace lh2core
 {
+
+struct LightDistance
+{
+	float distance = MAX_DISTANCE;
+	float3 color{};
+};
 class ILighting
 {
   public:
 	virtual float directIllumination( const float3& pos, float3 normal ) = 0;
+	virtual LightDistance nearestLight( const Ray& r ) = 0;
 };
-class TestLighting : public ILighting{
+class TestLighting : public ILighting
+{
   public:
 	float directIllumination( const float3& pos, float3 normal ) override;
+	LightDistance nearestLight( const Ray& r ) override;
 };
 class Lighting : public ILighting
 {
@@ -22,7 +31,8 @@ class Lighting : public ILighting
 					const CorePointLight* pointLights, const int pointLightCount,
 					const CoreSpotLight* spotLights, const int spotLightCount,
 					const CoreDirectionalLight* directionalLights, const int directionalLightCount );
-	float directIllumination( const float3& pos, float3 normal );
+	LightDistance nearestLight( const Ray& r ) override;
+	float directIllumination( const float3& pos, float3 normal ) override;
 	Lighting( Intersector* intersector ) : intersector( intersector ){};
 
   private:

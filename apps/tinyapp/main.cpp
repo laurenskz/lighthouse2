@@ -35,7 +35,17 @@ void PrepareScene()
 {
 	// initialize scene
 	renderer->AddScene( "BoxTextured.gltf", "../_shareddata/BoxTextured/glTF" );
-//	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
+	int mesh = renderer->AddMesh( "../_shareddata/scene/tetrahedron.obj" );
+	renderer->AddInstance( mesh, mat4::RotateX( 3.5) * mat4::Translate( 2, 0, 0 ) );
+	auto sky = new HostSkyDome();
+	sky->Load( "../_shareddata/sky_15.hdr" );
+	// Compensate for different evaluation in PBRT
+	sky->worldToLight = mat4::RotateX( -PI / 2 );
+	renderer->GetScene()->SetSkyDome( sky );
+	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
+	//	mat->pbrtMaterialType = lighthouse2::MaterialType::PBRT_GLASS;
+	mat->specular.value = 1;
+	//	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
 	renderer->AddDirectionalLight( normalize( make_float3( -1, -1, 0 ) ), make_float3( 1.0 / 5 ) );
 	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
 	//	renderer->SetNodeTransform( renderer->FindNode( "RootNode (gltf orientation matrix)" ), mat4::RotateX( -PI / 2 ) );

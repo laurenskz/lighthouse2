@@ -15,7 +15,7 @@ namespace lh2core
 {
 class PixelRenderer
 {
-	virtual float3 render( const ViewPyramid& view, int x, int y, int width, int height ) = 0;
+	virtual float3 render( const ViewPyramid& view, int x, int y, float width, float height ) = 0;
 };
 class Renderer
 {
@@ -25,7 +25,10 @@ class Renderer
 
 class BasePixelRenderer : public PixelRenderer
 {
-	float3 render( const ViewPyramid& view, int x, int y, int width, int height ) override;
+  private:
+	IRayTracer* rayTracer;
+	BasePixelRenderer( IRayTracer* tracer ) : rayTracer( tracer ){};
+	float3 render( const ViewPyramid& view, int x, int y, float width, float height ) override;
 };
 
 float3 renderAntialised( const ViewPyramid& view, Bitmap* screen, RayTracer* rayTracer, int x, int y );
@@ -33,22 +36,22 @@ void plotColor( Bitmap* screen, int y, int x, const float3& fColor );
 class SingleCoreRenderer : public Renderer
 {
   public:
-	explicit SingleCoreRenderer( RayTracer* rayTracer ) : rayTracer( rayTracer ){};
+	explicit SingleCoreRenderer( IRayTracer* rayTracer ) : rayTracer( rayTracer ){};
 	void renderTo( const ViewPyramid& view, Bitmap* screen ) override;
 
   private:
-	RayTracer* rayTracer;
+	IRayTracer* rayTracer;
 };
 
 class MultiThreadedRenderer : public Renderer
 {
   public:
-	explicit MultiThreadedRenderer( RayTracer* rayTracer );
+	explicit MultiThreadedRenderer( IRayTracer* rayTracer );
 	void renderTo( const ViewPyramid& view, Bitmap* screen ) override;
 
   private:
 	ctpl::thread_pool* threadPool;
-	RayTracer* rayTracer;
+	IRayTracer* rayTracer;
 	void renderRows( const ViewPyramid& view, Bitmap* screen, int start, uint end );
 };
 

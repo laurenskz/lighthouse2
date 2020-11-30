@@ -22,9 +22,9 @@ struct Instance
 	int meshIndex{};
 	mat4 transform;
 };
-class IGeometry{
+class IGeometry
+{
 	virtual Intersection intersectionInformation( const Primitive& primitive, Distance distance, Ray r ) = 0;
-
 };
 class Geometry : public IGeometry
 {
@@ -35,9 +35,12 @@ class Geometry : public IGeometry
 	std::vector<Primitive> spheres = std::vector<Primitive>();
 	std::vector<Material> sphereMaterials = std::vector<Material>();
 	std::vector<mat4> transforms = std::vector<mat4>();
+	std::vector<Material> lightMaterials = std::vector<Material>();
 	bool isDirty = true;
 	Primitive* primitives;
 	int count;
+	CoreLightTri* lights;
+	int lightCount;
 	CoreTexDesc* textures;
 	CoreMaterial* materials;
 	uint addPrimitives( int startIndex, const std::vector<Primitive>& toAdd );
@@ -49,11 +52,13 @@ class Geometry : public IGeometry
 	void setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
 	void setInstance( const int instanceIdx, const int modelIdx, const mat4& transform = mat4::Identity() );
 	void SetTextures( const CoreTexDesc* tex, const int textureCount );
+	void SetLights( const CoreLightTri* newLights, const int newLightCount );
 	void SetMaterials( CoreMaterial* mat, const int materialCount );
 	void addPlane( float3 normal, float d );
 	void finalizeInstances();
 	Primitives getPrimitives();
 	void addSphere( float3 pos, float r, Material mat );
 	Intersection intersectionInformation( const Primitive& primitive, Distance distance, Ray r );
+	void addLights( int primitiveIndex );
 };
 } // namespace lh2core

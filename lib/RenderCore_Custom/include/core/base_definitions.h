@@ -10,7 +10,8 @@ enum MaterialKind
 {
 	DIFFUSE,
 	SPECULAR,
-	GLASS
+	GLASS,
+	LIGHT
 };
 struct Material
 {

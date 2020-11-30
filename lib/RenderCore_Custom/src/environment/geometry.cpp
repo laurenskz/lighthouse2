@@ -70,7 +70,19 @@ void Geometry::finalizeInstances()
 	primitiveIndex = addPrimitives( primitiveIndex, spheres );
 	primitiveIndex = addPrimitives( primitiveIndex, planes );
 	addTriangles( primitiveIndex );
+	addLights( primitiveIndex );
 	isDirty = false;
+}
+void Geometry::addLights( int primitiveIndex )
+{
+	for ( int i = 0; i < lightCount; ++i )
+	{
+		primitives[primitiveIndex++] = Primitive{ TRIANGLE_BIT & LIGHT_BIT,
+												  lights[i].vertex0,
+												  lights[i].vertex1,
+												  lights[i].vertex2,
+												  i };
+	}
 }
 void Geometry::addTriangles( int primitiveIndex )
 {
@@ -118,16 +130,27 @@ uint Geometry::computePrimitiveCount()
 	{
 		triangleCount += meshes[instance.meshIndex]->triangleCount;
 	}
-	return planes.size() + spheres.size() + triangleCount;
+	return planes.size() + spheres.size() + triangleCount + lightCount;
 }
 Intersection Geometry::triangleIntersection( const Primitive& primitive, Distance distance, Ray r )
 {
-	const CoreTri& triangleData = meshes[primitive.meshIndex]->triangles[primitive.triangleNumber];
 	const float3& intersectionLocation = locationAt( distance.d, r );
+	if ( primitive.flags & LIGHT_BIT )
+	{
+		return Intersection{ intersectionLocation, make_float3( 0 ), lightMaterials[primitive.meshIndex] };
+	}
+	const CoreTri& triangleData = meshes[primitive.meshIndex]->triangles[primitive.triangleNumber];
 	auto normal = distance.u * triangleData.vN0 + ( distance.v ) * triangleData.vN1 + ( 1 - distance.u - distance.v ) * triangleData.vN2;
 	normal = normalize( make_float3( transforms[primitive.instanceIndex] * ( make_float4( normal ) ) ) );
 	auto mat = materials[triangleData.material];
-//	if ( true ) return Intersection{ intersectionLocation, normal, Material{ make_float3( 0 ), 0, GLASS,1.5 } };
+	Material result;
+	result.type = DIFFUSE;
+	if ( mat.pbrtMaterialType == lighthouse2::MaterialType::PBRT_GLASS )
+	{
+		result.type = GLASS;
+		result.refractionIndex = mat.refraction.value;
+	}
+	//	if ( true ) return Intersection{ intersectionLocation, normal, Material{ make_float3( 0 ), 0, GLASS,1.5 } };
 	if ( mat.color.textureID != -1 )
 	{
 		auto texture = textures[mat.color.textureID];
@@ -137,10 +160,18 @@ Intersection Geometry::triangleIntersection( const Primitive& primitive, Distanc
 		int x = floor( uv.x * texture.width );
 		int y = floor( uv.y * texture.height );
 		const uchar4& iColor = texture.idata[x + y * texture.width];
-		auto textureColor = make_float3( (float)iColor.x / 256, (float)iColor.y / 256, (float)iColor.z / 256 );
-		return Intersection{ intersectionLocation, normal, Material{ textureColor } };
+		result.color = make_float3( (float)iColor.x / 256, (float)iColor.y / 256, (float)iColor.z / 256 );
 	}
-	return Intersection{ intersectionLocation, normal, Material{ mat.color.value, 0.5 } };
+	else
+	{
+		result.color = mat.color.value;
+	}
+	if ( mat.specular.value != 1e32 )
+	{
+		result.type = SPECULAR;
+		result.specularity = mat.specular.value;
+	}
+	return Intersection{ intersectionLocation, normal, result };
 }
 void Geometry::SetTextures( const CoreTexDesc* tex, const int textureCount )
 {
@@ -151,5 +182,16 @@ void Geometry::SetMaterials( CoreMaterial* mat, const int materialCount )
 {
 	materials = new CoreMaterial[materialCount];
 	memcpy( materials, mat, sizeof( CoreMaterial ) * materialCount );
+}
+void Geometry::SetLights( const CoreLightTri* newLights, const int newLightCount )
+{
+	isDirty = true;
+	this->lights = new CoreLightTri[newLightCount];
+	memcpy( (void*)this->lights, newLights, newLightCount * sizeof( CoreLightTri ) );
+	this->lightCount = newLightCount;
+	for ( int i = 0; i < newLightCount; ++i )
+	{
+		lightMaterials[i] = Material{ newLights[i].radiance, 0, LIGHT };
+	}
 }
 } // namespace lh2core

@@ -45,8 +45,21 @@ float Lighting::illuminationFrom( const CoreDirectionalLight& light, const float
 	}
 	return 0;
 }
+/**
+ * Only supports area lights at the moment, this method is used by the path tracer.
+ * @param r
+ * @return
+ */
+LightDistance Lighting::nearestLight( const Ray& r )
+{
+	return LightDistance();
+}
 float TestLighting::directIllumination( const float3& pos, float3 normal )
 {
 	return 1; // Everything is always lit for testing purposes
+}
+LightDistance TestLighting::nearestLight( const Ray& r )
+{
+	return LightDistance();
 }
 } // namespace lh2core

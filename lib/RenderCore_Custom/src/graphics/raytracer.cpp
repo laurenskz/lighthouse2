@@ -23,7 +23,7 @@ float3 RayTracer::trace( Ray r, int count = 3 ) const
 	if ( count <= 0 ) return BLACK; //Recursion limit
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
-		return make_float3(0.529,0.808,0.929); //Black if nothing hit
+		return make_float3( 0.529, 0.808, 0.929 ); //Black if nothing hit
 	if ( intersection.mat.type == DIFFUSE )
 	{
 		return computeDiffuseColor( intersection );
@@ -78,9 +78,14 @@ float3 RayTracer::computeSpecularColor( const Ray& r, int count, const Intersect
 float3 RayTracer::traceReflectedRay( const Ray& r, int count, const Intersection& intersection ) const
 {
 	const float3& direction = reflect( r.direction, intersection.normal );
-	const Ray& reflectedRay = Ray{ intersection.location + ( 1e-3 * direction ), direction };
+	Ray reflectedRay = reflect( intersection, direction );
 	const float3& reflectionColor = trace( reflectedRay, count - 1 );
 	return reflectionColor;
+}
+Ray RayTracer::reflect( const Intersection& intersection, const float3& direction )
+{
+	const Ray& reflectedRay = Ray{ intersection.location + ( 1e-3 * direction ), direction };
+	return reflectedRay;
 }
 float3 RayTracer::computeDiffuseColor( const Intersection& intersection ) const
 {

@@ -12,6 +12,7 @@ const uint SPHERE_BIT = (uint)1 << (uint)0;
 const uint TRIANGLE_BIT = (uint)1 << (uint)1;
 const uint PLANE_BIT = (uint)1 << (uint)2;
 const uint CULLING_BIT = (uint)1 << (uint)3;
+const uint LIGHT_BIT = (uint)1 << (uint)4;
 
 struct Primitive
 {
@@ -21,7 +22,7 @@ struct Primitive
 	float3 v3;
 	int meshIndex;		// The index of the mesh
 	int triangleNumber; //Number of this triangle inside the mesh
-	int instanceIndex; //The transformation
+	int instanceIndex;	//The transformation
 };
 
 struct Primitives
@@ -45,7 +46,7 @@ inline float3 locationAt( float t, Ray r ) { return r.start + t * r.direction; }
 
 Distance distanceToPrimitive( const Primitive& primitive, Ray r );
 float distanceToSphere( const Primitive& primitive, Ray r );
-float distanceToSphereFromInside(const Primitive& primitive, Ray r);
+float distanceToSphereFromInside( const Primitive& primitive, Ray r );
 Distance distanceToTriangle( const Primitive& primitive, Ray r );
 float distanceToPlane( const Primitive& primitive, Ray r );
 

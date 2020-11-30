@@ -7,9 +7,12 @@ namespace lh2core
 {
 const float2 OFFSETS[]{ make_float2( 0.1, 0.25 ), make_float2( 0.7, 0.1 ), make_float2( 0.8, 0.25 ), make_float2( 0.9, 0.7 ) };
 
-float3 BasePixelRenderer::render( const ViewPyramid& view, int x, int y, int width, int height )
+float3 BasePixelRenderer::render( const ViewPyramid& view, int x, int y, float width, float height )
 {
-	return float3();
+	Ray ray{};
+	const float3& rayDirection = RayTracer::rayDirection( ( x / width ), ( y / height ), view );
+	ray.direction = rayDirection;
+	return rayTracer->trace( ray, 3 );
 }
 void SingleCoreRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 {
@@ -34,7 +37,7 @@ void plotColor( Bitmap* screen, int y, int x, const float3& fColor )
 	int b = clamp( (int)( fColor.z * 256 ), 0, 255 );
 	screen->Plot( x, y, ( b << 16 ) + ( g << 8 ) + ( r ) );
 }
-float3 renderAntialised( const ViewPyramid& view, Bitmap* screen, RayTracer* rayTracer, int x, int y )
+float3 renderAntialised( const ViewPyramid& view, Bitmap* screen, IRayTracer* rayTracer, int x, int y )
 {
 	auto result = make_float3( 0 );
 	Ray ray{};
@@ -74,7 +77,7 @@ void MultiThreadedRenderer::renderRows( const ViewPyramid& view, Bitmap* screen,
 		}
 	}
 }
-MultiThreadedRenderer::MultiThreadedRenderer( RayTracer* rayTracer )
+MultiThreadedRenderer::MultiThreadedRenderer( IRayTracer* rayTracer )
 {
 	this->rayTracer = rayTracer;
 	auto const cpuCount = std::max( (uint)1, std::thread::hardware_concurrency() );
