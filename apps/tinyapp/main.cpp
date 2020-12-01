@@ -49,7 +49,7 @@ void PrepareScene()
 //		renderer->AddDirectionalLight( normalize( make_float3( -1, -1, 0 ) ), make_float3( 1.0 / 5 ) );
 	//	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
 	const float3& spotPos = make_float3( 2, 8, 2 );
-	renderer->AddSpotLight( spotPos, normalize(make_float3(0)-spotPos  ), 0.95, 0.85, make_float3( 15 ), true );
+	renderer->AddSpotLight( spotPos, normalize(make_float3(0)-spotPos  ), 0.97, 0.92, make_float3( 20 ), true );
 	//	For path tracer
 //	int lightMat = renderer->AddMaterial( make_float3( 3 ) );
 //	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 6.0f, 0 ), 6.9f, 6.9f, lightMat );
