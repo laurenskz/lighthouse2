@@ -188,10 +188,11 @@ void Geometry::SetMaterials( CoreMaterial* mat, const int materialCount )
 void Geometry::SetLights( const CoreLightTri* newLights, const int newLightCount )
 {
 	isDirty = true;
+	this->lightCount = newLightCount;
+	if ( newLightCount == 0 ) return;
 	lightMaterials.resize( newLightCount );
 	this->lights = new CoreLightTri[newLightCount];
 	memcpy( (void*)this->lights, newLights, newLightCount * sizeof( CoreLightTri ) );
-	this->lightCount = newLightCount;
 	for ( int i = 0; i < newLightCount; ++i )
 	{
 		lightMaterials[i] = Material{ newLights[i].radiance, 0, LIGHT };
