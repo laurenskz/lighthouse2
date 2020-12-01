@@ -45,7 +45,7 @@ class Geometry : public IGeometry
 	CoreMaterial* materials;
 	uint addPrimitives( int startIndex, const std::vector<Primitive>& toAdd );
 	uint computePrimitiveCount();
-	void addTriangles( int primitiveIndex );
+	int addTriangles( int primitiveIndex );
 	Intersection triangleIntersection( const Primitive& primitive, Distance distance, Ray r );
 
   public:
@@ -59,6 +59,6 @@ class Geometry : public IGeometry
 	Primitives getPrimitives();
 	void addSphere( float3 pos, float r, Material mat );
 	Intersection intersectionInformation( const Primitive& primitive, Distance distance, Ray r );
-	void addLights( int primitiveIndex );
+	int addLights( int primitiveIndex );
 };
 } // namespace lh2core

@@ -36,7 +36,7 @@ void PrepareScene()
 	// initialize scene
 	renderer->AddScene( "BoxTextured.gltf", "../_shareddata/BoxTextured/glTF" );
 	int mesh = renderer->AddMesh( "../_shareddata/scene/tetrahedron.obj" );
-	renderer->AddInstance( mesh, mat4::RotateX( 3.5) * mat4::Translate( 2, 0, 0 ) );
+	renderer->AddInstance( mesh, mat4::RotateX( 3.5 ) * mat4::Translate( 2, 0, 0 ) );
 	auto sky = new HostSkyDome();
 	sky->Load( "../_shareddata/sky_15.hdr" );
 	// Compensate for different evaluation in PBRT
@@ -44,14 +44,14 @@ void PrepareScene()
 	renderer->GetScene()->SetSkyDome( sky );
 	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
 	//	mat->pbrtMaterialType = lighthouse2::MaterialType::PBRT_GLASS;
-	mat->specular.value = 1;
+	mat->specular.value = 0.5;
 	//	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
 	renderer->AddDirectionalLight( normalize( make_float3( -1, -1, 0 ) ), make_float3( 1.0 / 5 ) );
 	renderer->AddPointLight( make_float3( 3, 4, 5 ), make_float3( 13 ), true );
-	//	renderer->SetNodeTransform( renderer->FindNode( "RootNode (gltf orientation matrix)" ), mat4::RotateX( -PI / 2 ) );
-	//	int lightMat = renderer->AddMaterial( make_float3( 100, 100, 80 ) );
-	//	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 26.0f, 0 ), 6.9f, 6.9f, lightMat );
-	//	renderer->AddInstance( lightQuad );
+	//	For path tracer
+	int lightMat = renderer->AddMaterial( make_float3( 3 ) );
+	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 6.0f, 0 ), 6.9f, 6.9f, lightMat );
+	renderer->AddInstance( lightQuad );
 	//	car = renderer->AddInstance( renderer->AddMesh( "legocar.obj", "../_shareddata/", 10.0f ) );
 }
 
@@ -94,7 +94,7 @@ int main()
 																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" );	// RASTERIZER, your only option if not on NVidia
 																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
-	renderer->GetCamera()->LookAt( make_float3( 4, 2, 10 ), make_float3( 0 ) );
+	renderer->GetCamera()->LookAt( make_float3( 4, 1, 10 ), make_float3( 0, 2, 0 ) );
 	//	renderer->DeserializeCamera( "camera.xml" );
 	// initialize scene
 	PrepareScene();

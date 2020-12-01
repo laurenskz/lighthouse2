@@ -69,24 +69,25 @@ void Geometry::finalizeInstances()
 	int primitiveIndex = 0;
 	primitiveIndex = addPrimitives( primitiveIndex, spheres );
 	primitiveIndex = addPrimitives( primitiveIndex, planes );
-	addTriangles( primitiveIndex );
-	addLights( primitiveIndex );
+	primitiveIndex = addLights( primitiveIndex );
+	primitiveIndex = addTriangles( primitiveIndex );
 	isDirty = false;
 }
-void Geometry::addLights( int primitiveIndex )
+int Geometry::addLights( int primitiveIndex )
 {
 	for ( int i = 0; i < lightCount; ++i )
 	{
-		primitives[primitiveIndex++] = Primitive{ TRIANGLE_BIT & LIGHT_BIT,
+		primitives[primitiveIndex++] = Primitive{ TRIANGLE_BIT | LIGHT_BIT,
 												  lights[i].vertex0,
 												  lights[i].vertex1,
 												  lights[i].vertex2,
-												  i };
+												  i, -1, -1 };
 	}
+	return primitiveIndex;
 }
-void Geometry::addTriangles( int primitiveIndex )
+int Geometry::addTriangles( int primitiveIndex )
 {
-	for ( int instanceIndex; instanceIndex < instances.size(); ++instanceIndex )
+	for ( int instanceIndex = 0; instanceIndex < instances.size(); ++instanceIndex )
 	{
 		auto instance = instances[instanceIndex];
 		Mesh*& mesh = meshes[instance.meshIndex];
@@ -100,6 +101,7 @@ void Geometry::addTriangles( int primitiveIndex )
 													  i, instanceIndex };
 		}
 	}
+	return primitiveIndex;
 }
 void Geometry::addPlane( float3 normal, float d )
 {
@@ -186,6 +188,7 @@ void Geometry::SetMaterials( CoreMaterial* mat, const int materialCount )
 void Geometry::SetLights( const CoreLightTri* newLights, const int newLightCount )
 {
 	isDirty = true;
+	lightMaterials.resize( newLightCount );
 	this->lights = new CoreLightTri[newLightCount];
 	memcpy( (void*)this->lights, newLights, newLightCount * sizeof( CoreLightTri ) );
 	this->lightCount = newLightCount;

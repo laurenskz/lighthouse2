@@ -1,6 +1,7 @@
 //
 // Created by laurens on 11/15/20.
 //
+#include "graphics/raytracer.h"
 #include "core_settings.h"
 #include "environment/intersections.h"
 #include "environment/primitives.h"
@@ -79,6 +80,20 @@ TEST_F( RayFixture, DielectTrics )
 		Ray{ make_float3( 6, 0, 0 ), make_float3( -1, 0, 0 ) },
 		3,
 		Intersection{ make_float3( 3, 0, 0 ), normal, Material{ make_float3( 0 ), 0, GLASS, 1.5 } } );
+}
+
+TEST_F( RayFixture, Hemisphere )
+{
+	PathTracer p( nullptr, nullptr );
+	float3 dir = p.randomHemisphereDirection();
+	dir = p.randomHemisphereDirection();
+	dir = p.randomHemisphereDirection();
+	dir = p.randomHemisphereDirection();
+	dir = p.randomHemisphereDirection();
+	dir = p.randomHemisphereDirection();
+	dir = p.randomHemisphereDirection();
+	cout << length(dir) << endl;
+	cout << dir << endl;
 }
 
 //TEST_F( RayFixture, Illumination )

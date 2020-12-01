@@ -31,12 +31,13 @@ void RenderCore::Init()
 	intersector = new BruteForceIntersector();
 	auto* env = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
-	rayTracer = new RayTracer( env, lighting );
+	//	rayTracer = new RayTracer( env, lighting );
+	rayTracer = new PathTracer( env, lighting );
 	PixelRenderer* baseRenderer = new BasePixelRenderer( rayTracer );
-//	PixelRenderer* baseRenderer = new TestPixelRenderer();
-//	baseRenderer = new AntiAliasedRenderer( baseRenderer );
-	baseRenderer = new AveragingPixelRenderer(baseRenderer);
+	//	baseRenderer = new AntiAliasedRenderer( baseRenderer );
+	baseRenderer = new AveragingPixelRenderer( baseRenderer );
 	renderer = new MultiThreadedRenderer( baseRenderer );
+//	renderer = new SingleCoreRenderer( baseRenderer );
 }
 
 //  +-----------------------------------------------------------------------------+
