@@ -40,26 +40,15 @@ float3 RayTracer::trace( Ray r, int count = 3 )
 }
 float3 RayTracer::computeGlassColor( const Ray& r, int count, const Intersection& intersection )
 {
-	float cosTheta1 = dot( intersection.normal, -r.direction );
-	bool rayEntersObject = cosTheta1 > 0;
-	cosTheta1 = rayEntersObject ? cosTheta1 : -cosTheta1;
-	auto normal = rayEntersObject ? intersection.normal : -intersection.normal;
-	float n1 = rayEntersObject ? 1 : intersection.mat.refractionIndex;
-	float n2 = rayEntersObject ? intersection.mat.refractionIndex : 1;
-	float n1overn2 = n1 / n2;
-	float k = 1 - ( n1overn2 * n1overn2 ) * ( 1 - cosTheta1 );
-	float reflectivityFraction = schlick( n1, n2, cosTheta1 );
-	const Intersection& newIntersection = Intersection{ intersection.location, normal, intersection.mat, intersection.hitObject };
-	if ( k >= 0 ) //Refraction and reflection
+	Ray refracted;
+	Ray reflected;
+	float reflectivityFraction;
+	calculateGlass( reflected, refracted, reflectivityFraction, r, intersection );
+	if ( reflectivityFraction < 1 )
 	{
-		float3 T = n1overn2 * r.direction + normal * ( n1overn2 * cosTheta1 - sqrt( k ) );
-		return ( 1 - reflectivityFraction ) * trace( Ray{ intersection.location + 1e-3 * T, T }, count - 1 ) +
-			   reflectivityFraction * traceReflectedRay( r, count, newIntersection );
+		return ( 1 - reflectivityFraction ) * trace( refracted, count - 1 ) + reflectivityFraction * trace( reflected, count - 1 );
 	}
-	else
-	{
-		return traceReflectedRay( r, count, newIntersection );
-	}
+	return trace( reflected, count - 1 );
 }
 
 inline float schlick( float n1, float n2, float cosTheta )
@@ -130,8 +119,8 @@ float3 PathTracer::trace( Ray r, int count )
 {
 	if ( count <= 0 ) return BLACK; //Recursion limit
 	auto intersection = environment->intersect( r );
-	if ( !intersection.hitObject ) return BLACK;
-	//		return make_float3( 0.529, 0.808, 0.929 );
+	if ( !intersection.hitObject )
+		return BLACK;
 	if ( intersection.mat.type == LIGHT )
 	{
 		return intersection.mat.color;
@@ -147,12 +136,22 @@ float3 PathTracer::trace( Ray r, int count )
 		float3 hit = trace( newRay, count - 1 ) * dot( newDirection, intersection.normal );
 		return hit * PI * 2.0 * brdf;
 	}
-	if ( intersection.mat.type == GLASS )
-	{
-	}
+
 	if ( goReflected )
 	{
 		return trace( RayTracer::reflect( intersection, r ), count - 1 );
+	}
+	if ( intersection.mat.type == GLASS )
+	{
+		Ray refracted;
+		Ray reflected;
+		float reflectivityFraction;
+		calculateGlass( reflected, refracted, reflectivityFraction, r, intersection );
+		if ( dice < reflectivityFraction )
+		{
+			return trace( reflected, count - 1 );
+		}
+		return trace( refracted, count - 1 );
 	}
 	return make_float3( 0.529, 0.808, 0.929 );
 }

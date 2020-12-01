@@ -13,7 +13,7 @@ float3 BasePixelRenderer::render( const ViewPyramid& view, float x, float y, flo
 	ray.start = view.pos;
 	const float3& rayDirection = RayTracer::rayDirection( ( x / width ), ( y / height ), view );
 	ray.direction = rayDirection;
-	return rayTracer->trace( ray, 3 );
+	return rayTracer->trace( ray, 5 );
 }
 void SingleCoreRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 {
