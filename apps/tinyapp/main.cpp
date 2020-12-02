@@ -45,15 +45,18 @@ void PrepareScene()
 	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
 	//	mat->pbrtMaterialType = lighthouse2::MaterialType::PBRT_GLASS;
 	mat->specular.value = 0.5;
+
 	//	Point light
-//	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
+	//	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
 
 	//		Directional light
-//		renderer->AddDirectionalLight( normalize( make_float3( -1, -1, -1 ) ), make_float3( 1.0 / 2 ) );
+	//		renderer->AddDirectionalLight( normalize( make_float3( -1, -1, -1 ) ), make_float3( 1.0 / 2 ) );
 
 	//	Spot light
 		const float3& spotPos = make_float3( 2, 8, 2 );
 		renderer->AddSpotLight( spotPos, normalize( make_float3( 0 ) - spotPos ), 0.97, 0.92, make_float3( 20 ), true );
+
+
 	//	Area light for path tracer
 	//	int lightMat = renderer->AddMaterial( make_float3( 3 ) );
 	//	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 6.0f, 0 ), 6.9f, 6.9f, lightMat );
