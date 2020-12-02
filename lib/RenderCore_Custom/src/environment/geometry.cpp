@@ -93,7 +93,9 @@ int Geometry::addTriangles( int primitiveIndex )
 		Mesh*& mesh = meshes[instance.meshIndex];
 		for ( int i = 0; i < mesh->triangleCount; ++i )
 		{
-			primitives[primitiveIndex++] = Primitive{ TRIANGLE_BIT,
+			auto matId = meshes[instance.meshIndex]->triangles[i].material;
+			int transparentModifier = materials[matId].pbrtMaterialType == lighthouse2::MaterialType::PBRT_GLASS ? 1 : 0;
+			primitives[primitiveIndex++] = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ),
 													  make_float3( instance.transform * mesh->positions[i * 3] ),
 													  make_float3( instance.transform * mesh->positions[i * 3 + 1] ),
 													  make_float3( instance.transform * mesh->positions[i * 3 + 2] ),
@@ -110,8 +112,9 @@ void Geometry::addPlane( float3 normal, float d )
 }
 void Geometry::addSphere( float3 pos, float r, Material mat )
 {
+	int transparentModifier = mat.type == GLASS ? 1 : 0;
 	spheres.push_back( Primitive{
-		SPHERE_BIT, pos, make_float3( r * r, 0, 0 ),
+		SPHERE_BIT | ( TRANSPARENT_BIT * transparentModifier ), pos, make_float3( r * r, 0, 0 ),
 		make_float3( 0 ),
 		static_cast<int>( sphereMaterials.size() ),
 		-1, -1 } );

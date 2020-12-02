@@ -26,16 +26,14 @@ ShortestDistance BruteForceIntersector::nearest( const Ray& r )
 		}
 	}
 	if ( minIndex == -1 ) return ShortestDistance{ Distance{ MAX_DISTANCE }, nullptr };
-	if ( primitives[minIndex].flags > 100 )
-	{
-		cout << "What?" << endl;
-	}
 	return ShortestDistance{ nearest, &primitives[minIndex] };
 }
 bool BruteForceIntersector::isOccluded( const Ray& r, float object )
 {
 	for ( int i = 0; i < count; ++i )
 	{
+		//		Transparent objects don't occlude
+		if ( primitives[i].flags & TRANSPARENT_BIT ) continue;
 		auto d = distanceToPrimitive( primitives[i], r );
 		if ( d.d > 0 && d.d < object )
 		{

@@ -2,4 +2,5 @@
 .idea/
 apps/_shareddata/sky_15.hdr.bin
 cmake-build-debug/
+cmake-build-release/
 lib/RenderCore_Optix7/optix/.optix.maxwell.cu.ptx

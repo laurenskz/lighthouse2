@@ -31,13 +31,23 @@ void RenderCore::Init()
 	intersector = new BruteForceIntersector();
 	auto* env = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
-		rayTracer = new RayTracer( env, lighting );
-//	rayTracer = new PathTracer( env, lighting );
+#ifdef WHITTED
+	rayTracer = new RayTracer( env, lighting );
+#else
+	rayTracer = new PathTracer( env, lighting );
+#endif
 	PixelRenderer* baseRenderer = new BasePixelRenderer( rayTracer );
-//	baseRenderer = new AntiAliasedRenderer( baseRenderer );
-//	baseRenderer = new AveragingPixelRenderer( baseRenderer );
-//	renderer = new MultiThreadedRenderer( baseRenderer );
-		renderer = new SingleCoreRenderer( baseRenderer );
+#ifdef ANTI_ALIASING
+	baseRenderer = new AntiAliasedRenderer( baseRenderer );
+#endif
+#ifndef WHITTED
+	baseRenderer = new AveragingPixelRenderer( baseRenderer );
+#endif
+#ifdef MULTITHREADED
+	renderer = new MultiThreadedRenderer( baseRenderer );
+#else
+	renderer = new SingleCoreRenderer( baseRenderer );
+#endif
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -64,7 +74,9 @@ void RenderCore::SetLights( const CoreLightTri* triLights, const int triLightCou
 							const CoreDirectionalLight* directionalLights, const int directionalLightCount )
 {
 	lighting->SetLights( triLights, triLightCount, pointLights, pointLightCount, spotLights, spotLightCount, directionalLights, directionalLightCount );
+#ifndef WHITTED
 	geometry->SetLights( triLights, triLightCount );
+#endif
 }
 void RenderCore::FinalizeInstances()
 {

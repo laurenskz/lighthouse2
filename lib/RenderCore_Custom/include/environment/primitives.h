@@ -13,6 +13,7 @@ const uint TRIANGLE_BIT = (uint)1 << (uint)1;
 const uint PLANE_BIT = (uint)1 << (uint)2;
 const uint CULLING_BIT = (uint)1 << (uint)3;
 const uint LIGHT_BIT = (uint)1 << (uint)4;
+const uint TRANSPARENT_BIT = (uint)1 << (uint)5;
 
 struct Primitive
 {
