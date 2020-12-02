@@ -57,10 +57,6 @@ float Lighting::illuminationFrom( const CoreSpotLight& light, const float3& pos,
 {
 	auto directionFromLight = normalize( pos - light.position );
 	auto d = length( pos - light.position );
-	if ( d < 20 )
-	{
-		cout << endl;
-	}
 	if ( !intersector->isOccluded( Ray{ light.position, directionFromLight }, d - ( 1e-3 ) ) )
 	{
 		float cosDirection = dot( directionFromLight, light.direction );

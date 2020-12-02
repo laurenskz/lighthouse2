@@ -6,14 +6,14 @@
 namespace lh2core
 {
 
-void BruteForceIntersector::setPrimitives( Primitive* primitives, int count )
+void BruteForceIntersector::setPrimitives( Primitive* newPrimitives, int newCount )
 {
-	this->primitives = primitives;
-	this->count = count;
+	this->primitives = newPrimitives;
+	this->count = newCount;
 }
 ShortestDistance BruteForceIntersector::nearest( const Ray& r )
 {
-	Distance nearest = Distance{ MAX_DISTANCE };
+	auto nearest = Distance{ MAX_DISTANCE };
 	int minIndex = -1;
 	for ( int i = 0; i < count; ++i )
 	{

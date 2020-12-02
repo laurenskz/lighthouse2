@@ -31,7 +31,7 @@ class BruteForceIntersector : public Intersector
 
 
   public:
-	void setPrimitives( Primitive* primitives, int count ) override;
+	void setPrimitives( Primitive* newPrimitives, int newCount ) override;
 	ShortestDistance nearest( const Ray& r ) override;
 	bool isOccluded( const Ray& r, float d ) override;
 

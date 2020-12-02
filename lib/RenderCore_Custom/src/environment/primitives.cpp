@@ -30,7 +30,7 @@ float distanceToSphereFromInside( const Primitive& primitive, Ray r )
 	auto r2 = primitive.v2.x;
 	float3 oc = r.start - center;
 	float a = dot( r.direction, r.direction );
-	float b = 2.0 * dot( oc, r.direction );
+	float b = 2.0f * dot( oc, r.direction );
 	float c = dot( oc, oc ) - r2;
 	float discriminant = b * b - 4 * a * c;
 	if ( discriminant < 0.0 )
@@ -43,13 +43,13 @@ float distanceToSphereFromInside( const Primitive& primitive, Ray r )
 		float numerator = -b - root;
 		if ( numerator > 0.0 )
 		{
-			return numerator / ( 2.0 * a );
+			return numerator / ( 2.0f * a );
 		}
 
 		numerator = -b + root;
 		if ( numerator > 0.0 )
 		{
-			return numerator / ( 2.0 * a );
+			return numerator / ( 2.0f * a );
 		}
 		else
 		{
@@ -73,7 +73,7 @@ float distanceToPlane( const Primitive& primitive, Ray r )
 }
 Distance distanceToTriangle( const Primitive& primitive, Ray r )
 {
-	float3 edge1, edge2, h, s, q;
+	float3 edge1{}, edge2{}, h{}, s{}, q{};
 	float a, f, u, v;
 	edge1 = primitive.v2 - primitive.v1;
 	edge2 = primitive.v3 - primitive.v1;
@@ -86,7 +86,7 @@ Distance distanceToTriangle( const Primitive& primitive, Ray r )
 	if ( ( a > -EPSILON ) && a < EPSILON )
 		return Distance{ MAX_DISTANCE };
 #endif
-	f = 1.0 / a;
+	f = 1.0f / a;
 	s = r.start - primitive.v1;
 	u = f * dot( s, h );
 	if ( u < 0.0 || u > 1.0 )

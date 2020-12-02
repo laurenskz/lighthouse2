@@ -155,7 +155,6 @@ Intersection Geometry::triangleIntersection( const Primitive& primitive, Distanc
 		result.type = GLASS;
 		result.refractionIndex = mat.refraction.value;
 	}
-	//	if ( true ) return Intersection{ intersectionLocation, normal, Material{ make_float3( 0 ), 0, GLASS,1.5 } };
 	if ( mat.color.textureID != -1 )
 	{
 		auto texture = textures[mat.color.textureID];
