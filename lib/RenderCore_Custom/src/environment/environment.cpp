@@ -2,18 +2,8 @@
 namespace lh2core
 {
 #define FLOAT_EQ( x, y ) abs( x - y ) < 1e-3;
-Intersection Environment::intersect( const Ray& r )
-{
-	const ShortestDistance& nearest = intersector->nearest( r );
-	if ( nearest.minDistance.d == MAX_DISTANCE )
-	{
-		return Intersection(); //We hit nothing
-	}
-	Intersection intersection = geometry->intersectionInformation( *nearest.primitive, nearest.minDistance, r );
-	intersection.hitObject = true;
-	return intersection;
-}
-Intersection TestEnvironment::intersect( const Ray& r )
+
+Intersection TestEnvironment::intersect( Ray& r )
 {
 	for ( int i = 0; i < rays.size(); ++i )
 	{
@@ -22,6 +12,24 @@ Intersection TestEnvironment::intersect( const Ray& r )
 			return intersections[i];
 		}
 	}
-	return Intersection();
+	return Intersection{};
+}
+void Environment::intersectPacket( const RayPacket& rayPacket )
+{
+	for ( int i = 0; i < rayPacket.rayCount; ++i )
+	{
+		rayPacket.intersections[i] = intersect( rayPacket.rays[i] );
+	}
+}
+Intersection Environment::intersect( Ray& r )
+{
+	intersector->intersect( r );
+	if ( r.t == MAX_DISTANCE )
+	{
+		return Intersection{};
+	}
+	auto intersection = geometry->intersectionInformation( r );
+	intersection.hitObject = true;
+	return intersection;
 }
 } // namespace lh2core

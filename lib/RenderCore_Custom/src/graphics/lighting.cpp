@@ -7,7 +7,7 @@ float Lighting::illuminationFrom( const CorePointLight& light, const float3& pos
 	const float3& fromLightVector = pos - light.position;
 	float d = length( fromLightVector );
 	const float3& directionFromLight = normalize( fromLightVector );
-	Ray shadowRay = Ray{ light.position, directionFromLight };
+	Ray shadowRay{ light.position, directionFromLight };
 	if ( intersector->isOccluded( shadowRay, d - 1e-3 ) ) return 0; //occluded
 	float lightnormal = clamp( dot( ( -directionFromLight ), normal ), 0.0, 1.0 );
 	return lightnormal * light.energy / ( d * d );
@@ -57,7 +57,8 @@ float Lighting::illuminationFrom( const CoreSpotLight& light, const float3& pos,
 {
 	auto directionFromLight = normalize( pos - light.position );
 	auto d = length( pos - light.position );
-	if ( !intersector->isOccluded( Ray{ light.position, directionFromLight }, d - ( 1e-3 ) ) )
+	Ray ray{ light.position, directionFromLight };
+	if ( !intersector->isOccluded( ray, d - ( 1e-3 ) ) )
 	{
 		float cosDirection = dot( directionFromLight, light.direction );
 		float irradiance = clamp( dot( -directionFromLight, normal ), 0.0, 1.0 );

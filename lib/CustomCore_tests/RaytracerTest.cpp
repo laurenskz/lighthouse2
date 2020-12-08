@@ -53,15 +53,15 @@ TEST_F( RayFixture, SphereIntersects )
 	const float3& pos = make_float3( 0, 0, 0 );
 	float r = 1;
 	auto sphere = Primitive{ SPHERE_BIT, pos, make_float3( r * r, 0, 0 ) };
-	ASSERT_EQ( 1, distanceToSphere( sphere, Ray{ make_float3( 0, 0, -2 ), make_float3( 0, 0, 1 ) } ) );
+	ASSERT_EQ( 1, intersectSphere( sphere, Ray{ make_float3( 0, 0, -2 ), make_float3( 0, 0, 1 ) } ) );
 	const float3& rayDirection = normalize( make_float3( 0.2, 0.1, 1 ) );
 	const Ray& ray2 = Ray{ make_float3( 0, 0, -3 ), rayDirection };
-	float t = distanceToSphere( sphere, ray2 );
+	float t = intersectSphere( sphere, ray2 );
 	ASSERT_NEAR( 2.171, t, 1e-3 );
-	auto intersectionPoint = locationAt( t, ray2 );
+	auto intersectionPoint = intersectionLocation( t, ray2 );
 	ASSERT_NEAR( 1, length( intersectionPoint ), 1e-3 );
-	cout << distanceToSphere( sphere, Ray{ make_float3( 0 ), make_float3( 0, 1, 0 ) } ) << endl;
-	cout << distanceToSphereFromInside( sphere, Ray{ make_float3( 0.1 ), make_float3( 0, 1, 0 ) } ) << endl;
+	cout << intersectSphere( sphere, Ray{ make_float3( 0 ), make_float3( 0, 1, 0 ) } ) << endl;
+	cout << intersectSphereInside( sphere, Ray{ make_float3( 0.1 ), make_float3( 0, 1, 0 ) } ) << endl;
 	//	auto intersection = sphereIntersection(sphere, intersectionPoint, materials );
 	//	EXPECT_VEC_EQ( intersection.location, intersectionPoint );
 	//	EXPECT_VEC_EQ( intersectionPoint, intersection.location );
@@ -109,7 +109,7 @@ TEST_F( RayFixture, Hemisphere )
 //	Plane plane = Plane( make_float3( 0, 1, 0 ), 2, 0 );
 //	const Ray& r = Ray{ make_float3( 0, 2, 0 ), normalize( make_float3( -2, -1, 0 ) ) };
 //	auto t = plane.distanceTo( r );
-//	auto intersection = locationAt( t, r );
+//	auto intersection = intersectionLocation( t, r );
 //	cout << intersection;
 //}
 //

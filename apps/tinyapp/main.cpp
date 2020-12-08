@@ -50,11 +50,11 @@ void PrepareScene()
 //	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
 
 	//		Directional light
-	//		renderer->AddDirectionalLight( normalize( make_float3( -1, -1, -1 ) ), make_float3( 1.0 / 2 ) );
+	renderer->AddDirectionalLight( normalize( make_float3( -1, -1, -1 ) ), make_float3( 1.0 / 2 ) );
 
-	//	Spot light
-	const float3& spotPos = make_float3( 2, 8, 2 );
-	renderer->AddSpotLight( spotPos, normalize( make_float3( 0 ) - spotPos ), 0.97, 0.92, make_float3( 20 ), true );
+//		Spot light
+//	const float3& spotPos = make_float3( 2, 8, 2 );
+//	renderer->AddSpotLight( spotPos, normalize( make_float3( 0 ) - spotPos ), 0.97, 0.92, make_float3( 20 ), true );
 
 	//	Area light for path tracer
 	//	int lightMat = renderer->AddMaterial( make_float3( 3 ) );

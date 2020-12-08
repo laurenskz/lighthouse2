@@ -8,12 +8,12 @@ using namespace lighthouse2;
 namespace lh2core
 {
 inline float schlick( float n1, float n2, float cosTheta );
-void calculateGlass(Ray& reflected,Ray& refracted,float& reflectivityFraction,const Ray& r, const Intersection& intersection);
+void calculateGlass( Ray& reflected, Ray& refracted, float& reflectivityFraction, const Ray& r, const Intersection& intersection );
 
 class IRayTracer
 {
   public:
-	[[nodiscard]] virtual float3 trace( Ray r, int count ) = 0;
+	[[nodiscard]] virtual float3 trace( Ray& r, int count ) = 0;
 };
 
 class RayTracer : public IRayTracer
@@ -24,18 +24,18 @@ class RayTracer : public IRayTracer
 	ILighting* lighting;
 	RayTracer( IEnvironment* environment, ILighting* lighting ) : environment( environment ), lighting( lighting ){};
 	static float3 rayDirection( float u, float v, const ViewPyramid& view );
-	[[nodiscard]] float3 trace( Ray r, int count );
-	float3 computeGlassColor( const Ray& r, int count, const Intersection& intersection );
+	[[nodiscard]] float3 trace( Ray& r,int count ) override;
+	void traceTo( Ray* rays, Intersection* intersections, float3* buffer, int rayCount, int recursionCount );
+	float3 computeGlassColor( const Ray& r, int count, Intersection& intersection );
 	static Ray reflect( const Intersection& intersection, const Ray& r );
-
 
   private:
 	inline static float3 screenPos( float u, float v, const ViewPyramid& view );
 	inline static float3 reflect( const float3& direction, const float3& normal );
 
 	float3 computeDiffuseColor( const Intersection& intersection );
-	float3 computeSpecularColor( const Ray& r, int count, const Intersection& intersection );
-	float3 traceReflectedRay( const Ray& r, int count, const Intersection& intersection );
+	float3 computeSpecularColor( const Ray& r, int count, Intersection& intersection );
+	float3 traceReflectedRay( const Ray& r, int count, Intersection& intersection );
 };
 
 class PathTracer : public IRayTracer
@@ -44,7 +44,7 @@ class PathTracer : public IRayTracer
 	IEnvironment* environment;
 	ILighting* lighting;
 	PathTracer( IEnvironment* environment, ILighting* lighting ) : environment( environment ), lighting( lighting ){};
-	float3 trace( Ray r, int count ) override;
+	float3 trace( Ray& r, int count) override;
 	float3 randomDirectionFrom( const float3& normal );
 	float3 randomHemisphereDirection();
 

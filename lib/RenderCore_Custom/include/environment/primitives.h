@@ -15,17 +15,6 @@ const uint CULLING_BIT = (uint)1 << (uint)3;
 const uint LIGHT_BIT = (uint)1 << (uint)4;
 const uint TRANSPARENT_BIT = (uint)1 << (uint)5;
 
-struct Primitive
-{
-	uint flags;
-	float3 v1;
-	float3 v2;
-	float3 v3;
-	int meshIndex;		// The index of the mesh
-	int triangleNumber; //Number of this triangle inside the mesh
-	int instanceIndex;	//The transformation
-};
-
 struct Primitives
 {
 	Primitive* data;
@@ -43,14 +32,22 @@ inline bool isSphere( const Primitive& primitive ) { return primitive.flags & SP
 inline bool isTriangle( const Primitive& primitive ) { return primitive.flags & TRIANGLE_BIT; }
 inline bool isPlane( const Primitive& primitive ) { return primitive.flags & PLANE_BIT; }
 
-inline float3 locationAt( float t, Ray r ) { return r.start + t * r.direction; };
+inline float3 intersectionLocation( const Ray& r ) { return r.start + r.t * r.direction; };
 
-Distance distanceToPrimitive( const Primitive& primitive, Ray r );
-float distanceToSphere( const Primitive& primitive, Ray r );
-float distanceToSphereFromInside( const Primitive& primitive, Ray r );
-Distance distanceToTriangle( const Primitive& primitive, Ray r );
-float distanceToPlane( const Primitive& primitive, Ray r );
+void intersectPrimitive( const Primitive* primitive, Ray& r );
+void intersectSphere( const Primitive* primitive, Ray& r );
+void intersectSphereInside( const Primitive* primitive, Ray& r );
+void intersectTriangle( const Primitive* primitive, Ray& r );
+void intersectPlane( const Primitive* primitive, Ray& r );
 
-Intersection sphereIntersection( const Primitive& primitive, const Material& mat, Ray r, float t );
-Intersection planeIntersection( const Primitive& primitive, const Material& mat, Ray r, float t );
+Intersection sphereIntersection( const Ray& r, const Material& mat );
+Intersection planeIntersection( const Ray& r, const Material& mat );
+inline void updateT( float t, const Primitive* primitive, Ray& ray )
+{
+	if ( t < ray.t )
+	{
+		ray.t = t;
+		ray.primitive = primitive;
+	}
+}
 } // namespace lh2core

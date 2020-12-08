@@ -7,9 +7,8 @@ namespace lh2core
 {
 const float2 OFFSETS[]{ make_float2( 0.1, 0.25 ), make_float2( 0.7, 0.1 ), make_float2( 0.8, 0.25 ), make_float2( 0.9, 0.7 ) };
 
-float3 BasePixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
+float3 BasePixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection )
 {
-	Ray ray{};
 	ray.start = view.pos;
 	const float3& rayDirection = RayTracer::rayDirection( ( x / width ), ( y / height ), view );
 	ray.direction = rayDirection;
@@ -19,12 +18,12 @@ void SingleCoreRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 {
 	pixelRenderer->beforeRender( view, screen->width, screen->height );
 	Ray ray{};
-	ray.start = view.pos;
+	Intersection intersection{};
 	for ( int y = 0; y < screen->height; ++y )
 	{
 		for ( int x = 0; x < screen->width; ++x )
 		{
-			const float3& fColor = pixelRenderer->render( view, x, y, screen->width, screen->height );
+			const float3& fColor = pixelRenderer->render( view, x, y, screen->width, screen->height, ray, intersection );
 			plotColor( screen, y, x, fColor );
 		}
 	}
@@ -56,11 +55,13 @@ void MultiThreadedRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 void MultiThreadedRenderer::renderRows( const ViewPyramid& view, Bitmap* screen, int start, uint end )
 {
 	end = std::min( end, screen->height );
+	Ray ray{};
+	Intersection intersection{};
 	for ( int y = start; y < end; ++y )
 	{
 		for ( int x = 0; x < screen->width; ++x )
 		{
-			const float3& fColor = pixelRenderer->render( view, x, y, screen->width, screen->height );
+			const float3& fColor = pixelRenderer->render( view, x, y, screen->width, screen->height, ray, intersection );
 			plotColor( screen, y, x, fColor );
 		}
 	}
@@ -71,20 +72,20 @@ MultiThreadedRenderer::MultiThreadedRenderer( PixelRenderer* pixelRenderer )
 	auto const cpuCount = std::max( (uint)1, std::thread::hardware_concurrency() );
 	threadPool = new ctpl::thread_pool( cpuCount );
 }
-float3 AntiAliasedRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
+float3 AntiAliasedRenderer::render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection )
 {
 	auto result = make_float3( 0 );
 	for ( auto offset : OFFSETS )
 	{
-		const float3& color = renderer->render( view, x + offset.x, y + offset.y, width, height );
+		const float3& color = renderer->render( view, x + offset.x, y + offset.y, width, height, ray, intersection );
 		result += color;
 	}
 	return result / 4;
 }
-float3 AveragingPixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
+float3 AveragingPixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection )
 {
 	int pixelIndex = floor( y * round( width ) + x );
-	pixelData[pixelIndex] += renderer->render( view, x, y, width, height );
+	pixelData[pixelIndex] += renderer->render( view, x, y, width, height, ray, intersection );
 	return pixelData[pixelIndex] / numFrames;
 }
 
@@ -102,7 +103,7 @@ void AveragingPixelRenderer::beforeRender( const ViewPyramid& view, int width, i
 	lastRenderPos = view.pos;
 	numFrames += 1;
 }
-float3 TestPixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height )
+float3 TestPixelRenderer::render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection )
 {
 	return make_float3( 1 ) * count / 10.0;
 }

@@ -16,16 +16,16 @@ namespace lh2core
 class PixelRenderer
 {
   public:
-	virtual float3 render( const ViewPyramid& view, float x, float y, float width, float height ) = 0;
+	virtual float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) = 0;
 	virtual void beforeRender( const ViewPyramid& view, int width, int height ){};
 };
 
-class TestPixelRenderer : public PixelRenderer{
+class TestPixelRenderer : public PixelRenderer
+{
   public:
 	void beforeRender( const ViewPyramid& view, int width, int height ) override;
-	float3 render( const ViewPyramid& view, float x, float y, float width, float height ) override;
+	float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) override;
 	float count = 0;
-
 };
 class Renderer
 {
@@ -40,13 +40,13 @@ class BasePixelRenderer : public PixelRenderer
 
   public:
 	BasePixelRenderer( IRayTracer* tracer ) : rayTracer( tracer ){};
-	float3 render( const ViewPyramid& view, float x, float y, float width, float height ) override;
+	float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) override;
 };
 
 class AveragingPixelRenderer : public PixelRenderer
 {
   public:
-	float3 render( const ViewPyramid& view, float x, float y, float width, float height ) override;
+	float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) override;
 	void beforeRender( const ViewPyramid& view, int width, int height ) override;
 	AveragingPixelRenderer( PixelRenderer* renderer ) : renderer( renderer ){};
 
@@ -63,7 +63,7 @@ class AntiAliasedRenderer : public PixelRenderer
 {
   public:
 	AntiAliasedRenderer( PixelRenderer* renderer ) : renderer( renderer ){};
-	float3 render( const ViewPyramid& view, float x, float y, float width, float height ) override;
+	float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) override;
 
   private:
 	PixelRenderer* renderer;

@@ -18,9 +18,10 @@ float3 RayTracer::rayDirection( float u, float v, const ViewPyramid& view )
 
 	return normalize( ( screenPos( u, v, view ) - view.pos ) );
 }
-float3 RayTracer::trace( Ray r, int count = 3 )
+float3 RayTracer::trace( Ray& r, int count )
 {
 	if ( count <= 0 ) return BLACK; //Recursion limit
+	r.t = MAX_DISTANCE;
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
 		return make_float3( 0.529, 0.808, 0.929 ); //Black if nothing hit
@@ -38,7 +39,42 @@ float3 RayTracer::trace( Ray r, int count = 3 )
 	}
 	return BLACK;
 }
-float3 RayTracer::computeGlassColor( const Ray& r, int count, const Intersection& intersection )
+
+void RayTracer::traceTo( Ray* rays, Intersection* intersections, float3* buffer, int rayCount, int recursionCount )
+{
+	//	if ( recursionCount <= 0 )
+	//	{
+	//		for ( int i = 0; i < rayCount; ++i )
+	//		{
+	//			buffer[i] = BLACK; //Recursion limit
+	//		}
+	//	}
+	//	environment->insersectTo( rays, rayCount, intersections );
+	//	for ( int i = 0; i < rayCount; ++i )
+	//	{
+	//		if ( !intersections[i].hitObject )
+	//		{
+	//			rays[i].alive = false;
+	//			buffer[i] = make_float3( 0.529, 0.808, 0.929 ); //Black if nothing hit
+	//			continue;
+	//		}
+	//	}
+	//	if ( intersection.mat.type == DIFFUSE )
+	//	{
+	//		return computeDiffuseColor( intersection );
+	//	}
+	//	if ( intersection.mat.type == SPECULAR && intersection.mat.specularity > 0 )
+	//	{
+	//		return computeSpecularColor( r, count, intersection );
+	//	}
+	//	if ( intersection.mat.type == GLASS )
+	//	{
+	//		return computeGlassColor( r, count, intersection );
+	//	}
+	//	return BLACK;
+}
+
+float3 RayTracer::computeGlassColor( const Ray& r, int count, Intersection& intersection )
 {
 	Ray refracted;
 	Ray reflected;
@@ -81,14 +117,13 @@ void calculateGlass( Ray& reflected, Ray& refracted, float& reflectivityFraction
 	reflected = Ray{ intersection.location + ( 1e-3 * reflectedDirection ), reflectedDirection };
 }
 
-float3 RayTracer::computeSpecularColor( const Ray& r, int count, const Intersection& intersection )
+float3 RayTracer::computeSpecularColor( const Ray& r, int count, Intersection& intersection )
 {
-	float3 reflectionColor = traceReflectedRay( r, count, intersection );
-	return ( 1 - intersection.mat.specularity ) * computeDiffuseColor( intersection ) +
-		   ( intersection.mat.specularity ) *
-			   reflectionColor;
+	const float3& diffuseColor = ( 1 - intersection.mat.specularity ) * computeDiffuseColor( intersection );
+	const float3& reflectionColor = traceReflectedRay( r, count, intersection );
+	return diffuseColor + intersection.mat.specularity * reflectionColor;
 }
-float3 RayTracer::traceReflectedRay( const Ray& r, int count, const Intersection& intersection )
+float3 RayTracer::traceReflectedRay( const Ray& r, int count, Intersection& intersection )
 {
 	Ray reflectedRay = reflect( intersection, r );
 	const float3& reflectionColor = trace( reflectedRay, count - 1 );
@@ -115,8 +150,10 @@ float3 RayTracer::reflect( const float3& direction, const float3& normal )
 {
 	return normalize( direction - ( ( 2 * dot( direction, normal ) ) * normal ) );
 }
-float3 PathTracer::trace( Ray r, int count )
+
+float3 PathTracer::trace( Ray& r, int count )
 {
+	r.t = MAX_DISTANCE;
 	if ( count <= 0 ) return BLACK; //Recursion limit
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
@@ -139,7 +176,8 @@ float3 PathTracer::trace( Ray r, int count )
 
 	if ( goReflected )
 	{
-		return trace( RayTracer::reflect( intersection, r ), count - 1 );
+		Ray ray = RayTracer::reflect( intersection, r );
+		return trace( ray, count - 1 );
 	}
 	if ( intersection.mat.type == GLASS )
 	{

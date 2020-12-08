@@ -37,22 +37,6 @@ void Geometry::setInstance( const int instanceIdx, const int meshIdx, const mat4
 		instances[instanceIdx].transform = transform;
 	}
 }
-Intersection Geometry::intersectionInformation( const Primitive& primitive, Distance distance, Ray r )
-{
-	if ( isSphere( primitive ) )
-	{
-		return sphereIntersection( primitive, sphereMaterials[primitive.meshIndex], r, distance.d );
-	}
-	if ( isPlane( primitive ) )
-	{
-		return planeIntersection( primitive, Material{}, r, distance.d );
-	}
-	if ( isTriangle( primitive ) )
-	{
-		return triangleIntersection( primitive, distance, r );
-	}
-	return Intersection();
-}
 Primitives Geometry::getPrimitives()
 {
 	if ( isDirty )
@@ -137,45 +121,45 @@ uint Geometry::computePrimitiveCount()
 	}
 	return planes.size() + spheres.size() + triangleCount + lightCount;
 }
-Intersection Geometry::triangleIntersection( const Primitive& primitive, Distance distance, Ray r )
+Intersection Geometry::triangleIntersection( const Ray& r )
 {
-	const float3& intersectionLocation = locationAt( distance.d, r );
-	if ( primitive.flags & LIGHT_BIT )
+	Intersection intersection{};
+	intersection.location = intersectionLocation( r );
+	if ( r.primitive->flags & LIGHT_BIT )
 	{
-		return Intersection{ intersectionLocation, make_float3( 0 ), lightMaterials[primitive.meshIndex] };
+		intersection.mat = lightMaterials[r.primitive->meshIndex];
 	}
-	const CoreTri& triangleData = meshes[primitive.meshIndex]->triangles[primitive.triangleNumber];
-	auto normal = distance.u * triangleData.vN0 + ( distance.v ) * triangleData.vN1 + ( 1 - distance.u - distance.v ) * triangleData.vN2;
-	normal = normalize( make_float3( transforms[primitive.instanceIndex] * ( make_float4( normal ) ) ) );
+	const CoreTri& triangleData = meshes[r.primitive->meshIndex]->triangles[r.primitive->triangleNumber];
+	auto normal = r.u * triangleData.vN0 + ( r.v ) * triangleData.vN1 + ( 1 - r.u - r.v ) * triangleData.vN2;
+	intersection.normal = normalize( make_float3( transforms[r.primitive->instanceIndex] * ( make_float4( normal ) ) ) );
 	auto mat = materials[triangleData.material];
-	Material result;
-	result.type = DIFFUSE;
+	intersection.mat.type = DIFFUSE;
 	if ( mat.pbrtMaterialType == lighthouse2::MaterialType::PBRT_GLASS )
 	{
-		result.type = GLASS;
-		result.refractionIndex = mat.refraction.value;
+		intersection.mat.type = GLASS;
+		intersection.mat.refractionIndex = mat.refraction.value;
 	}
 	if ( mat.color.textureID != -1 )
 	{
 		auto texture = textures[mat.color.textureID];
-		float2 uv = make_float2( distance.u, distance.v );
+		float2 uv = make_float2( r.u, r.v );
 		uv *= mat.color.uvscale;
 		uv += mat.color.uvoffset;
 		int x = floor( uv.x * texture.width );
 		int y = floor( uv.y * texture.height );
 		const uchar4& iColor = texture.idata[x + y * texture.width];
-		result.color = make_float3( (float)iColor.x / 256, (float)iColor.y / 256, (float)iColor.z / 256 );
+		intersection.mat.color = make_float3( (float)iColor.x / 256, (float)iColor.y / 256, (float)iColor.z / 256 );
 	}
 	else
 	{
-		result.color = mat.color.value;
+		intersection.mat.color = mat.color.value;
 	}
-	if ( mat.specular.value != 1e32 )
+	if ( mat.specular.value > (1e-4) )
 	{
-		result.type = SPECULAR;
-		result.specularity = mat.specular.value;
+		intersection.mat.type = SPECULAR;
+		intersection.mat.specularity = mat.specular.value;
 	}
-	return Intersection{ intersectionLocation, normal, result };
+	return intersection;
 }
 void Geometry::SetTextures( const CoreTexDesc* tex, const int textureCount )
 {
@@ -198,6 +182,21 @@ void Geometry::SetLights( const CoreLightTri* newLights, const int newLightCount
 	for ( int i = 0; i < newLightCount; ++i )
 	{
 		lightMaterials[i] = Material{ newLights[i].radiance, 0, LIGHT };
+	}
+}
+Intersection Geometry::intersectionInformation( const Ray& ray )
+{
+	if ( isTriangle( *ray.primitive ) )
+	{
+		return triangleIntersection( ray );
+	}
+	if ( isSphere( *ray.primitive ) )
+	{
+		return sphereIntersection( ray, sphereMaterials[ray.primitive->meshIndex] );
+	}
+	if ( isPlane( *ray.primitive ) )
+	{
+		return planeIntersection( ray, Material{} );
 	}
 }
 } // namespace lh2core

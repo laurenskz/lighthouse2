@@ -11,35 +11,36 @@ void BruteForceIntersector::setPrimitives( Primitive* newPrimitives, int newCoun
 	this->primitives = newPrimitives;
 	this->count = newCount;
 }
-ShortestDistance BruteForceIntersector::nearest( const Ray& r )
+void BruteForceIntersector::intersect( Ray& r )
 {
-	auto nearest = Distance{ MAX_DISTANCE };
-	int minIndex = -1;
 	for ( int i = 0; i < count; ++i )
 	{
-		Primitive prim = primitives[i];
-		auto d = distanceToPrimitive( prim, r );
-		if ( d.d > 0 && d.d < nearest.d )
-		{
-			nearest = d;
-			minIndex = i;
-		}
+		intersectPrimitive( &primitives[i], r );
 	}
-	if ( minIndex == -1 ) return ShortestDistance{ Distance{ MAX_DISTANCE }, nullptr };
-	return ShortestDistance{ nearest, &primitives[minIndex] };
 }
-bool BruteForceIntersector::isOccluded( const Ray& r, float object )
+bool BruteForceIntersector::isOccluded( Ray& r, float object )
 {
 	for ( int i = 0; i < count; ++i )
 	{
 		//		Transparent objects don't occlude
 		if ( primitives[i].flags & TRANSPARENT_BIT ) continue;
-		auto d = distanceToPrimitive( primitives[i], r );
-		if ( d.d > 0 && d.d < object )
-		{
-			return true; //Occlusion
-		}
+		intersectPrimitive( &primitives[i], r );
+		if ( r.t < object ) return true;
 	}
 	return false;
+}
+void BruteForceIntersector::intersectPacket( const RayPacket& packet )
+{
+	for ( int i = 0; i < packet.rayCount; ++i )
+	{
+		intersect( packet.rays[i] );
+	}
+}
+void BruteForceIntersector::packetOccluded( const RayPacket& packet )
+{
+	for ( int i = 0; i < packet.rayCount; ++i )
+	{
+		packet.occlusions[i] = isOccluded( packet.rays[i], packet.occlusionDistances[i] );
+	}
 }
 } // namespace lh2core

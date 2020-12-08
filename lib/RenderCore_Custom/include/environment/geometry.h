@@ -3,6 +3,7 @@
 
 using namespace lighthouse2;
 #include "core/base_definitions.h"
+#include "environment/intersections.h"
 #include "environment/primitives.h"
 namespace lh2core
 {
@@ -24,7 +25,8 @@ struct Instance
 };
 class IGeometry
 {
-	virtual Intersection intersectionInformation( const Primitive& primitive, Distance distance, Ray r ) = 0;
+  public:
+	virtual Intersection intersectionInformation( const Ray& ray) = 0;
 };
 class Geometry : public IGeometry
 {
@@ -46,7 +48,7 @@ class Geometry : public IGeometry
 	uint addPrimitives( int startIndex, const std::vector<Primitive>& toAdd );
 	uint computePrimitiveCount();
 	int addTriangles( int primitiveIndex );
-	Intersection triangleIntersection( const Primitive& primitive, Distance distance, Ray r );
+	Intersection triangleIntersection( const Ray& r );
 
   public:
 	void setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
@@ -58,7 +60,9 @@ class Geometry : public IGeometry
 	void finalizeInstances();
 	Primitives getPrimitives();
 	void addSphere( float3 pos, float r, Material mat );
-	Intersection intersectionInformation( const Primitive& primitive, Distance distance, Ray r );
+	Intersection intersectionInformation( const Ray& ray ) override;
+
+  public:
 	int addLights( int primitiveIndex );
 };
 } // namespace lh2core
