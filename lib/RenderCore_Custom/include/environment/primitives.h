@@ -28,6 +28,7 @@ struct Distance
 	float v{};
 };
 
+
 inline bool isSphere( const Primitive& primitive ) { return primitive.flags & SPHERE_BIT; }
 inline bool isTriangle( const Primitive& primitive ) { return primitive.flags & TRIANGLE_BIT; }
 inline bool isPlane( const Primitive& primitive ) { return primitive.flags & PLANE_BIT; }

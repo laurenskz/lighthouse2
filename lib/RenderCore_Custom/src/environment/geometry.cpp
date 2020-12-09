@@ -98,7 +98,7 @@ void Geometry::addSphere( float3 pos, float r, Material mat )
 {
 	int transparentModifier = mat.type == GLASS ? 1 : 0;
 	spheres.push_back( Primitive{
-		SPHERE_BIT | ( TRANSPARENT_BIT * transparentModifier ), pos, make_float3( r * r, 0, 0 ),
+		SPHERE_BIT | ( TRANSPARENT_BIT * transparentModifier ), pos, make_float3( r * r, r, 0 ),
 		make_float3( 0 ),
 		static_cast<int>( sphereMaterials.size() ),
 		-1, -1 } );

@@ -14,6 +14,13 @@ Intersection TestEnvironment::intersect( Ray& r )
 	}
 	return Intersection{};
 }
+void TestEnvironment::intersectPacket( const RayPacket& rayPacket )
+{
+	for ( int i = 0; i < rayPacket.rayCount; ++i )
+	{
+		rayPacket.intersections[i] = intersect( rayPacket.rays[i] );
+	}
+}
 void Environment::intersectPacket( const RayPacket& rayPacket )
 {
 	for ( int i = 0; i < rayPacket.rayCount; ++i )

@@ -21,6 +21,7 @@ class TestEnvironment : public IEnvironment
 {
 
   public:
+	void intersectPacket( const RayPacket& rayPacket ) override;
 	TestEnvironment( std::vector<Intersection> intersections,
 					 std::vector<Ray> rays ) : intersections( std::move( intersections ) ), rays( std::move( rays ) ){};
 	Intersection intersect( Ray& r )  override;
