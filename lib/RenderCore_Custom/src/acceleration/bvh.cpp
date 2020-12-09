@@ -21,9 +21,7 @@ bool TopLevelBVH::isOccluded( Ray& r, float d )
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 {
 	auto* tree = new BVHTree( primitives, count );
-	tree->nodes[0].bounds = calculateBounds( primitives, tree->primitiveIndices, 0, count );
-	tree->nodes[0].count = count;
-	tree->nodes[0].leftFirst = 0;
+
 	subDivide( tree, 0 );
 	return tree;
 }
@@ -64,9 +62,9 @@ bool BaseBuilder::doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, S
 		const float3& centroid = tree->centroids[tree->primitiveIndices[i]];
 		for ( int axis = 1; axis <= 3; ++axis )
 		{
-			auto splitPlanePosition = SplitPlane{ axis, axis == 1 ? centroid.x : axis == 2 ? centroid.y
-																			 : axis == 3   ? centroid.z
-																						   : -1 };
+			auto splitPlanePosition = SplitPlane{ axis, axis == AXIS_X ? centroid.x : axis == AXIS_Y ? centroid.y
+																				  : axis == AXIS_Z	 ? centroid.z
+																									 : -1 };
 			auto candidate = evaluateSplitPlane( splitPlanePosition, *tree, nodeIdx );
 			float splitCost = sah( candidate );
 			if ( splitCost < cost )
@@ -87,11 +85,15 @@ BVHTree::BVHTree( Primitive* primitives, int primitiveCount )
 	this->primitives = primitives;
 	this->primitiveCount = primitiveCount;
 	this->primitiveIndices = new int[primitiveCount];
+	this->centroids = new float3[primitiveCount];
 	for ( int i = 0; i < primitiveCount; ++i )
 	{
 		primitiveIndices[i] = i;
 		centroids[i] = calculateCentroid( primitives[i] );
 	}
+	nodes[0].bounds = calculateBounds( primitives, primitiveIndices, 0, primitiveCount );
+	nodes[0].count = primitiveCount;
+	nodes[0].leftFirst = 0;
 }
 BVHTree::~BVHTree()
 {
@@ -132,8 +134,8 @@ void BVHTree::reorder( const SplitPlane& plane, int start, int count )
 		}
 	}
 }
-bool BVHTree::toLeft( const SplitPlane& plane, const float3& centroid ) { return plane.axis == 1 ? centroid.x <= plane.location : plane.axis == 2 ? centroid.y <= plane.location
-																																				  : plane.axis == 3 && centroid.z <= plane.location; }
+bool BVHTree::toLeft( const SplitPlane& plane, const float3& centroid ) { return plane.axis == AXIS_X ? centroid.x <= plane.location : plane.axis == AXIS_Y ? centroid.y <= plane.location
+																																							: plane.axis == AXIS_Z && centroid.z <= plane.location; }
 AABB calculateBounds( Primitive* primitives, const int* indices, int first, int count )
 {
 	AABB bounds;
@@ -184,6 +186,7 @@ float3 calculateCentroid( const Primitive& primitive )
 	{
 		return primitive.v1;
 	}
+	return make_float3( 0 );
 }
 SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, int nodeIdx )
 {

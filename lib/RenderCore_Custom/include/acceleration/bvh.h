@@ -7,6 +7,9 @@
 using namespace lighthouse2;
 namespace lh2core
 {
+#define AXIS_X 1
+#define AXIS_Y 2
+#define AXIS_Z 3
 struct AABB
 {
 	float3 min = make_float3( MAXFLOAT );
@@ -68,13 +71,19 @@ struct SplitResult
 	int lCount = 0;
 	int rCount = 0;
 };
+// Bounding boxes
 AABB calculateBounds( Primitive* primitives, const int* indices, int first, int count );
 AABB boundBoth( const AABB& first, const AABB& second );
-SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, int nodeIdx );
 void updateAABB( AABB& bounds, const Primitive& primitive );
-float surfaceArea( const AABB& box );
-inline float sah( const SplitResult& splitResult ) { return surfaceArea( splitResult.left ) * splitResult.lCount + surfaceArea( splitResult.right ) * splitResult.rCount; }
+
+//Misc
 float3 calculateCentroid( const Primitive& primitive );
+float surfaceArea( const AABB& box );
+
+
+
+SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, int nodeIdx );
+inline float sah( const SplitResult& splitResult ) { return surfaceArea( splitResult.left ) * splitResult.lCount + surfaceArea( splitResult.right ) * splitResult.rCount; }
 class Heuristic
 {
 	//	Cost if node is used as leaf
