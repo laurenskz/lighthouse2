@@ -139,8 +139,33 @@ TEST_F( BVHFixture, SplitPlaneCreator )
 	SplitPlane plane{};
 	SplitResult result{};
 	auto doSplit = split->doSplitPlane( tree, 0, plane, result );
-	ASSERT_TRUE(doSplit);
+	ASSERT_TRUE( doSplit );
 	ASSERT_EQ( 1, result.lCount );
 	EXPECT_AABB_EQ( ( AABB{ make_float3( -7 ), make_float3( -5 ) } ), result.left );
-	EXPECT_AABB_EQ( ( AABB{ make_float3( -2 ), make_float3( 1 ) } ), result.right);
+	EXPECT_AABB_EQ( ( AABB{ make_float3( -2 ), make_float3( 1 ) } ), result.right );
+}
+
+TEST_F( BVHFixture, UpdateTree )
+{
+	int count = 3;
+	Primitive primitive[] = {
+		Primitive{ TRIANGLE_BIT, make_float3( 0 ), make_float3( 0, 1, 1 ), make_float3( 1 ) },
+		Primitive{ TRIANGLE_BIT, make_float3( -2 ), make_float3( -1 ), make_float3( -1, 0, 0 ) },
+		Primitive{ TRIANGLE_BIT, make_float3( -7 ), make_float3( -6 ), make_float3( -5 ) } };
+	auto* tree = new BVHTree( primitive, count );
+	auto split = new OptimalExpensiveSplit();
+	SplitPlane plane{};
+	SplitResult result{};
+	auto doSplit = split->doSplitPlane( tree, 0, plane, result );
+	auto* builder = new BaseBuilder( split );
+	BVHNode& root = tree->nodes[0];
+	builder->updateTree( tree, root, plane, result );
+	EXPECT_AABB_EQ( ( AABB{ make_float3( -7 ), make_float3( -5 ) } ), tree->nodes[root.leftChild()].bounds );
+	EXPECT_AABB_EQ( ( AABB{ make_float3( -2 ), make_float3( 1 ) } ), tree->nodes[root.rightChild()].bounds );
+	ASSERT_EQ( root.splitAxis(), AXIS_X );
+	ASSERT_EQ( tree->primitiveIndices[0], 2 );
+	ASSERT_EQ( 1, tree->nodes[root.leftChild()].count );
+	ASSERT_EQ( 2, tree->nodes[root.rightChild()].count );
+	ASSERT_EQ( 1, tree->nodes[root.rightChild()].primitiveIndex() );
+	ASSERT_EQ( 0, tree->nodes[root.leftChild()].primitiveIndex() );
 }
