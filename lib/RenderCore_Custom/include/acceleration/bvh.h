@@ -76,6 +76,8 @@ struct SplitResult
 {
 	AABB left{};
 	AABB right{};
+	AABB lCentroids{};
+	AABB rCentroids{};
 	int lCount = 0;
 	int rCount = 0;
 };
@@ -116,13 +118,13 @@ class BVHBuilder
 class SplitPlaneCreator
 {
   public:
-	virtual bool doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result ) = 0;
+	virtual bool doSplitPlane( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, SplitPlane& plane, SplitResult& result ) = 0;
 };
 
 class OptimalExpensiveSplit : public SplitPlaneCreator
 {
   public:
-	bool doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result ) override;
+	bool doSplitPlane( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, SplitPlane& plane, SplitResult& result ) override;
 };
 
 class BaseBuilder : public BVHBuilder
@@ -133,7 +135,7 @@ class BaseBuilder : public BVHBuilder
   public:
 	explicit BaseBuilder( SplitPlaneCreator* splitPlaneCreator ) : splitPlaneCreator( splitPlaneCreator ){};
 	BVHTree* buildBVH( Primitive* primitives, int count ) override;
-	void subDivide( BVHTree* tree, int node, int depth );
+	void subDivide( BVHTree* tree, const AABB& centroidBounds, int node, int depth );
 	void updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& plane, const SplitResult& best ) const;
 };
 } // namespace lh2core

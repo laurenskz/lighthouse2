@@ -57,16 +57,17 @@ TEST_F( BVHFixture, Bounds )
 		Primitive{ TRIANGLE_BIT, make_float3( 0 ), make_float3( 1 ), make_float3( 1, 0, 1 ) },
 		Primitive{ TRIANGLE_BIT, make_float3( 0 ), make_float3( 3, 2, 3 ), make_float3( 1, 0, 1 ) },
 	};
+	float3 centroids[4];
 	int indices[] = { 0, 1, 2, 3 };
-	auto bounds = calculateBounds( primitives, indices, 0, 4 );
-	EXPECT_FLOAT3_EQ( make_float3( -1, 0, -10 ), bounds.min )
-	EXPECT_FLOAT3_EQ( make_float3( 3, 2, 3 ), bounds.max )
+	auto bounds = calculateBounds( primitives, indices, centroids, 0, 4 );
+	EXPECT_FLOAT3_EQ( make_float3( -1, 0, -10 ), bounds.primitiveBounds.min )
+	EXPECT_FLOAT3_EQ( make_float3( 3, 2, 3 ), bounds.primitiveBounds.max )
 	int indices2[] = { 0, 2, 3 };
-	bounds = calculateBounds( primitives, indices2, 1, 2 );
-	EXPECT_FLOAT3_EQ( make_float3( 0 ), bounds.min )
-	EXPECT_FLOAT3_EQ( make_float3( 3, 2, 3 ), bounds.max )
-	updateAABB( bounds, primitives[0] );
-	EXPECT_FLOAT3_EQ( make_float3( -1, 0, -10 ), bounds.min )
+	bounds = calculateBounds( primitives, indices2, centroids, 1, 2 );
+	EXPECT_FLOAT3_EQ( make_float3( 0 ), bounds.primitiveBounds.min )
+	EXPECT_FLOAT3_EQ( make_float3( 3, 2, 3 ), bounds.primitiveBounds.max )
+	updateAABB( bounds.primitiveBounds, primitives[0] );
+	EXPECT_FLOAT3_EQ( make_float3( -1, 0, -10 ), bounds.primitiveBounds.min )
 	AABB first{ make_float3( 0 ), make_float3( 100 ) }, second{ make_float3( -20 ), make_float3( 0, 1000, 0 ) };
 	const AABB& bounded = boundBoth( first, second );
 	EXPECT_FLOAT3_EQ( make_float3( -20 ), bounded.min )

@@ -27,20 +27,20 @@ bool TopLevelBVH::isOccluded( Ray& r, float d )
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 {
 	auto* tree = new BVHTree( primitives, count );
-	subDivide( tree, 0, 1 );
+	subDivide( tree, tree->rootCentroidBounds, 0, 1 );
 	return tree;
 }
-void BaseBuilder::subDivide( BVHTree* tree, int nodeIdx, int depth )
+void BaseBuilder::subDivide( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, int depth )
 {
 	if ( tree->depth < depth ) tree->depth = depth;
 	auto node = tree->nodes[nodeIdx];
 	SplitPlane plane{};
 	SplitResult best{};
-	if ( splitPlaneCreator->doSplitPlane( tree, nodeIdx, plane, best ) )
+	if ( splitPlaneCreator->doSplitPlane( tree, centroidBounds, nodeIdx, plane, best ) )
 	{
 		updateTree( tree, node, plane, best );
-		subDivide( tree, node.leftChild(), depth + 1 );
-		subDivide( tree, node.rightChild(), depth + 1 );
+		subDivide( tree, best.lCentroids, node.leftChild(), depth + 1 );
+		subDivide( tree, best.rCentroids, node.rightChild(), depth + 1 );
 	}
 }
 void BaseBuilder::updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& plane, const SplitResult& best ) const
@@ -219,11 +219,13 @@ SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, in
 		if ( BVHTree::toLeft( plane, tree.centroids[primitiveIndex] ) )
 		{
 			updateAABB( result.left, tree.primitives[primitiveIndex] );
+			updateAABB( result.lCentroids, tree.centroids[primitiveIndex] );
 			result.lCount++;
 		}
 		else
 		{
 			updateAABB( result.right, tree.primitives[primitiveIndex] );
+			updateAABB( result.rCentroids, tree.centroids[primitiveIndex] );
 			result.rCount++;
 		}
 	}
@@ -259,7 +261,7 @@ float distanceTo( const Ray& ray, const AABB& box )
 	return tmin;
 }
 
-bool OptimalExpensiveSplit::doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result )
+bool OptimalExpensiveSplit::doSplitPlane( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, SplitPlane& plane, SplitResult& result )
 {
 	auto node = tree->nodes[nodeIdx];
 	auto cost = surfaceArea( node.bounds ) * node.count;
