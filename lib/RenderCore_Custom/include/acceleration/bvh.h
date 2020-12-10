@@ -55,6 +55,7 @@ class BVHTree
 	BVHTree( Primitive* primitives, int primitiveCount );
 	~BVHTree();
 	BVHNode* nodes;
+	AABB* centroidBounds;
 	int nodeCount;
 	int* primitiveIndices;
 	Primitive* primitives;
@@ -80,21 +81,16 @@ void updateAABB( AABB& bounds, const Primitive& primitive );
 float3 calculateCentroid( const Primitive& primitive );
 float surfaceArea( const AABB& box );
 
-
-
+//Splitting
 SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, int nodeIdx );
 inline float sah( const SplitResult& splitResult ) { return surfaceArea( splitResult.left ) * splitResult.lCount + surfaceArea( splitResult.right ) * splitResult.rCount; }
+
 class Heuristic
 {
 	//	Cost if node is used as leaf
 	virtual float leafCost( const BVHTree& tree, int nodeIndex ) = 0;
 };
 
-class Partitioner
-{
-	//
-	virtual float splitPosition( const BVHNode& node ) = 0;
-};
 class BVHBuilder
 {
   public:
@@ -103,12 +99,26 @@ class BVHBuilder
 	static BVHNode* allocateFor( int primitiveCount ) { return new BVHNode[nodeCount( primitiveCount )]; }
 };
 
-class BaseBuilder : public BVHBuilder
+class SplitPlaneCreator
 {
   public:
+	virtual bool doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result ) = 0;
+};
+
+class OptimalExpensiveSplit: public SplitPlaneCreator{
+  public:
+	bool doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result ) override;
+};
+
+class BaseBuilder : public BVHBuilder
+{
+  private:
+	SplitPlaneCreator* splitPlaneCreator;
+
+  public:
+	explicit BaseBuilder( SplitPlaneCreator* splitPlaneCreator ) : splitPlaneCreator( splitPlaneCreator ){};
 	BVHTree* buildBVH( Primitive* primitives, int count ) override;
 	void subDivide( BVHTree* tree, int node );
-	bool doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result );
 	void updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& plane, const SplitResult& best ) const;
 };
 } // namespace lh2core

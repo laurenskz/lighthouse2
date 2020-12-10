@@ -37,8 +37,8 @@ class BVHFixture : public ::testing::Test
 
 TEST_F( BVHFixture, BuildBasics )
 {
-	auto builder = new BaseBuilder();
-	builder->buildBVH( primitives, primitiveCount );
+	//	auto builder = new BaseBuilder();
+	//	builder->buildBVH( primitives, primitiveCount );
 }
 
 TEST_F( BVHFixture, Centroid )
@@ -104,4 +104,43 @@ TEST_F( BVHFixture, EvaluateSplitPlane )
 	ASSERT_EQ( 2, result.rCount );
 	EXPECT_AABB_EQ( ( AABB{ make_float3( 0, 2, 3 ), make_float3( 0, 2, 3 ) } ), result.left );
 	EXPECT_AABB_EQ( ( AABB{ make_float3( -1, 1, 6 ), make_float3( 5, 3, 10 ) } ), result.right );
+}
+
+TEST_F( BVHFixture, Reorder )
+{
+	int count = 5;
+	float3 centroids[] = { make_float3( 5, 1, 6 ), make_float3( 1, 2, 3 ), make_float3( -1, 3, 10 ), make_float3( -2, 0, 0 ), make_float3( -2 ) };
+	Primitive primitives[count];
+	for ( int i = 0; i < count; ++i )
+	{
+		primitives[i] = Primitive{ TRIANGLE_BIT, centroids[i], centroids[i], centroids[i] };
+	}
+	BVHTree* tree = new BVHTree( primitives, count );
+	const SplitPlane& plane = SplitPlane{ AXIS_X, -1 };
+	SplitResult result = evaluateSplitPlane( SplitPlane{ AXIS_Y, 1.5 }, *tree, 0 );
+	tree->reorder( plane, 0, count );
+	cout << "Left: " << result.lCount << ", right: " << result.rCount << endl;
+	for ( int i = 0; i < count; ++i )
+	{
+		cout << "Primitive index " << i << ": " << tree->primitiveIndices[i] << endl;
+	}
+	ASSERT_EQ( tree->primitiveIndices[0], 2 );
+}
+
+TEST_F( BVHFixture, SplitPlaneCreator )
+{
+	int count = 3;
+	Primitive primitive[] = {
+		Primitive{ TRIANGLE_BIT, make_float3( 0 ), make_float3( 0, 1, 1 ), make_float3( 1 ) },
+		Primitive{ TRIANGLE_BIT, make_float3( -2 ), make_float3( -1 ), make_float3( -1, 0, 0 ) },
+		Primitive{ TRIANGLE_BIT, make_float3( -7 ), make_float3( -6 ), make_float3( -5 ) } };
+	BVHTree* tree = new BVHTree( primitive, count );
+	auto split = new OptimalExpensiveSplit();
+	SplitPlane plane{};
+	SplitResult result{};
+	auto doSplit = split->doSplitPlane( tree, 0, plane, result );
+	ASSERT_TRUE(doSplit);
+	ASSERT_EQ( 1, result.lCount );
+	EXPECT_AABB_EQ( ( AABB{ make_float3( -7 ), make_float3( -5 ) } ), result.left );
+	EXPECT_AABB_EQ( ( AABB{ make_float3( -2 ), make_float3( 1 ) } ), result.right);
 }

@@ -21,7 +21,6 @@ bool TopLevelBVH::isOccluded( Ray& r, float d )
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 {
 	auto* tree = new BVHTree( primitives, count );
-
 	subDivide( tree, 0 );
 	return tree;
 }
@@ -30,7 +29,7 @@ void BaseBuilder::subDivide( BVHTree* tree, int nodeIdx )
 	auto node = tree->nodes[nodeIdx];
 	SplitPlane plane{};
 	SplitResult best{};
-	if ( doSplitPlane( tree, nodeIdx, plane, best ) )
+	if ( splitPlaneCreator->doSplitPlane( tree, nodeIdx, plane, best ) )
 	{
 		updateTree( tree, node, plane, best );
 		subDivide( tree, node.leftChild() );
@@ -52,32 +51,7 @@ void BaseBuilder::updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& pl
 	tree->nodes[node.leftChild()].leftFirst = leftChildPrimitivePointer;
 	tree->nodes[node.rightChild()].leftFirst = leftChildPrimitivePointer + best.lCount;
 }
-bool BaseBuilder::doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result )
-{
-	auto node = tree->nodes[nodeIdx];
-	auto cost = surfaceArea( node.bounds ) * node.count;
-	bool split = false;
-	for ( int i = node.leftFirst; i < node.leftFirst + node.count; ++i )
-	{
-		const float3& centroid = tree->centroids[tree->primitiveIndices[i]];
-		for ( int axis = 1; axis <= 3; ++axis )
-		{
-			auto splitPlanePosition = SplitPlane{ axis, axis == AXIS_X ? centroid.x : axis == AXIS_Y ? centroid.y
-																				  : axis == AXIS_Z	 ? centroid.z
-																									 : -1 };
-			auto candidate = evaluateSplitPlane( splitPlanePosition, *tree, nodeIdx );
-			float splitCost = sah( candidate );
-			if ( splitCost < cost )
-			{
-				cost = splitCost;
-				plane = splitPlanePosition;
-				result = candidate;
-				split = true;
-			}
-		}
-	}
-	return split;
-}
+
 BVHTree::BVHTree( Primitive* primitives, int primitiveCount )
 {
 	this->nodeCount = 2 * primitiveCount;
@@ -86,6 +60,7 @@ BVHTree::BVHTree( Primitive* primitives, int primitiveCount )
 	this->primitiveCount = primitiveCount;
 	this->primitiveIndices = new int[primitiveCount];
 	this->centroids = new float3[primitiveCount];
+	poolPtr = 2;
 	for ( int i = 0; i < primitiveCount; ++i )
 	{
 		primitiveIndices[i] = i;
@@ -124,8 +99,7 @@ void BVHTree::reorder( const SplitPlane& plane, int start, int count )
 	for ( int j = start; j < start + count; ++j )
 	{
 		const float3& centroid = centroids[primitiveIndices[j]];
-		bool toLeft = BVHTree::toLeft( plane, centroid );
-		if ( toLeft )
+		if ( BVHTree::toLeft( plane, centroid ) )
 		{
 			int temp = primitiveIndices[i];
 			primitiveIndices[i] = primitiveIndices[j];
@@ -209,4 +183,30 @@ SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, in
 	return result;
 }
 
+bool OptimalExpensiveSplit::doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result )
+{
+	auto node = tree->nodes[nodeIdx];
+	auto cost = surfaceArea( node.bounds ) * node.count;
+	bool split = false;
+	for ( int i = node.leftFirst; i < node.leftFirst + node.count; ++i )
+	{
+		const float3& centroid = tree->centroids[tree->primitiveIndices[i]];
+		for ( int axis = 1; axis <= 3; ++axis )
+		{
+			auto splitPlanePosition = SplitPlane{ axis, axis == AXIS_X ? centroid.x : axis == AXIS_Y ? centroid.y
+																				  : axis == AXIS_Z	 ? centroid.z
+																									 : -1 };
+			auto candidate = evaluateSplitPlane( splitPlanePosition, *tree, nodeIdx );
+			float splitCost = sah( candidate );
+			if ( splitCost < cost )
+			{
+				cost = splitCost;
+				plane = splitPlanePosition;
+				result = candidate;
+				split = true;
+			}
+		}
+	}
+	return split;
+}
 } // namespace lh2core
