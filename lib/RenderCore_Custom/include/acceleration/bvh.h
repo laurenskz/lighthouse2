@@ -3,7 +3,7 @@
 #include "environment/intersections.h"
 #include "environment/primitives.h"
 #include "platform.h"
-
+#include <stack>
 using namespace lighthouse2;
 namespace lh2core
 {
@@ -15,6 +15,7 @@ struct AABB
 	float3 min = make_float3( MAXFLOAT );
 	float3 max = make_float3( -MAXFLOAT );
 };
+
 class BVHNode
 {
   public:
@@ -33,6 +34,31 @@ struct SplitPlane
 	int axis;
 	float location;
 };
+
+float distanceTo( const Ray& ray, const AABB& box );
+class BVHTree
+{
+  public:
+	void traverse( Ray& ray, mat4 transform ) const;
+	void traverse( const RayPacket& packet, mat4 transform );
+	bool isOccluded( Ray& ray, mat4 transform, float d ) const;
+	void isOccluded( const RayPacket& packet, mat4 transform, float d );
+	void refit( Primitive* newPrimitives );
+	void reorder( const SplitPlane& plane, int start, int count );
+	BVHTree( Primitive* primitives, int primitiveCount );
+	~BVHTree();
+	BVHNode* nodes;
+	int nodeCount;
+	int* primitiveIndices;
+	Primitive* primitives;
+	float3* centroids;
+	AABB rootCentroidBounds;
+	int primitiveCount;
+	int poolPtr;
+	int depth = 0;
+	static bool toLeft( const SplitPlane& plane, const float3& centroid );
+};
+
 class TopLevelBVH : public Intersector
 {
   public:
@@ -41,28 +67,9 @@ class TopLevelBVH : public Intersector
 	void intersectPacket( const RayPacket& packet ) override;
 	void packetOccluded( const RayPacket& packet ) override;
 	bool isOccluded( Ray& r, float d ) override;
-};
 
-class BVHTree
-{
-  public:
-	void traverse( Ray& ray, mat4 transform );
-	void traverse( const RayPacket& packet, mat4 transform );
-	void isOccluded( Ray& ray, mat4 transform, float d );
-	void isOccluded( const RayPacket& packet, mat4 transform, float d );
-	void refit( Primitive* newPrimitives );
-	void reorder( const SplitPlane& plane, int start, int count );
-	BVHTree( Primitive* primitives, int primitiveCount );
-	~BVHTree();
-	BVHNode* nodes;
-	AABB* centroidBounds;
-	int nodeCount;
-	int* primitiveIndices;
-	Primitive* primitives;
-	float3* centroids;
-	int primitiveCount;
-	int poolPtr;
-	static bool toLeft( const SplitPlane& plane, const float3& centroid );
+  private:
+	BVHTree* tree{};
 };
 
 struct SplitResult
@@ -72,10 +79,17 @@ struct SplitResult
 	int lCount = 0;
 	int rCount = 0;
 };
+
+struct Bounds
+{
+	AABB primitiveBounds;
+	AABB centroidBounds;
+};
 // Bounding boxes
-AABB calculateBounds( Primitive* primitives, const int* indices, int first, int count );
+Bounds calculateBounds( Primitive* primitives, const int* indices, float3* centroids, int first, int count );
 AABB boundBoth( const AABB& first, const AABB& second );
 void updateAABB( AABB& bounds, const Primitive& primitive );
+void updateAABB( AABB& bounds, const float3& vertex );
 
 //Misc
 float3 calculateCentroid( const Primitive& primitive );
@@ -105,7 +119,8 @@ class SplitPlaneCreator
 	virtual bool doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result ) = 0;
 };
 
-class OptimalExpensiveSplit: public SplitPlaneCreator{
+class OptimalExpensiveSplit : public SplitPlaneCreator
+{
   public:
 	bool doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result ) override;
 };
@@ -118,7 +133,7 @@ class BaseBuilder : public BVHBuilder
   public:
 	explicit BaseBuilder( SplitPlaneCreator* splitPlaneCreator ) : splitPlaneCreator( splitPlaneCreator ){};
 	BVHTree* buildBVH( Primitive* primitives, int count ) override;
-	void subDivide( BVHTree* tree, int node );
+	void subDivide( BVHTree* tree, int node, int depth );
 	void updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& plane, const SplitResult& best ) const;
 };
 } // namespace lh2core

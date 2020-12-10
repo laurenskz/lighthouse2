@@ -22,8 +22,8 @@
 
 #include "platform.h"
 #define WHITTED
-//#define MULTITHREADED
-#define ANTI_ALIASING
+#define MULTITHREADED
+//#define ANTI_ALIASING
 using namespace lighthouse2;
 #include "core_api_base.h"
 
@@ -32,6 +32,7 @@ using namespace lighthouse2;
 #include "graphics/raytracer.h"
 #include "graphics/renderer.h"
 #include "core/rendercore.h"
+#include "acceleration/bvh.h"
 
 
 using namespace lh2core;

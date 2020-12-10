@@ -4,9 +4,15 @@ namespace lh2core
 
 void TopLevelBVH::setPrimitives( Primitive* primitives, int count )
 {
+	auto* splitter = new OptimalExpensiveSplit();
+	auto* builder = new BaseBuilder( splitter );
+	tree = builder->buildBVH( primitives, count );
+	delete splitter;
+	delete builder;
 }
 void TopLevelBVH::intersect( Ray& r )
 {
+	tree->traverse( r, mat4::Identity() );
 }
 void TopLevelBVH::intersectPacket( const RayPacket& packet )
 {
@@ -16,24 +22,25 @@ void TopLevelBVH::packetOccluded( const RayPacket& packet )
 }
 bool TopLevelBVH::isOccluded( Ray& r, float d )
 {
-	return false;
+	return tree->isOccluded( r, mat4::Identity(), d );
 }
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 {
 	auto* tree = new BVHTree( primitives, count );
-	subDivide( tree, 0 );
+	subDivide( tree, 0, 1 );
 	return tree;
 }
-void BaseBuilder::subDivide( BVHTree* tree, int nodeIdx )
+void BaseBuilder::subDivide( BVHTree* tree, int nodeIdx, int depth )
 {
+	if ( tree->depth < depth ) tree->depth = depth;
 	auto node = tree->nodes[nodeIdx];
 	SplitPlane plane{};
 	SplitResult best{};
 	if ( splitPlaneCreator->doSplitPlane( tree, nodeIdx, plane, best ) )
 	{
 		updateTree( tree, node, plane, best );
-		subDivide( tree, node.leftChild() );
-		subDivide( tree, node.rightChild() );
+		subDivide( tree, node.leftChild(), depth + 1 );
+		subDivide( tree, node.rightChild(), depth + 1 );
 	}
 }
 void BaseBuilder::updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& plane, const SplitResult& best ) const
@@ -66,7 +73,9 @@ BVHTree::BVHTree( Primitive* primitives, int primitiveCount )
 		primitiveIndices[i] = i;
 		centroids[i] = calculateCentroid( primitives[i] );
 	}
-	nodes[0].bounds = calculateBounds( primitives, primitiveIndices, 0, primitiveCount );
+	const Bounds& bounds = calculateBounds( primitives, primitiveIndices, centroids, 0, primitiveCount );
+	rootCentroidBounds = bounds.centroidBounds;
+	nodes[0].bounds = bounds.primitiveBounds;
 	nodes[0].count = primitiveCount;
 	nodes[0].leftFirst = 0;
 }
@@ -83,7 +92,7 @@ void BVHTree::refit( Primitive* newPrimitives )
 		if ( !nodes[i].isUsed() ) continue;
 		if ( nodes[i].isLeaf() )
 		{
-			nodes[i].bounds = calculateBounds( primitives, primitiveIndices, nodes[i].leftFirst, nodes[i].count );
+			nodes[i].bounds = calculateBounds( primitives, primitiveIndices, centroids, nodes[i].leftFirst, nodes[i].count ).primitiveBounds;
 		}
 		else
 		{
@@ -110,13 +119,45 @@ void BVHTree::reorder( const SplitPlane& plane, int start, int count )
 }
 bool BVHTree::toLeft( const SplitPlane& plane, const float3& centroid ) { return plane.axis == AXIS_X ? centroid.x <= plane.location : plane.axis == AXIS_Y ? centroid.y <= plane.location
 																																							: plane.axis == AXIS_Z && centroid.z <= plane.location; }
-AABB calculateBounds( Primitive* primitives, const int* indices, int first, int count )
+void BVHTree::traverse( Ray& ray, mat4 transform ) const
 {
-	AABB bounds;
+	int stackPtr = 0;
+	int traverselStack[depth];
+	traverselStack[stackPtr] = 0;
+	while ( stackPtr >= 0 )
+	{
+		auto node = nodes[traverselStack[stackPtr--]];
+		if ( !node.isUsed() || ray.t <= distanceTo( ray, node.bounds ) ) continue;
+		if ( node.isLeaf() )
+		{
+			for ( int i = node.primitiveIndex(); i < node.primitiveIndex() + node.count; ++i )
+			{
+				intersectPrimitive( &primitives[primitiveIndices[i]], ray );
+			}
+		}
+		else
+		{
+			bool leftIsNear = node.splitAxis() == AXIS_X ? ray.direction.x < 0 : node.splitAxis() == AXIS_Y ? ray.direction.y < 0
+																											: node.splitAxis() == AXIS_Z && ray.direction.z < 0;
+			int near = leftIsNear ? node.leftChild() : node.rightChild();
+			int far = leftIsNear ? node.rightChild() : node.leftChild();
+			traverselStack[stackPtr++] = far;
+			traverselStack[stackPtr++] = near;
+		}
+	}
+}
+bool BVHTree::isOccluded( Ray& ray, mat4 transform, float d ) const
+{
+	traverse( ray, transform );
+	return ray.t < d;
+}
+Bounds calculateBounds( Primitive* primitives, const int* indices, float3* centroids, int first, int count )
+{
+	Bounds bounds;
 	for ( int i = first; i < first + count; ++i )
 	{
-		auto primitive = primitives[indices[i]];
-		updateAABB( bounds, primitive );
+		updateAABB( bounds.primitiveBounds, primitives[indices[i]] );
+		updateAABB( bounds.centroidBounds, centroids[indices[i]] );
 	}
 	return bounds;
 }
@@ -140,6 +181,12 @@ void updateAABB( AABB& bounds, const Primitive& primitive )
 		bounds.min = fminf( primitive.v1 - make_float3( primitive.v2.y ), bounds.min );
 		bounds.max = fmaxf( primitive.v1 + make_float3( primitive.v2.y ), bounds.max );
 	}
+}
+
+void updateAABB( AABB& bounds, const float3& vertex )
+{
+	bounds.min = fminf( vertex, bounds.min );
+	bounds.max = fmaxf( vertex, bounds.max );
 }
 float surfaceArea( const AABB& box )
 {
@@ -181,6 +228,35 @@ SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, in
 		}
 	}
 	return result;
+}
+float distanceTo( const Ray& ray, const AABB& box )
+{
+	// r.dir is unit direction vector of ray
+	float3 dirfrac = 1.0f / ray.direction;
+	// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+	// r.org is origin of ray
+	float t1 = ( box.min.x - ray.start.x ) * dirfrac.x;
+	float t2 = ( box.max.x - ray.start.x ) * dirfrac.x;
+	float t3 = ( box.min.y - ray.start.y ) * dirfrac.y;
+	float t4 = ( box.max.y - ray.start.y ) * dirfrac.y;
+	float t5 = ( box.min.z - ray.start.z ) * dirfrac.z;
+	float t6 = ( box.max.z - ray.start.z ) * dirfrac.z;
+
+	float tmin = max( max( min( t1, t2 ), min( t3, t4 ) ), min( t5, t6 ) );
+	float tmax = min( min( max( t1, t2 ), max( t3, t4 ) ), max( t5, t6 ) );
+
+	// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+	if ( tmax < 0 )
+	{
+		return MAX_DISTANCE;
+	}
+
+	// if tmin > tmax, ray doesn't intersect AABB
+	if ( tmin > tmax )
+	{
+		return MAX_DISTANCE;
+	}
+	return tmin;
 }
 
 bool OptimalExpensiveSplit::doSplitPlane( BVHTree* tree, int nodeIdx, SplitPlane& plane, SplitResult& result )

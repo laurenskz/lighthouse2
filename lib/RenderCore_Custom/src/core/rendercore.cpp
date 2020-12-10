@@ -26,9 +26,10 @@ void RenderCore::Init()
 	// initialize core
 	geometry = new Geometry();
 	//	geometry->addSphere( make_float3( 0.5, -0.9, 1.5 ), 0.5, Material{ make_float3( 1, 0, 0 ) } );
-	geometry->addSphere( make_float3( -3, -0.3, -2 ), 0.5, Material{ make_float3( 0 ), 0, GLASS, 1.5 } );
-	geometry->addPlane( make_float3( 0, 1, 0 ), 1 );
-	intersector = new BruteForceIntersector();
+//	geometry->addSphere( make_float3( -3, -0.3, -2 ), 0.5, Material{ make_float3( 0 ), 0, GLASS, 1.5 } );
+	//	geometry->addPlane( make_float3( 0, 1, 0 ), 1 );
+	//	intersector = new BruteForceIntersector();
+	intersector = new TopLevelBVH();
 	auto* env = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
 #ifdef WHITTED
