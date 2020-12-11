@@ -292,4 +292,52 @@ bool OptimalExpensiveSplit::doSplitPlane( BVHTree* tree, const AABB& centroidBou
 	}
 	return split;
 }
+bool BinningSplit::doSplitPlane( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, SplitPlane& plane, SplitResult& result )
+{
+	auto node = tree->nodes[nodeIdx];
+	auto cost = surfaceArea( node.bounds ) * node.count;
+	bool split = false;
+	auto axisLengths = centroidBounds.max - centroidBounds.min;
+	int axis = axisLengths.x >= axisLengths.y && axisLengths.x >= axisLengths.z
+				   ? AXIS_X
+			   : axisLengths.y >= axisLengths.x && axisLengths.y >= axisLengths.z
+				   ? AXIS_Y
+				   : AXIS_Z;
+	float2 bounds = axis == AXIS_X
+						? make_float2( centroidBounds.min.x, centroidBounds.max.x )
+					: axis == AXIS_Y
+						? make_float2( centroidBounds.min.y, centroidBounds.max.y )
+						: make_float2( centroidBounds.min.z, centroidBounds.max.z );
+	float binLength = ( bounds.y - bounds.x ) / (float)binCount;
+	for ( int bin = 0; bin < binCount; ++bin )
+	{
+		SplitPlane splitPlanePosition;
+		if ( node.count <= binCount )
+		{
+			if ( bin >= node.count ) break;
+			splitPlanePosition = splitPlaneFromCentroid( tree->centroids[tree->primitiveIndices[node.primitiveIndex() + bin]], axis );
+		}
+		else
+		{
+			splitPlanePosition = SplitPlane{ axis, bounds.x + (float)bin * binLength };
+		}
+		auto candidate = evaluateSplitPlane( splitPlanePosition, *tree, nodeIdx );
+		float splitCost = sah( candidate );
+		if ( splitCost < cost )
+		{
+			cost = splitCost;
+			plane = splitPlanePosition;
+			result = candidate;
+			split = true;
+		}
+	}
+	return split;
+}
+SplitPlane BinningSplit::splitPlaneFromCentroid( const float3& centroid, int axis ) const
+{
+	auto splitPlanePosition = SplitPlane{ axis, axis == AXIS_X ? centroid.x : axis == AXIS_Y ? centroid.y
+																		  : axis == AXIS_Z	 ? centroid.z
+																							 : -1 };
+	return splitPlanePosition;
+}
 } // namespace lh2core
