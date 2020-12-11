@@ -34,27 +34,27 @@ static std::bitset<1024> keystates;
 void PrepareScene()
 {
 	// initialize scene
-	renderer->AddScene( "BoxTextured.gltf", "../_shareddata/BoxTextured/glTF" );
-	int mesh = renderer->AddMesh( "../_shareddata/scene/tetrahedron.obj" );
-	renderer->AddInstance( mesh, mat4::RotateX( 3.5 ) * mat4::Translate( 2, 0, 0 ) );
-	auto sky = new HostSkyDome();
-	sky->Load( "../_shareddata/sky_15.hdr" );
+	renderer->AddScene( "scene.gltf", "../_shareddata/knight" );
+	//	int mesh = renderer->AddMesh( "../_shareddata/scene/tetrahedron.obj" );
+	//	renderer->AddInstance( mesh, mat4::RotateX( 3.5 ) * mat4::Translate( 2, 0, 0 ) );
+	//	auto sky = new HostSkyDome();
+	//	sky->Load( "../_shareddata/sky_15.hdr" );
 	// Compensate for different evaluation in PBRT
-	sky->worldToLight = mat4::RotateX( -PI / 2 );
-	renderer->GetScene()->SetSkyDome( sky );
-	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
+	//	sky->worldToLight = mat4::RotateX( -PI / 2 );
+	//	renderer->GetScene()->SetSkyDome( sky );
+//	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
 	//	mat->pbrtMaterialType = lighthouse2::MaterialType::PBRT_GLASS;
-	mat->specular.value = 0.5;
+//	mat->specular.value = 0.5;
 
 	//	Point light
-//	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
+	//	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
 
 	//		Directional light
-	renderer->AddDirectionalLight( normalize( make_float3( -1, -1, -1 ) ), make_float3( 1.0 / 2 ) );
+	renderer->AddDirectionalLight( normalize( make_float3( 1) ), make_float3( 1.0 / 2 ) );
 
-//		Spot light
-//	const float3& spotPos = make_float3( 2, 8, 2 );
-//	renderer->AddSpotLight( spotPos, normalize( make_float3( 0 ) - spotPos ), 0.97, 0.92, make_float3( 20 ), true );
+	//		Spot light
+	//	const float3& spotPos = make_float3( 2, 8, 2 );
+	//	renderer->AddSpotLight( spotPos, normalize( make_float3( 0 ) - spotPos ), 0.97, 0.92, make_float3( 20 ), true );
 
 	//	Area light for path tracer
 	//	int lightMat = renderer->AddMaterial( make_float3( 3 ) );

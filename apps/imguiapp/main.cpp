@@ -32,7 +32,7 @@ int currentMaterialID = -1;
 static CoreStats coreStats;
 
 // rmse
-Bitmap* rawFrame1 = 0, * rawFrame2 = 0; // noisy & converged frame, for comparison
+Bitmap *rawFrame1 = 0, *rawFrame2 = 0; // noisy & converged frame, for comparison
 
 // frame timer
 Timer frameTimer;
@@ -107,25 +107,65 @@ void PrepareScene()
 bool HandleInput( float frameTime )
 {
 	// handle keyboard input
-	float tspd = (keystates[GLFW_KEY_LEFT_SHIFT] ? 15.0f : 5.0f) * frameTime, rspd = 2.5f * frameTime;
+	float tspd = ( keystates[GLFW_KEY_LEFT_SHIFT] ? 15.0f : 5.0f ) * frameTime, rspd = 2.5f * frameTime;
 	bool changed = false;
 	Camera* camera = renderer->GetCamera();
-	if (keystates[GLFW_KEY_A]) { changed = true; camera->TranslateRelative( make_float3( -tspd, 0, 0 ) ); }
-	if (keystates[GLFW_KEY_D]) { changed = true; camera->TranslateRelative( make_float3( tspd, 0, 0 ) ); }
-	if (keystates[GLFW_KEY_W]) { changed = true; camera->TranslateRelative( make_float3( 0, 0, tspd ) ); }
-	if (keystates[GLFW_KEY_S]) { changed = true; camera->TranslateRelative( make_float3( 0, 0, -tspd ) ); }
-	if (keystates[GLFW_KEY_R]) { changed = true; camera->TranslateRelative( make_float3( 0, tspd, 0 ) ); }
-	if (keystates[GLFW_KEY_F]) { changed = true; camera->TranslateRelative( make_float3( 0, -tspd, 0 ) ); }
-	if (keystates[GLFW_KEY_B]) changed = true; // force restart
-	if (keystates[GLFW_KEY_UP]) { changed = true; camera->TranslateTarget( make_float3( 0, -rspd, 0 ) ); }
-	if (keystates[GLFW_KEY_DOWN]) { changed = true; camera->TranslateTarget( make_float3( 0, rspd, 0 ) ); }
-	if (keystates[GLFW_KEY_LEFT]) { changed = true; camera->TranslateTarget( make_float3( -rspd, 0, 0 ) ); }
-	if (keystates[GLFW_KEY_RIGHT]) { changed = true; camera->TranslateTarget( make_float3( rspd, 0, 0 ) ); }
+	if ( keystates[GLFW_KEY_A] )
+	{
+		changed = true;
+		camera->TranslateRelative( make_float3( -tspd, 0, 0 ) );
+	}
+	if ( keystates[GLFW_KEY_D] )
+	{
+		changed = true;
+		camera->TranslateRelative( make_float3( tspd, 0, 0 ) );
+	}
+	if ( keystates[GLFW_KEY_W] )
+	{
+		changed = true;
+		camera->TranslateRelative( make_float3( 0, 0, tspd ) );
+	}
+	if ( keystates[GLFW_KEY_S] )
+	{
+		changed = true;
+		camera->TranslateRelative( make_float3( 0, 0, -tspd ) );
+	}
+	if ( keystates[GLFW_KEY_R] )
+	{
+		changed = true;
+		camera->TranslateRelative( make_float3( 0, tspd, 0 ) );
+	}
+	if ( keystates[GLFW_KEY_F] )
+	{
+		changed = true;
+		camera->TranslateRelative( make_float3( 0, -tspd, 0 ) );
+	}
+	if ( keystates[GLFW_KEY_B] ) changed = true; // force restart
+	if ( keystates[GLFW_KEY_UP] )
+	{
+		changed = true;
+		camera->TranslateTarget( make_float3( 0, -rspd, 0 ) );
+	}
+	if ( keystates[GLFW_KEY_DOWN] )
+	{
+		changed = true;
+		camera->TranslateTarget( make_float3( 0, rspd, 0 ) );
+	}
+	if ( keystates[GLFW_KEY_LEFT] )
+	{
+		changed = true;
+		camera->TranslateTarget( make_float3( -rspd, 0, 0 ) );
+	}
+	if ( keystates[GLFW_KEY_RIGHT] )
+	{
+		changed = true;
+		camera->TranslateTarget( make_float3( rspd, 0, 0 ) );
+	}
 	// process left button click
-	if (mbstates[GLFW_MOUSE_BUTTON_1] && keystates[GLFW_KEY_LEFT_SHIFT])
+	if ( mbstates[GLFW_MOUSE_BUTTON_1] && keystates[GLFW_KEY_LEFT_SHIFT] )
 	{
 		int selectedMaterialID = renderer->GetTriangleMaterialID( coreStats.probedInstid, coreStats.probedTriid );
-		if (selectedMaterialID != -1)
+		if ( selectedMaterialID != -1 )
 		{
 			currentMaterial = *renderer->GetMaterial( selectedMaterialID );
 			currentMaterialID = selectedMaterialID;
@@ -143,7 +183,7 @@ void HandleOneOffInput( int key, int action )
 {
 	if ( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
 		animPaused = !animPaused;
-	else if( key == GLFW_KEY_H && action == GLFW_PRESS )
+	else if ( key == GLFW_KEY_H && action == GLFW_PRESS )
 		showUi = !showUi;
 }
 
@@ -153,7 +193,7 @@ void HandleOneOffInput( int key, int action )
 //  +-----------------------------------------------------------------------------+
 bool HandleMaterialChange()
 {
-	if (currentMaterial.Changed() && currentMaterialID != -1)
+	if ( currentMaterial.Changed() && currentMaterialID != -1 )
 	{
 		// local copy of current material has been changed; put it back
 		*renderer->GetMaterial( currentMaterialID ) = currentMaterial;
@@ -179,7 +219,8 @@ void Initialize()
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_B" );		// OPTIX PRIME, best for pre-RTX CUDA devices
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" );	// RASTERIZER, your only option if not on NVidia
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Minimal" );			// MINIMAL example, to get you started on your own core
-	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
+	//	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" ); // Meir's Vulkan / RTX core
+	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Custom" ); // OPTIX PRIME, best for pre-RTX CUDA devices
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_PBRT" );	// Marijn's PBRT core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7Guiding" );		// OPTIX7 core with path guiding for next event estimation (under construction)
@@ -220,51 +261,53 @@ int main()
 	Initialize();
 	// application main loop
 	bool camMoved = true, firstFrame = true;
-	while (!glfwWindowShouldClose( window ))
+	while ( !glfwWindowShouldClose( window ) )
 	{
 		// poll glfw events
 		glfwPollEvents();
-		if (!running) break;
+		if ( !running ) break;
 		// start renderering in a separate thread
 		static int frameCounter = 0;
-		if (frameCounter++ < 5) camMoved = true;
+		if ( frameCounter++ < 5 ) camMoved = true;
 		renderer->Render( camMoved ? Restart : Converge, false /* async */ );
-		if (frameCounter == 5)
+		if ( frameCounter == 5 )
 		{
 			// obtain noisy image
 			renderTarget->CopyTo( rawFrame1 );
 		}
-		if (frameCounter == 64)
+		if ( frameCounter == 64 )
 		{
 			// obtain ground truth
 			renderTarget->CopyTo( rawFrame2 );
 			// compare noisy image against ground truth
-			__int64 sum = 0;
-			for( uint i = 0; i < (scrwidth * scrheight); i++ )
+			int64_t sum = 0;
+			for ( uint i = 0; i < ( scrwidth * scrheight ); i++ )
 			{
 				uint s = rawFrame1->pixels[i];
 				uint g = rawFrame2->pixels[i];
-				int dr = (int)((s >> 16) & 255) - (int)((g >> 16) & 255);
-				int dg = (int)((s >> 8) & 255) - (int)((g >> 16) & 255);
-				int db = (int)(s & 255) - (int)(g & 255);
+				int dr = (int)( ( s >> 16 ) & 255 ) - (int)( ( g >> 16 ) & 255 );
+				int dg = (int)( ( s >> 8 ) & 255 ) - (int)( ( g >> 16 ) & 255 );
+				int db = (int)( s & 255 ) - (int)( g & 255 );
 				int d = dr * dr + dg * dg + db * db;
 				sum += d;
 			}
-			sum = (float)sum / (float)(scrwidth * scrheight);
+			sum = (float)sum / (float)( scrwidth * scrheight );
 			printf( "RMSE: %5.2f\n", sqrtf( (float)sum ) );
 		}
 		// camera and user input
 		frameTime = frameTimer.elapsed();
 		frameTimer.reset();
 		camMoved = renderer->GetCamera()->Changed();
-		if (hasFocus) if (HandleInput( frameTime )) camMoved = true;
-		if (HandleMaterialChange()) camMoved = true;
+		if ( hasFocus )
+			if ( HandleInput( frameTime ) ) camMoved = true;
+		if ( HandleMaterialChange() ) camMoved = true;
 		// update animations
-		if (!animPaused) for (int i = 0; i < renderer->AnimationCount(); i++)
-		{
-			renderer->UpdateAnimation( i, frameTime );
-			camMoved = true; // will remain false if scene has no animations
-		}
+		if ( !animPaused )
+			for ( int i = 0; i < renderer->AnimationCount(); i++ )
+			{
+				renderer->UpdateAnimation( i, frameTime );
+				camMoved = true; // will remain false if scene has no animations
+			}
 		renderer->SynchronizeSceneData();
 		// wait for rendering to complete
 		renderer->WaitForRender();
@@ -279,7 +322,7 @@ int main()
 		DrawQuad();
 		shader->Unbind();
 		// update user interface
-		if (showUi)
+		if ( showUi )
 			UpdateUI();
 		glfwSwapBuffers( window );
 		firstFrame = false;

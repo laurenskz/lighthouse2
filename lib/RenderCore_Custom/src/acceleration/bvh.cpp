@@ -4,7 +4,9 @@ namespace lh2core
 
 void TopLevelBVH::setPrimitives( Primitive* primitives, int count )
 {
-	auto* splitter = new BinningSplit();
+	cout << "Building BVH over " << count << " primitives" << endl;
+	if ( count <= 0 || tree != nullptr ) return;
+	auto* splitter = new BinningSplit( 16 );
 	auto* builder = new BaseBuilder( splitter );
 	tree = builder->buildBVH( primitives, count );
 	delete splitter;
@@ -12,6 +14,7 @@ void TopLevelBVH::setPrimitives( Primitive* primitives, int count )
 }
 void TopLevelBVH::intersect( Ray& r )
 {
+	if ( tree == nullptr ) return;
 	tree->traverse( r, mat4::Identity() );
 }
 void TopLevelBVH::intersectPacket( const RayPacket& packet )
@@ -22,6 +25,7 @@ void TopLevelBVH::packetOccluded( const RayPacket& packet )
 }
 bool TopLevelBVH::isOccluded( Ray& r, float d )
 {
+	if ( tree == nullptr ) return false;
 	return tree->isOccluded( r, mat4::Identity(), d );
 }
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
@@ -129,7 +133,7 @@ void BVHTree::traverse( Ray& ray, mat4 transform ) const
 		int nodeIdx = traverselStack[stackPtr--];
 		auto node = nodes[nodeIdx];
 		float boundDistance = distanceTo( ray, node.bounds );
-		if ( !node.isUsed() || ray.t <= boundDistance )
+		if ( !node.isUsed() || boundDistance < 0 || ray.t <= boundDistance )
 		{
 			continue;
 		}

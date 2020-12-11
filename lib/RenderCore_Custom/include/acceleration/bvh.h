@@ -121,14 +121,15 @@ class SplitPlaneCreator
 	virtual bool doSplitPlane( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, SplitPlane& plane, SplitResult& result ) = 0;
 };
 
-class BinningSplit : public SplitPlaneCreator{
+class BinningSplit : public SplitPlaneCreator
+{
   private:
 	int binCount;
 
-
   public:
+	explicit BinningSplit( int count ) : binCount( count ){};
 	bool doSplitPlane( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, SplitPlane& plane, SplitResult& result ) override;
-	SplitPlane splitPlaneFromCentroid( const float3& centroid, int axis ) const;
+	[[nodiscard]] SplitPlane splitPlaneFromCentroid( const float3& centroid, int axis ) const;
 };
 
 class OptimalExpensiveSplit : public SplitPlaneCreator

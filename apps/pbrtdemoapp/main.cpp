@@ -120,7 +120,7 @@ int main()
 	InitImGui();
 
 	// initialize renderer: pick one
-	renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_PBRT" );		// OPTIX PRIME with PBRT materials, slow
+	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Custom" );		// OPTIX PRIME with PBRT materials, slow
 
 	renderer->DeserializeCamera( "camera.xml" );
 	// initialize scene
