@@ -136,6 +136,6 @@ class BaseBuilder : public BVHBuilder
 	explicit BaseBuilder( SplitPlaneCreator* splitPlaneCreator ) : splitPlaneCreator( splitPlaneCreator ){};
 	BVHTree* buildBVH( Primitive* primitives, int count ) override;
 	void subDivide( BVHTree* tree, const AABB& centroidBounds, int node, int depth );
-	void updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& plane, const SplitResult& best ) const;
+	void updateTree( BVHTree* tree, int nodeIdx, const SplitPlane& plane, const SplitResult& best ) const;
 };
 } // namespace lh2core

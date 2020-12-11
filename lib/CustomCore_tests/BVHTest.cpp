@@ -139,7 +139,7 @@ TEST_F( BVHFixture, SplitPlaneCreator )
 	auto split = new OptimalExpensiveSplit();
 	SplitPlane plane{};
 	SplitResult result{};
-	auto doSplit = split->doSplitPlane( tree, 0, plane, result );
+	auto doSplit = split->doSplitPlane( tree, AABB{}, 0, plane, result );
 	ASSERT_TRUE( doSplit );
 	ASSERT_EQ( 1, result.lCount );
 	EXPECT_AABB_EQ( ( AABB{ make_float3( -7 ), make_float3( -5 ) } ), result.left );
@@ -157,16 +157,34 @@ TEST_F( BVHFixture, UpdateTree )
 	auto split = new OptimalExpensiveSplit();
 	SplitPlane plane{};
 	SplitResult result{};
-	auto doSplit = split->doSplitPlane( tree, 0, plane, result );
+	auto doSplit = split->doSplitPlane( tree, AABB{}, 0, plane, result );
 	auto* builder = new BaseBuilder( split );
-	BVHNode& root = tree->nodes[0];
-	builder->updateTree( tree, root, plane, result );
-	EXPECT_AABB_EQ( ( AABB{ make_float3( -7 ), make_float3( -5 ) } ), tree->nodes[root.leftChild()].bounds );
-	EXPECT_AABB_EQ( ( AABB{ make_float3( -2 ), make_float3( 1 ) } ), tree->nodes[root.rightChild()].bounds );
-	ASSERT_EQ( root.splitAxis(), AXIS_X );
+	builder->updateTree( tree, 0, plane, result );
+	EXPECT_AABB_EQ( ( AABB{ make_float3( -7 ), make_float3( -5 ) } ), tree->nodes[tree->nodes[0].leftChild()].bounds );
+	EXPECT_AABB_EQ( ( AABB{ make_float3( -2 ), make_float3( 1 ) } ), tree->nodes[tree->nodes[0].rightChild()].bounds );
+	ASSERT_EQ( tree->nodes[0].splitAxis(), AXIS_X );
 	ASSERT_EQ( tree->primitiveIndices[0], 2 );
-	ASSERT_EQ( 1, tree->nodes[root.leftChild()].count );
-	ASSERT_EQ( 2, tree->nodes[root.rightChild()].count );
-	ASSERT_EQ( 1, tree->nodes[root.rightChild()].primitiveIndex() );
-	ASSERT_EQ( 0, tree->nodes[root.leftChild()].primitiveIndex() );
+	ASSERT_EQ( 1, tree->nodes[tree->nodes[0].leftChild()].count );
+	ASSERT_EQ( 2, tree->nodes[tree->nodes[0].rightChild()].count );
+	ASSERT_EQ( 1, tree->nodes[tree->nodes[0].rightChild()].primitiveIndex() );
+	ASSERT_EQ( 0, tree->nodes[tree->nodes[0].leftChild()].primitiveIndex() );
+}
+
+TEST_F( BVHFixture, TraverseTree )
+{
+	int count = 3;
+	Primitive primitive[] = {
+		Primitive{ TRIANGLE_BIT, make_float3( 0, 0, 0 ), make_float3( 0, 1, 0 ), make_float3( 0, 1, 1 ) },
+		Primitive{ TRIANGLE_BIT, make_float3( 1, 0, 0 ), make_float3( 1, 1, 0 ), make_float3( 1, 1, 1 ) },
+		Primitive{ TRIANGLE_BIT, make_float3( 2, 0, 0 ), make_float3( 2, 1, 0 ), make_float3( 2, 1, 1 ) },
+	};
+	auto split = new OptimalExpensiveSplit();
+	auto* builder = new BaseBuilder( split );
+	BVHTree* tree = builder->buildBVH( primitive, count );
+	Ray ray = Ray{ make_float3( -2.2, 0.2, 0.2 ), make_float3( 1, 0, 0 ) };
+	tree->traverse( ray, mat4::Identity() );
+	cout << ray.t << endl;
+	ray = Ray{ make_float3( 4.2, 0.2, 0.2 ), make_float3( -1, 0, 0 ) };
+	tree->traverse( ray, mat4::Identity() );
+	cout << ray.t << endl;
 }

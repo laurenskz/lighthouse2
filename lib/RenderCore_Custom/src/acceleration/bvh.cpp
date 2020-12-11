@@ -33,30 +33,30 @@ BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 void BaseBuilder::subDivide( BVHTree* tree, const AABB& centroidBounds, int nodeIdx, int depth )
 {
 	if ( tree->depth < depth ) tree->depth = depth;
-	auto node = tree->nodes[nodeIdx];
+	BVHNode& node = tree->nodes[nodeIdx];
 	SplitPlane plane{};
 	SplitResult best{};
 	if ( splitPlaneCreator->doSplitPlane( tree, centroidBounds, nodeIdx, plane, best ) )
 	{
-		updateTree( tree, node, plane, best );
+		updateTree( tree, nodeIdx, plane, best );
 		subDivide( tree, best.lCentroids, node.leftChild(), depth + 1 );
 		subDivide( tree, best.rCentroids, node.rightChild(), depth + 1 );
 	}
 }
-void BaseBuilder::updateTree( BVHTree* tree, BVHNode& node, const SplitPlane& plane, const SplitResult& best ) const
+void BaseBuilder::updateTree( BVHTree* tree, int nodeIdx, const SplitPlane& plane, const SplitResult& best ) const
 {
-	int leftChildPrimitivePointer = node.leftFirst;
-	tree->reorder( plane, node.leftFirst, node.count );
+	int leftChildPrimitivePointer = tree->nodes[nodeIdx].leftFirst;
+	tree->reorder( plane, tree->nodes[nodeIdx].leftFirst, tree->nodes[nodeIdx].count );
 	int left = tree->poolPtr;
 	tree->poolPtr += 2;
-	node.leftFirst = left;
-	node.count = -plane.axis;
-	tree->nodes[node.leftChild()].bounds = best.left;
-	tree->nodes[node.rightChild()].bounds = best.right;
-	tree->nodes[node.leftChild()].count = best.lCount;
-	tree->nodes[node.rightChild()].count = best.rCount;
-	tree->nodes[node.leftChild()].leftFirst = leftChildPrimitivePointer;
-	tree->nodes[node.rightChild()].leftFirst = leftChildPrimitivePointer + best.lCount;
+	tree->nodes[nodeIdx].leftFirst = left;
+	tree->nodes[nodeIdx].count = -plane.axis;
+	tree->nodes[tree->nodes[nodeIdx].leftChild()].bounds = best.left;
+	tree->nodes[tree->nodes[nodeIdx].rightChild()].bounds = best.right;
+	tree->nodes[tree->nodes[nodeIdx].leftChild()].count = best.lCount;
+	tree->nodes[tree->nodes[nodeIdx].rightChild()].count = best.rCount;
+	tree->nodes[tree->nodes[nodeIdx].leftChild()].leftFirst = leftChildPrimitivePointer;
+	tree->nodes[tree->nodes[nodeIdx].rightChild()].leftFirst = leftChildPrimitivePointer + best.lCount;
 }
 
 BVHTree::BVHTree( Primitive* primitives, int primitiveCount )
@@ -124,10 +124,17 @@ void BVHTree::traverse( Ray& ray, mat4 transform ) const
 	int stackPtr = 0;
 	int traverselStack[depth];
 	traverselStack[stackPtr] = 0;
+	int evaluations = 0;
 	while ( stackPtr >= 0 )
 	{
-		auto node = nodes[traverselStack[stackPtr--]];
-		if ( !node.isUsed() || ray.t <= distanceTo( ray, node.bounds ) ) continue;
+		int nodeIdx = traverselStack[stackPtr--];
+		auto node = nodes[nodeIdx];
+		float boundDistance = distanceTo( ray, node.bounds );
+		if ( !node.isUsed() || ray.t <= boundDistance )
+		{
+			continue;
+		}
+		evaluations++;
 		if ( node.isLeaf() )
 		{
 			for ( int i = node.primitiveIndex(); i < node.primitiveIndex() + node.count; ++i )
@@ -137,14 +144,15 @@ void BVHTree::traverse( Ray& ray, mat4 transform ) const
 		}
 		else
 		{
-			bool leftIsNear = node.splitAxis() == AXIS_X ? ray.direction.x < 0 : node.splitAxis() == AXIS_Y ? ray.direction.y < 0
-																											: node.splitAxis() == AXIS_Z && ray.direction.z < 0;
+			bool leftIsNear = node.splitAxis() == AXIS_X ? ray.direction.x > 0 : node.splitAxis() == AXIS_Y ? ray.direction.y > 0
+																											: node.splitAxis() == AXIS_Z && ray.direction.z > 0;
 			int near = leftIsNear ? node.leftChild() : node.rightChild();
 			int far = leftIsNear ? node.rightChild() : node.leftChild();
-			traverselStack[stackPtr++] = far;
-			traverselStack[stackPtr++] = near;
+			traverselStack[++stackPtr] = far;
+			traverselStack[++stackPtr] = near;
 		}
 	}
+	cout << evaluations << endl;
 }
 bool BVHTree::isOccluded( Ray& ray, mat4 transform, float d ) const
 {

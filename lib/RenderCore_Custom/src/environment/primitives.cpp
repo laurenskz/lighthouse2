@@ -82,7 +82,7 @@ void intersectTriangle( const Primitive* primitive, Ray& r )
 	edge2 = primitive->v3 - primitive->v1;
 	h = cross( r.direction, edge2 );
 	a = dot( edge1, h );
-#ifdef CULLING
+#ifndef CULLING
 	if ( a < EPSILON )
 		return; // This ray is parallel to this triangle.
 #else
