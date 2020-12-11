@@ -124,7 +124,6 @@ void BVHTree::traverse( Ray& ray, mat4 transform ) const
 	int stackPtr = 0;
 	int traverselStack[depth];
 	traverselStack[stackPtr] = 0;
-	int evaluations = 0;
 	while ( stackPtr >= 0 )
 	{
 		int nodeIdx = traverselStack[stackPtr--];
@@ -134,7 +133,6 @@ void BVHTree::traverse( Ray& ray, mat4 transform ) const
 		{
 			continue;
 		}
-		evaluations++;
 		if ( node.isLeaf() )
 		{
 			for ( int i = node.primitiveIndex(); i < node.primitiveIndex() + node.count; ++i )
@@ -152,7 +150,6 @@ void BVHTree::traverse( Ray& ray, mat4 transform ) const
 			traverselStack[++stackPtr] = near;
 		}
 	}
-	cout << evaluations << endl;
 }
 bool BVHTree::isOccluded( Ray& ray, mat4 transform, float d ) const
 {
