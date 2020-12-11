@@ -4,7 +4,7 @@ namespace lh2core
 
 void TopLevelBVH::setPrimitives( Primitive* primitives, int count )
 {
-	auto* splitter = new OptimalExpensiveSplit();
+	auto* splitter = new BinningSplit();
 	auto* builder = new BaseBuilder( splitter );
 	tree = builder->buildBVH( primitives, count );
 	delete splitter;
