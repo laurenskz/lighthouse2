@@ -10,6 +10,7 @@ Mesh::Mesh( int vertexCount )
 }
 void Geometry::setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles )
 {
+	cout << "Received new mesh with index: " << meshIdx << endl;
 	Mesh* mesh;
 	if ( meshIdx >= meshes.size() )
 		meshes.push_back( mesh = new Mesh( vertexCount ) );
@@ -35,6 +36,7 @@ void Geometry::setInstance( const int instanceIdx, const int meshIdx, const mat4
 		transforms[instanceIdx] = transform;
 		instances[instanceIdx].meshIndex = meshIdx;
 		instances[instanceIdx].transform = transform;
+		isDirty = true;
 	}
 }
 Primitives Geometry::getPrimitives()
@@ -154,7 +156,7 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 	{
 		intersection.mat.color = mat.color.value;
 	}
-	if ( mat.specular.value > (1e-4) )
+	if ( mat.specular.value > ( 1e-4 ) )
 	{
 		intersection.mat.type = SPECULAR;
 		intersection.mat.specularity = mat.specular.value;
@@ -198,5 +200,6 @@ Intersection Geometry::intersectionInformation( const Ray& ray )
 	{
 		return planeIntersection( ray, Material{} );
 	}
+	return Intersection{};
 }
 } // namespace lh2core

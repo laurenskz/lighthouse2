@@ -4,9 +4,9 @@ namespace lh2core
 
 void TopLevelBVH::setPrimitives( Primitive* primitives, int count )
 {
+	if ( count <= 0 ) return;
 	cout << "Building BVH over " << count << " primitives" << endl;
-	if ( count <= 0 || tree != nullptr ) return;
-	auto* splitter = new BinningSplit( 16 );
+	auto* splitter = new BinningSplit( 32 );
 	auto* builder = new BaseBuilder( splitter );
 	tree = builder->buildBVH( primitives, count );
 	delete splitter;

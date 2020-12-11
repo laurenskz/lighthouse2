@@ -34,7 +34,8 @@ static std::bitset<1024> keystates;
 void PrepareScene()
 {
 	// initialize scene
-	renderer->AddScene( "scene.gltf", "../_shareddata/knight" );
+	renderer->AddScene( "AnimatedCube.gltf", "../_shareddata/animatedCube" );
+//	renderer->AddScene( "RiggedFigure.gltf", "../_shareddata/RiggedFigure/glTF" );
 	//	int mesh = renderer->AddMesh( "../_shareddata/scene/tetrahedron.obj" );
 	//	renderer->AddInstance( mesh, mat4::RotateX( 3.5 ) * mat4::Translate( 2, 0, 0 ) );
 	//	auto sky = new HostSkyDome();
@@ -42,15 +43,15 @@ void PrepareScene()
 	// Compensate for different evaluation in PBRT
 	//	sky->worldToLight = mat4::RotateX( -PI / 2 );
 	//	renderer->GetScene()->SetSkyDome( sky );
-//	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
+	//	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
 	//	mat->pbrtMaterialType = lighthouse2::MaterialType::PBRT_GLASS;
-//	mat->specular.value = 0.5;
+	//	mat->specular.value = 0.5;
 
-	//	Point light
-	//	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
+	//		Point light
+	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
 
 	//		Directional light
-	renderer->AddDirectionalLight( normalize( make_float3( 1) ), make_float3( 1.0 / 2 ) );
+	renderer->AddDirectionalLight( normalize( make_float3( -1 ) ), make_float3( 1.0 / 2 ) );
 
 	//		Spot light
 	//	const float3& spotPos = make_float3( 2, 8, 2 );
@@ -101,12 +102,15 @@ int main()
 																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" );	// RASTERIZER, your only option if not on NVidia
 																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
-	renderer->GetCamera()->LookAt( make_float3( -4, 1, 10 ), make_float3( 0, 2, 0 ) );
+	renderer->GetCamera()->LookAt( make_float3( 0, 3, 10 ), make_float3( 0, 2, 0 ) );
 	//	renderer->DeserializeCamera( "camera.xml" );
 	// initialize scene
 	PrepareScene();
 	// set initial window size
 	ReshapeWindowCallback( 0, SCRWIDTH, SCRHEIGHT );
+	Timer timer;
+	timer.reset();
+	float deltaTime = 0;
 	// enter main loop
 	while ( !glfwWindowShouldClose( window ) )
 	{
@@ -116,6 +120,12 @@ int main()
 		renderer->Render( Restart /* alternative: converge */ );
 		// handle user input
 		HandleInput( 0.025f );
+		for ( int i = 0; i < renderer->AnimationCount(); i++ )
+		{
+			renderer->UpdateAnimation( i, deltaTime );
+		}
+		deltaTime = timer.elapsed();
+		timer.reset();
 		// minimal rigid animation example
 		static float r = 0;
 		renderer->SetNodeTransform( car, mat4::Identity() );
