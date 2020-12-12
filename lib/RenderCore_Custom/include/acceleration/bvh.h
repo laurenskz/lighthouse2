@@ -36,27 +36,56 @@ struct SplitPlane
 };
 
 float distanceTo( const Ray& ray, const AABB& box );
-class BVHTree
+
+template <class Derived>
+class BaseBVHTree
 {
   public:
-	void traverse( Ray& ray, mat4 transform ) const;
-	void traverse( const RayPacket& packet, mat4 transform );
-	bool isOccluded( Ray& ray, mat4 transform, float d ) const;
-	void isOccluded( const RayPacket& packet, mat4 transform, float d );
+	void traverse( Ray& ray ) const;
+	void traversePacket( const RayPacket& packet ) const;
+	bool isOccluded( Ray& ray, float d ) const;
+	void isOccludedPacket( const RayPacket& packet, float d ) const;
+	BVHNode* nodes;
+	int nodeCount;
+	int poolPtr;
+	int depth = 0;
+	[[nodiscard]] inline AABB bounds() const { return nodes[0].bounds; }
+};
+
+class BVHTree : public BaseBVHTree<BVHTree>
+{
+  public:
 	void refit( Primitive* newPrimitives );
 	void reorder( const SplitPlane& plane, int start, int count );
 	BVHTree( Primitive* primitives, int primitiveCount );
 	~BVHTree();
-	BVHNode* nodes;
-	int nodeCount;
 	int* primitiveIndices;
 	Primitive* primitives;
 	float3* centroids;
 	AABB rootCentroidBounds;
 	int primitiveCount;
 	int poolPtr;
-	int depth = 0;
+	inline bool leftIsNear( const BVHNode& node, const Ray& ray ) const;
+	inline void visitLeaf( const BVHNode& node, Ray& ray ) const;
 	static bool toLeft( const SplitPlane& plane, const float3& centroid );
+};
+
+struct TLInstance
+{
+	mat4 transform;
+	mat4 inverted;
+	BVHTree* tree;
+};
+
+class TLBVHTree final : public BaseBVHTree<TLBVHTree>
+{
+  private:
+	const std::vector<TLInstance>& instances;
+
+  public:
+	explicit TLBVHTree( const std::vector<TLInstance>& instances ) : instances( instances ){};
+	inline bool leftIsNear( const BVHNode& node, const Ray& ray ) const;
+	inline void visitLeaf( const BVHNode& node, Ray& ray ) const;
 };
 
 class TopLevelBVH : public Intersector
@@ -70,6 +99,7 @@ class TopLevelBVH : public Intersector
 
   private:
 	BVHTree* tree{};
+	TLBVHTree* tlBVH{};
 };
 
 struct SplitResult

@@ -15,7 +15,8 @@ void TopLevelBVH::setPrimitives( Primitive* primitives, int count )
 void TopLevelBVH::intersect( Ray& r )
 {
 	if ( tree == nullptr ) return;
-	tree->traverse( r, mat4::Identity() );
+
+	tree->traverse( r );
 }
 void TopLevelBVH::intersectPacket( const RayPacket& packet )
 {
@@ -26,11 +27,11 @@ void TopLevelBVH::packetOccluded( const RayPacket& packet )
 bool TopLevelBVH::isOccluded( Ray& r, float d )
 {
 	if ( tree == nullptr ) return false;
-	return tree->isOccluded( r, mat4::Identity(), d );
+	return tree->isOccluded( r, d );
 }
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 {
-	auto* tree = new BVHTree( primitives, count );
+	BVHTree* tree = new BVHTree( primitives, count );
 	subDivide( tree, tree->rootCentroidBounds, 0, 1 );
 	return tree;
 }
@@ -123,42 +124,17 @@ void BVHTree::reorder( const SplitPlane& plane, int start, int count )
 }
 bool BVHTree::toLeft( const SplitPlane& plane, const float3& centroid ) { return plane.axis == AXIS_X ? centroid.x <= plane.location : plane.axis == AXIS_Y ? centroid.y <= plane.location
 																																							: plane.axis == AXIS_Z && centroid.z <= plane.location; }
-void BVHTree::traverse( Ray& ray, mat4 transform ) const
+bool BVHTree::leftIsNear( const BVHNode& node, const Ray& ray ) const
 {
-	int stackPtr = 0;
-	int traverselStack[depth];
-	traverselStack[stackPtr] = 0;
-	while ( stackPtr >= 0 )
-	{
-		int nodeIdx = traverselStack[stackPtr--];
-		auto node = nodes[nodeIdx];
-		float boundDistance = distanceTo( ray, node.bounds );
-		if ( !node.isUsed() || boundDistance < 0 || ray.t <= boundDistance )
-		{
-			continue;
-		}
-		if ( node.isLeaf() )
-		{
-			for ( int i = node.primitiveIndex(); i < node.primitiveIndex() + node.count; ++i )
-			{
-				intersectPrimitive( &primitives[primitiveIndices[i]], ray );
-			}
-		}
-		else
-		{
-			bool leftIsNear = node.splitAxis() == AXIS_X ? ray.direction.x > 0 : node.splitAxis() == AXIS_Y ? ray.direction.y > 0
-																											: node.splitAxis() == AXIS_Z && ray.direction.z > 0;
-			int near = leftIsNear ? node.leftChild() : node.rightChild();
-			int far = leftIsNear ? node.rightChild() : node.leftChild();
-			traverselStack[++stackPtr] = far;
-			traverselStack[++stackPtr] = near;
-		}
-	}
+	return node.splitAxis() == AXIS_X ? ray.direction.x > 0 : node.splitAxis() == AXIS_Y ? ray.direction.y > 0
+																						 : node.splitAxis() == AXIS_Z && ray.direction.z > 0;
 }
-bool BVHTree::isOccluded( Ray& ray, mat4 transform, float d ) const
+void BVHTree::visitLeaf( const BVHNode& node, Ray& ray ) const
 {
-	traverse( ray, transform );
-	return ray.t < d;
+	for ( int i = node.primitiveIndex(); i < node.primitiveIndex() + node.count; ++i )
+	{
+		intersectPrimitive( &primitives[primitiveIndices[i]], ray );
+	}
 }
 Bounds calculateBounds( Primitive* primitives, const int* indices, float3* centroids, int first, int count )
 {
@@ -343,5 +319,52 @@ SplitPlane BinningSplit::splitPlaneFromCentroid( const float3& centroid, int axi
 																		  : axis == AXIS_Z	 ? centroid.z
 																							 : -1 };
 	return splitPlanePosition;
+}
+template <class Derived>
+void BaseBVHTree<Derived>::traverse( Ray& ray ) const
+{
+	int stackPtr = 0;
+	int traverselStack[depth];
+	traverselStack[stackPtr] = 0;
+	while ( stackPtr >= 0 )
+	{
+		int nodeIdx = traverselStack[stackPtr--];
+		auto node = nodes[nodeIdx];
+		float boundDistance = distanceTo( ray, node.bounds );
+		if ( !node.isUsed() || boundDistance < 0 || ray.t <= boundDistance )
+		{
+			continue;
+		}
+		if ( node.isLeaf() )
+		{
+			static_cast<const Derived*>( this )->visitLeaf( node, ray );
+		}
+		else
+		{
+			bool leftFirst = static_cast<const Derived*>( this )->leftIsNear( node, ray );
+			int near = leftFirst ? node.leftChild() : node.rightChild();
+			int far = leftFirst ? node.rightChild() : node.leftChild();
+			traverselStack[++stackPtr] = far;
+			traverselStack[++stackPtr] = near;
+		}
+	}
+}
+template <class Derived>
+bool BaseBVHTree<Derived>::isOccluded( Ray& ray, float d ) const
+{
+	traverse( ray );
+	return ray.t < d;
+}
+bool TLBVHTree::leftIsNear( const BVHNode& node, const Ray& ray ) const
+{
+	return distanceTo( ray, nodes[node.leftChild()].bounds ) < distanceTo( ray, nodes[node.rightChild()].bounds );
+}
+void TLBVHTree::visitLeaf( const BVHNode& node, Ray& ray ) const
+{
+	auto pos = ray.start;
+	auto tree = instances[node.leftChild()];
+	ray.start = make_float3( tree.inverted * make_float4( pos ) );
+	tree.tree->traverse( ray );
+	ray.start = pos;
 }
 } // namespace lh2core
