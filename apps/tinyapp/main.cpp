@@ -26,7 +26,7 @@ struct Car
 	float3 velocity;
 };
 
-#define CAR_COUNT 5
+#define CAR_COUNT 100
 static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0;
 static Shader* shader = 0;
@@ -53,7 +53,7 @@ void PrepareScene()
 	cars = new Car[CAR_COUNT];
 	for ( int i = 0; i < CAR_COUNT; ++i )
 	{
-		cars[i].start = make_float3( (float)i * 0.3, (float)i * 0.3, (float)i * 0.3 );
+		cars[i].start = make_float3( (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX );
 		cars[i].velocity = make_float3( 0.1, 0.1, 0.1 );
 		cars[i].nodeIdx = renderer->AddInstance( mesh, mat4::Translate( cars[i].start ) );
 	}
@@ -147,15 +147,15 @@ int main()
 			renderer->UpdateAnimation( i, deltaTime );
 		}
 		deltaTime = timer.elapsed();
-		//		for ( int i = 0; i < CAR_COUNT; ++i )
-		//		{
-		//			cars[i].start += deltaTime * cars[i].velocity;
-		//			if ( dot( make_float3( 1 ), cars[i].start ) > 5 )
-		//			{
-		//				cars[i].velocity = -cars[i].velocity;
-		//			}
-		//			renderer->SetNodeTransform( cars[i].nodeIdx, mat4::Translate( cars[i].start ) );
-		//		}
+		for ( int i = 0; i < CAR_COUNT; ++i )
+		{
+			cars[i].start += deltaTime * cars[i].velocity;
+			if ( dot( make_float3( 1 ), cars[i].start ) > 5 )
+			{
+				cars[i].velocity = -cars[i].velocity;
+			}
+			renderer->SetNodeTransform( cars[i].nodeIdx, mat4::Translate( cars[i].start ) );
+		}
 		timer.reset();
 		// minimal rigid animation example
 		static float r = 0;
