@@ -46,6 +46,7 @@ struct Ray
 	float3 direction;
 	float t = MAX_DISTANCE, u{}, v{};
 	bool alive = true;
+	int instanceIndex = -1;
 	const Primitive* primitive = nullptr;
 };
 

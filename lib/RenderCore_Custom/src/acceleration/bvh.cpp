@@ -4,19 +4,10 @@ namespace lh2core
 
 void TopLevelBVH::setPrimitives( Primitive* primitives, int count )
 {
-	if ( count <= 0 ) return;
-	cout << "Building BVH over " << count << " primitives" << endl;
-	auto* splitter = new BinningSplit( 32 );
-	auto* builder = new BaseBuilder( splitter );
-	tree = builder->buildBVH( primitives, count );
-	delete splitter;
-	delete builder;
 }
 void TopLevelBVH::intersect( Ray& r )
 {
-	if ( tree == nullptr ) return;
-
-	tree->traverse( r );
+	tlBVH->traverse( r );
 }
 void TopLevelBVH::intersectPacket( const RayPacket& packet )
 {
@@ -26,8 +17,102 @@ void TopLevelBVH::packetOccluded( const RayPacket& packet )
 }
 bool TopLevelBVH::isOccluded( Ray& r, float d )
 {
-	if ( tree == nullptr ) return false;
-	return tree->isOccluded( r, d );
+	return tlBVH->isOccluded( r, d );
+}
+TLBVHTree* TopLevelBVH::buildTopLevelBVH()
+{
+	auto newTree = new TLBVHTree( instances );
+	int poolPtr = newTree->nodeCount - 1;
+	int nodeList[instances.size()];
+	int depths[newTree->nodeCount];
+	int mergedCount = instances.size();
+	for ( int i = 0; i < instances.size(); ++i )
+	{
+		const TLInstance& instance = instances[i];
+		int nodeIndex = poolPtr--;
+		depths[nodeIndex] = 1;
+		newTree->nodes[nodeIndex] = TLBVHNode::makeLeaf( instance.transform * instance.tree->bounds(), i );
+		nodeList[i] = nodeIndex;
+	}
+	int a = 0;
+	int b = findBestMatch( a, mergedCount, nodeList, newTree );
+	while ( mergedCount > 1 )
+	{
+		int c = findBestMatch( b, mergedCount, nodeList, newTree );
+		if ( a == c )
+		{
+			mergeNodes( newTree, nodeList, depths, a, b, poolPtr, mergedCount );
+		}
+		else
+		{
+			a = b;
+			b = c;
+		}
+	}
+	newTree->nodes[0] = newTree->nodes[poolPtr + 1];
+	newTree->depth = depths[poolPtr + 1];
+	return newTree;
+}
+void TopLevelBVH::mergeNodes( const TLBVHTree* newTree, int* nodeList, int* depths, int a, int b, int& poolPtr, int& mergedCount ) const
+{
+	int leftChild = nodeList[a];
+	int rightChild = nodeList[b];
+	int parentIndex = poolPtr--;
+	newTree->nodes[parentIndex] = TLBVHNode::makeParent( boundBoth( newTree->nodes[leftChild].bounds, newTree->nodes[rightChild].bounds ), leftChild, rightChild );
+	mergedCount--;
+	nodeList[a] = parentIndex;
+	nodeList[b] = nodeList[mergedCount];
+	depths[parentIndex] = max( depths[leftChild], depths[rightChild] ) + 1;
+}
+int TopLevelBVH::findBestMatch( int nodeIdx, int count, const int* nodes, TLBVHTree* currentTree )
+{
+	int bestMatch = abs( nodeIdx - 1 );
+	float bestCost = surfaceArea( boundBoth( currentTree->nodes[nodes[nodeIdx]].bounds, currentTree->nodes[nodes[bestMatch]].bounds ) );
+	for ( int i = 0; i < count; ++i )
+	{
+		if ( i == nodeIdx || i == bestMatch ) continue;
+		float cost = surfaceArea( boundBoth( currentTree->nodes[nodes[nodeIdx]].bounds, currentTree->nodes[nodes[i]].bounds ) );
+		if ( cost < bestCost )
+		{
+			bestCost = cost;
+			bestMatch = i;
+		}
+	}
+	return bestMatch;
+}
+void TopLevelBVH::setMesh( int meshIndex, Primitive* primitives, int count )
+{
+	if ( meshIndex >= trees.size() )
+	{
+		auto* splitter = new BinningSplit( 32 );
+		auto* builder = new BaseBuilder( splitter );
+		trees.push_back( builder->buildBVH( primitives, count ) );
+	}
+	else
+	{
+		trees[meshIndex]->refit( primitives );
+	}
+}
+void TopLevelBVH::setInstance( int instanceIndex, int meshIndex, const mat4& transform )
+{
+	isDirty = true;
+	if ( instanceIndex >= instances.size() )
+	{
+		instances.push_back( TLInstance{ transform, transform.Inverted(), instanceIndex, trees[meshIndex] } );
+	}
+	else
+	{
+		instances[instanceIndex].transform = transform;
+		instances[instanceIndex].inverted = transform.Inverted();
+	}
+}
+void TopLevelBVH::finalize()
+{
+	if ( isDirty )
+	{
+		tlBVH = buildTopLevelBVH();
+		isDirty = false;
+	}
 }
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 {
@@ -320,8 +405,8 @@ SplitPlane BinningSplit::splitPlaneFromCentroid( const float3& centroid, int axi
 																							 : -1 };
 	return splitPlanePosition;
 }
-template <class Derived>
-void BaseBVHTree<Derived>::traverse( Ray& ray ) const
+template <class Derived, class Node>
+void BaseBVHTree<Derived, Node>::traverse( Ray& ray ) const
 {
 	int stackPtr = 0;
 	int traverselStack[depth];
@@ -349,22 +434,50 @@ void BaseBVHTree<Derived>::traverse( Ray& ray ) const
 		}
 	}
 }
-template <class Derived>
-bool BaseBVHTree<Derived>::isOccluded( Ray& ray, float d ) const
+template <class Derived, class Node>
+bool BaseBVHTree<Derived, Node>::isOccluded( Ray& ray, float d ) const
 {
 	traverse( ray );
 	return ray.t < d;
 }
-bool TLBVHTree::leftIsNear( const BVHNode& node, const Ray& ray ) const
+bool TLBVHTree::leftIsNear( const TLBVHNode& node, const Ray& ray ) const
 {
 	return distanceTo( ray, nodes[node.leftChild()].bounds ) < distanceTo( ray, nodes[node.rightChild()].bounds );
 }
-void TLBVHTree::visitLeaf( const BVHNode& node, Ray& ray ) const
+void TLBVHTree::visitLeaf( const TLBVHNode& node, Ray& ray ) const
 {
-	auto pos = ray.start;
-	auto tree = instances[node.leftChild()];
+	float t = ray.t;
+	float3 pos = ray.start;
+	float3 dir = ray.direction;
+	auto tree = instances[node.treeIndex()];
 	ray.start = make_float3( tree.inverted * make_float4( pos ) );
+	ray.direction = normalize( make_float3( tree.inverted * make_float4( dir ) ) );
 	tree.tree->traverse( ray );
+	if ( ray.t < t )
+	{
+		ray.instanceIndex = tree.instanceIndex;
+	}
 	ray.start = pos;
+	ray.direction = dir;
+}
+AABB operator*( const mat4& mat, const AABB& bounds )
+{
+	//	We need to apply the transformation to all 8 corners
+	AABB newBounds{};
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.min.y, bounds.min.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.min.y, bounds.max.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.max.y, bounds.min.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.max.y, bounds.max.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.min.y, bounds.min.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.min.y, bounds.max.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.max.y, bounds.min.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.max.y, bounds.max.z, 0 ) ) );
+	return newBounds;
+}
+
+TLBVHTree::TLBVHTree( const vector<TLInstance>& instances ) : instances( instances )
+{
+	nodeCount = (int)instances.size() * 2;
+	nodes = new TLBVHNode[nodeCount];
 }
 } // namespace lh2core

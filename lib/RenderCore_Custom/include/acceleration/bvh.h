@@ -15,6 +15,7 @@ struct AABB
 	float3 min = make_float3( MAXFLOAT );
 	float3 max = make_float3( -MAXFLOAT );
 };
+AABB operator*( const mat4& a, const AABB& bounds );
 
 class BVHNode
 {
@@ -29,6 +30,21 @@ class BVHNode
 	[[nodiscard]] inline int primitiveIndex() const { return this->leftFirst; }
 	[[nodiscard]] inline int splitAxis() const { return -this->count; }
 };
+
+class TLBVHNode
+{
+  public:
+	AABB bounds;
+	int leftFirst = -1;
+	int right = -1;
+	[[nodiscard]] inline bool isLeaf() const { return this->right < 0; }
+	[[nodiscard]] inline int leftChild() const { return this->leftFirst; }
+	[[nodiscard]] inline int rightChild() const { return this->right; }
+	[[nodiscard]] inline bool isUsed() const { return this->leftFirst >= 0; }
+	[[nodiscard]] inline int treeIndex() const { return this->leftFirst; }
+	static TLBVHNode makeParent( const AABB& bounds, int left, int right ) { return TLBVHNode{ bounds, left, right }; }
+	static TLBVHNode makeLeaf( const AABB& bounds, int treeIndex ) { return TLBVHNode{ bounds, treeIndex, -1 }; }
+};
 struct SplitPlane
 {
 	int axis;
@@ -37,7 +53,7 @@ struct SplitPlane
 
 float distanceTo( const Ray& ray, const AABB& box );
 
-template <class Derived>
+template <class Derived, class Node>
 class BaseBVHTree
 {
   public:
@@ -45,14 +61,14 @@ class BaseBVHTree
 	void traversePacket( const RayPacket& packet ) const;
 	bool isOccluded( Ray& ray, float d ) const;
 	void isOccludedPacket( const RayPacket& packet, float d ) const;
-	BVHNode* nodes;
+	Node* nodes;
 	int nodeCount;
 	int poolPtr;
 	int depth = 0;
 	[[nodiscard]] inline AABB bounds() const { return nodes[0].bounds; }
 };
 
-class BVHTree : public BaseBVHTree<BVHTree>
+class BVHTree : public BaseBVHTree<BVHTree, BVHNode>
 {
   public:
 	void refit( Primitive* newPrimitives );
@@ -74,18 +90,19 @@ struct TLInstance
 {
 	mat4 transform;
 	mat4 inverted;
+	int instanceIndex;
 	BVHTree* tree;
 };
 
-class TLBVHTree final : public BaseBVHTree<TLBVHTree>
+class TLBVHTree final : public BaseBVHTree<TLBVHTree, TLBVHNode>
 {
   private:
 	const std::vector<TLInstance>& instances;
 
   public:
-	explicit TLBVHTree( const std::vector<TLInstance>& instances ) : instances( instances ){};
-	inline bool leftIsNear( const BVHNode& node, const Ray& ray ) const;
-	inline void visitLeaf( const BVHNode& node, Ray& ray ) const;
+	explicit TLBVHTree( const std::vector<TLInstance>& instances );
+	inline bool leftIsNear( const TLBVHNode& node, const Ray& ray ) const;
+	inline void visitLeaf( const TLBVHNode& node, Ray& ray ) const;
 };
 
 class TopLevelBVH : public Intersector
@@ -96,10 +113,18 @@ class TopLevelBVH : public Intersector
 	void intersectPacket( const RayPacket& packet ) override;
 	void packetOccluded( const RayPacket& packet ) override;
 	bool isOccluded( Ray& r, float d ) override;
+	static inline int findBestMatch( int node, int count, const int* nodes, TLBVHTree* tree );
+	void setMesh( int meshIndex, Primitive* primitives, int count );
+	void setInstance( int instanceIndex, int meshIndex, const mat4& transform );
+	void finalize();
 
   private:
-	BVHTree* tree{};
+	bool isDirty = false;
+	std::vector<TLInstance> instances{};
+	std::vector<BVHTree*> trees{};
 	TLBVHTree* tlBVH{};
+	TLBVHTree* buildTopLevelBVH();
+	void mergeNodes( const TLBVHTree* newTree, int* nodeList, int* depths, int a, int b, int& poolPtr, int& mergedCount ) const;
 };
 
 struct SplitResult

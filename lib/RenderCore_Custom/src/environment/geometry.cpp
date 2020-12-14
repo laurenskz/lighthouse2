@@ -6,7 +6,28 @@ Mesh::Mesh( int vertexCount )
 {
 	positions = new float4[vertexCount];
 	triangleCount = vertexCount / 3;
+	triangles = new CoreTri[triangleCount];
+	primitives = new Primitive[triangleCount];
 	this->vertexCount = vertexCount;
+}
+void Mesh::setPositions( const float4* positions, const CoreTri* fatData, const CoreMaterial* materials, int meshIndex )
+{
+	for ( int i = 0; i < vertexCount; ++i )
+	{
+		this->positions[i] = positions[i];
+	}
+	memcpy( triangles, fatData, triangleCount * sizeof( CoreTri ) );
+	for ( int i = 0; i < triangleCount; ++i )
+	{
+		auto matId = triangles[i].material;
+		int transparentModifier = materials[matId].pbrtMaterialType == MaterialType::PBRT_GLASS ? 1 : 0;
+		primitives[i] = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ),
+								   make_float3( positions[i * 3] ),
+								   make_float3( positions[i * 3 + 1] ),
+								   make_float3( positions[i * 3 + 2] ),
+								   meshIndex,
+								   i, -1 };
+	}
 }
 void Geometry::setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles )
 {
@@ -16,12 +37,7 @@ void Geometry::setGeometry( const int meshIdx, const float4* vertexData, const i
 		meshes.push_back( mesh = new Mesh( vertexCount ) );
 	else
 		mesh = meshes[meshIdx];
-	for ( int i = 0; i < vertexCount; ++i )
-	{
-		mesh->positions[i] = vertexData[i];
-	}
-	mesh->triangles = new CoreTri[triangleCount];
-	memcpy( mesh->triangles, triangles, triangleCount * sizeof( CoreTri ) );
+	mesh->setPositions( vertexData, triangles, materials, meshIdx );
 }
 void Geometry::setInstance( const int instanceIdx, const int meshIdx, const mat4& transform )
 {
@@ -79,17 +95,23 @@ int Geometry::addTriangles( int primitiveIndex )
 		Mesh*& mesh = meshes[instance.meshIndex];
 		for ( int i = 0; i < mesh->triangleCount; ++i )
 		{
-			auto matId = meshes[instance.meshIndex]->triangles[i].material;
-			int transparentModifier = materials[matId].pbrtMaterialType == lighthouse2::MaterialType::PBRT_GLASS ? 1 : 0;
-			primitives[primitiveIndex++] = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ),
-													  make_float3( instance.transform * mesh->positions[i * 3] ),
-													  make_float3( instance.transform * mesh->positions[i * 3 + 1] ),
-													  make_float3( instance.transform * mesh->positions[i * 3 + 2] ),
-													  instance.meshIndex,
-													  i, instanceIndex };
+			Primitive primitive = computePrimitive( instanceIndex, instance, mesh, i );
+			primitives[primitiveIndex++] = primitive;
 		}
 	}
 	return primitiveIndex;
+}
+Primitive Geometry::computePrimitive( int instanceIndex, const Instance& instance, Mesh* const& mesh, int i )
+{
+	auto matId = meshes[instance.meshIndex]->triangles[i].material;
+	int transparentModifier = materials[matId].pbrtMaterialType == MaterialType::PBRT_GLASS ? 1 : 0;
+	const Primitive& primitive = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ),
+											make_float3( instance.transform * mesh->positions[i * 3] ),
+											make_float3( instance.transform * mesh->positions[i * 3 + 1] ),
+											make_float3( instance.transform * mesh->positions[i * 3 + 2] ),
+											instance.meshIndex,
+											i, instanceIndex };
+	return primitive;
 }
 void Geometry::addPlane( float3 normal, float d )
 {
@@ -133,7 +155,7 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 	}
 	const CoreTri& triangleData = meshes[r.primitive->meshIndex]->triangles[r.primitive->triangleNumber];
 	auto normal = r.u * triangleData.vN0 + ( r.v ) * triangleData.vN1 + ( 1 - r.u - r.v ) * triangleData.vN2;
-	intersection.normal = normalize( make_float3( transforms[r.primitive->instanceIndex] * ( make_float4( normal ) ) ) );
+	intersection.normal = normalize( make_float3( transforms[r.instanceIndex] * ( make_float4( normal ) ) ) );
 	auto mat = materials[triangleData.material];
 	intersection.mat.type = DIFFUSE;
 	if ( mat.pbrtMaterialType == lighthouse2::MaterialType::PBRT_GLASS )
@@ -201,5 +223,9 @@ Intersection Geometry::intersectionInformation( const Ray& ray )
 		return planeIntersection( ray, Material{} );
 	}
 	return Intersection{};
+}
+const Mesh* Geometry::getMesh( int meshIdx )
+{
+	return meshes[meshIdx];
 }
 } // namespace lh2core

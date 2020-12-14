@@ -26,7 +26,7 @@ void RenderCore::Init()
 	// initialize core
 	geometry = new Geometry();
 	//	geometry->addSphere( make_float3( 0.5, -0.9, 1.5 ), 0.5, Material{ make_float3( 1, 0, 0 ) } );
-//	geometry->addSphere( make_float3( -3, -0.3, -2 ), 0.5, Material{ make_float3( 0 ), 0, GLASS, 1.5 } );
+	//	geometry->addSphere( make_float3( -3, -0.3, -2 ), 0.5, Material{ make_float3( 0 ), 0, GLASS, 1.5 } );
 	//	geometry->addPlane( make_float3( 0, 1, 0 ), 1 );
 	//	intersector = new BruteForceIntersector();
 	intersector = new TopLevelBVH();
@@ -66,7 +66,9 @@ void RenderCore::SetTarget( GLTexture* target, const uint )
 
 void RenderCore::SetInstance( const int instanceIdx, const int meshIdx, const mat4& matrix )
 {
+	if ( meshIdx < 0 || instanceIdx < 0 ) return;
 	geometry->setInstance( instanceIdx, meshIdx, matrix );
+	intersector->setInstance( instanceIdx, meshIdx, matrix );
 }
 
 void RenderCore::SetLights( const CoreLightTri* triLights, const int triLightCount,
@@ -82,6 +84,7 @@ void RenderCore::SetLights( const CoreLightTri* triLights, const int triLightCou
 void RenderCore::FinalizeInstances()
 {
 	geometry->finalizeInstances();
+	intersector->finalize();
 }
 //  +-----------------------------------------------------------------------------+
 //  |  RenderCore::SetGeometry                                                    |
@@ -90,6 +93,8 @@ void RenderCore::FinalizeInstances()
 void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles )
 {
 	geometry->setGeometry( meshIdx, vertexData, vertexCount, triangleCount, triangles );
+	auto mesh = geometry->getMesh( meshIdx );
+	intersector->setMesh( meshIdx, mesh->primitives, mesh->triangleCount );
 }
 
 //  +-----------------------------------------------------------------------------+

@@ -12,10 +12,11 @@ class Mesh
   public:
 	explicit Mesh( int vertexCount );
 	float4* positions;
-	mat4 transform = mat4::Identity();
+	Primitive* primitives;
 	int vertexCount;
 	int triangleCount;
 	CoreTri* triangles = nullptr; // 'fat' triangle data
+	void setPositions( const float4* positions, const CoreTri* fatData, const CoreMaterial* materials, int meshIndex );
 };
 
 struct Instance
@@ -26,7 +27,7 @@ struct Instance
 class IGeometry
 {
   public:
-	virtual Intersection intersectionInformation( const Ray& ray) = 0;
+	virtual Intersection intersectionInformation( const Ray& ray ) = 0;
 };
 class Geometry : public IGeometry
 {
@@ -51,6 +52,7 @@ class Geometry : public IGeometry
 	Intersection triangleIntersection( const Ray& r );
 
   public:
+	const Mesh* getMesh( int meshIdx );
 	void setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
 	void setInstance( const int instanceIdx, const int modelIdx, const mat4& transform = mat4::Identity() );
 	void SetTextures( const CoreTexDesc* tex, const int textureCount );
@@ -64,5 +66,6 @@ class Geometry : public IGeometry
 
   public:
 	int addLights( int primitiveIndex );
+	Primitive computePrimitive( int instanceIndex, const Instance& instance, Mesh* const& mesh, int i );
 };
 } // namespace lh2core
