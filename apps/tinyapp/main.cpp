@@ -34,10 +34,12 @@ static std::bitset<1024> keystates;
 void PrepareScene()
 {
 	// initialize scene
-	renderer->AddScene( "AnimatedCube.gltf", "../_shareddata/animatedCube" );
-//	renderer->AddScene( "RiggedFigure.gltf", "../_shareddata/RiggedFigure/glTF" );
-	//	int mesh = renderer->AddMesh( "../_shareddata/scene/tetrahedron.obj" );
-	//	renderer->AddInstance( mesh, mat4::RotateX( 3.5 ) * mat4::Translate( 2, 0, 0 ) );
+	//	renderer->AddScene( "AnimatedCube.gltf", "../_shareddata/animatedCube" );
+	//	renderer->AddScene( "CesiumMan.gltf", "../_shareddata/CesiumMan/glTF" );
+	//	int node = renderer->FindNode( "Cesium_Man" );
+	//	renderer->AddInstance( 0, mat4::Translate( -3, 0, 0 ) );
+	int mesh = renderer->AddMesh( "../_shareddata/sponza/sponza.obj" );
+	renderer->AddInstance( mesh, mat4::Identity() );
 	//	auto sky = new HostSkyDome();
 	//	sky->Load( "../_shareddata/sky_15.hdr" );
 	// Compensate for different evaluation in PBRT

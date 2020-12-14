@@ -446,10 +446,10 @@ bool TLBVHTree::leftIsNear( const TLBVHNode& node, const Ray& ray ) const
 }
 void TLBVHTree::visitLeaf( const TLBVHNode& node, Ray& ray ) const
 {
+	auto tree = instances[node.treeIndex()];
 	float t = ray.t;
 	float3 pos = ray.start;
 	float3 dir = ray.direction;
-	auto tree = instances[node.treeIndex()];
 	ray.start = make_float3( tree.inverted * make_float4( pos ) );
 	ray.direction = normalize( make_float3( tree.inverted * make_float4( dir ) ) );
 	tree.tree->traverse( ray );
