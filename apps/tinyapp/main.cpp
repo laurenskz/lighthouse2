@@ -18,11 +18,22 @@
 
 #include <bitset>
 
+struct Car
+{
+	int nodeIdx;
+	float3 start;
+	float3 rotation;
+	float3 velocity;
+};
+
+#define CAR_COUNT 5
 static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0;
 static Shader* shader = 0;
 static uint scrwidth = 0, scrheight = 0, car = 0, scrspp = 1;
 static bool running = true;
+static Car* cars;
+
 static std::bitset<1024> keystates;
 
 #include "main_tools.h"
@@ -39,11 +50,15 @@ void PrepareScene()
 	//	int node = renderer->FindNode( "Cesium_Man" );
 	//	renderer->AddInstance( 0, mat4::Translate( -3, 0, 0 ) );
 	int mesh = renderer->AddMesh( "../_shareddata/legocar.obj" );
-		renderer->AddInstance( mesh, mat4::Identity() );
-	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, -1, 0 ) ) );
-	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 1, 0 ) ) );
-//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 2, 0 ) ) );
-//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 9, 0 ) ) );
+	cars = new Car[CAR_COUNT];
+	for ( int i = 0; i < CAR_COUNT; ++i )
+	{
+		cars[i].start = make_float3( (float)i * 0.3, (float)i * 0.3, (float)i * 0.3 );
+		cars[i].velocity = make_float3( 0.1, 0.1, 0.1 );
+		cars[i].nodeIdx = renderer->AddInstance( mesh, mat4::Translate( cars[i].start ) );
+	}
+	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 2, 0 ) ) );
+	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 9, 0 ) ) );
 	//	auto sky = new HostSkyDome();
 	//	sky->Load( "../_shareddata/sky_15.hdr" );
 	// Compensate for different evaluation in PBRT
@@ -117,6 +132,7 @@ int main()
 	Timer timer;
 	timer.reset();
 	float deltaTime = 0;
+
 	// enter main loop
 	while ( !glfwWindowShouldClose( window ) )
 	{
@@ -131,6 +147,15 @@ int main()
 			renderer->UpdateAnimation( i, deltaTime );
 		}
 		deltaTime = timer.elapsed();
+		//		for ( int i = 0; i < CAR_COUNT; ++i )
+		//		{
+		//			cars[i].start += deltaTime * cars[i].velocity;
+		//			if ( dot( make_float3( 1 ), cars[i].start ) > 5 )
+		//			{
+		//				cars[i].velocity = -cars[i].velocity;
+		//			}
+		//			renderer->SetNodeTransform( cars[i].nodeIdx, mat4::Translate( cars[i].start ) );
+		//		}
 		timer.reset();
 		// minimal rigid animation example
 		static float r = 0;

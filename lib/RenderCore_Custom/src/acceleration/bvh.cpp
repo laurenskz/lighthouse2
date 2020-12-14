@@ -42,6 +42,8 @@ TLBVHTree* TopLevelBVH::buildTopLevelBVH()
 		if ( a == c )
 		{
 			mergeNodes( newTree, nodeList, depths, a, b, poolPtr, mergedCount );
+			a = 0;
+			b = findBestMatch( a, mergedCount, nodeList, newTree );
 		}
 		else
 		{

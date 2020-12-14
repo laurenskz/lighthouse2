@@ -42,8 +42,8 @@ class TLBVHNode
 	[[nodiscard]] inline int rightChild() const { return this->right; }
 	[[nodiscard]] inline bool isUsed() const { return this->leftFirst >= 0; }
 	[[nodiscard]] inline int treeIndex() const { return this->leftFirst; }
-	static TLBVHNode makeParent( const AABB& bounds, int left, int right ) { return TLBVHNode{ bounds, left, right }; }
-	static TLBVHNode makeLeaf( const AABB& bounds, int treeIndex ) { return TLBVHNode{ bounds, treeIndex, -1 }; }
+	static TLBVHNode makeParent( AABB bounds, int left, int right ) { return TLBVHNode{ bounds, left, right }; }
+	static TLBVHNode makeLeaf( AABB bounds, int treeIndex ) { return TLBVHNode{ bounds, treeIndex, -1 }; }
 };
 struct SplitPlane
 {
