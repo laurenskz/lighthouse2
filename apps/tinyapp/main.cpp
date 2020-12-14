@@ -38,8 +38,12 @@ void PrepareScene()
 	//	renderer->AddScene( "CesiumMan.gltf", "../_shareddata/CesiumMan/glTF" );
 	//	int node = renderer->FindNode( "Cesium_Man" );
 	//	renderer->AddInstance( 0, mat4::Translate( -3, 0, 0 ) );
-	int mesh = renderer->AddMesh( "../_shareddata/sponza/sponza.obj" );
-	renderer->AddInstance( mesh, mat4::Identity() );
+	int mesh = renderer->AddMesh( "../_shareddata/legocar.obj" );
+		renderer->AddInstance( mesh, mat4::Identity() );
+	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, -1, 0 ) ) );
+	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 1, 0 ) ) );
+//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 2, 0 ) ) );
+//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 9, 0 ) ) );
 	//	auto sky = new HostSkyDome();
 	//	sky->Load( "../_shareddata/sky_15.hdr" );
 	// Compensate for different evaluation in PBRT
@@ -130,7 +134,6 @@ int main()
 		timer.reset();
 		// minimal rigid animation example
 		static float r = 0;
-		renderer->SetNodeTransform( car, mat4::Identity() );
 		r += 0.025f * 0.3f;
 		if ( r > 2 * PI ) r -= 2 * PI;
 		// finalize and present

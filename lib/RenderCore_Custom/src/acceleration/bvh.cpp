@@ -450,8 +450,8 @@ void TLBVHTree::visitLeaf( const TLBVHNode& node, Ray& ray ) const
 	float t = ray.t;
 	float3 pos = ray.start;
 	float3 dir = ray.direction;
-	ray.start = make_float3( tree.inverted * make_float4( pos ) );
-	ray.direction = normalize( make_float3( tree.inverted * make_float4( dir ) ) );
+	ray.start = make_float3( tree.inverted * make_float4( pos, 1 ) );
+	ray.direction = normalize( make_float3( tree.inverted * make_float4( dir, 0 ) ) );
 	tree.tree->traverse( ray );
 	if ( ray.t < t )
 	{
@@ -464,14 +464,14 @@ AABB operator*( const mat4& mat, const AABB& bounds )
 {
 	//	We need to apply the transformation to all 8 corners
 	AABB newBounds{};
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.min.y, bounds.min.z, 0 ) ) );
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.min.y, bounds.max.z, 0 ) ) );
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.max.y, bounds.min.z, 0 ) ) );
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.max.y, bounds.max.z, 0 ) ) );
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.min.y, bounds.min.z, 0 ) ) );
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.min.y, bounds.max.z, 0 ) ) );
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.max.y, bounds.min.z, 0 ) ) );
-	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.max.y, bounds.max.z, 0 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.min.y, bounds.min.z, 1 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.min.y, bounds.max.z, 1 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.max.y, bounds.min.z, 1 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.min.x, bounds.max.y, bounds.max.z, 1 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.min.y, bounds.min.z, 1 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.min.y, bounds.max.z, 1 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.max.y, bounds.min.z, 1 ) ) );
+	updateAABB( newBounds, make_float3( mat * make_float4( bounds.max.x, bounds.max.y, bounds.max.z, 1 ) ) );
 	return newBounds;
 }
 
