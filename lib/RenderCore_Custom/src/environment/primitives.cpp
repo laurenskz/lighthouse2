@@ -83,10 +83,10 @@ void intersectTriangle( const Primitive* primitive, Ray& r )
 	h = cross( r.direction, edge2 );
 	a = dot( edge1, h );
 #ifndef CULLING
-	if ( a < EPSILON )
+	if ( a < EPS )
 		return; // This ray is parallel to this triangle.
 #else
-	if ( ( a > -EPSILON ) && a < EPSILON )
+	if ( ( a > -EPS ) && a < EPS )
 		return;
 #endif
 	f = 1.0f / a;
@@ -99,7 +99,7 @@ void intersectTriangle( const Primitive* primitive, Ray& r )
 	if ( v < 0.0 || u + v > 1.0 )
 		return;
 	float t = f * dot( edge2, q );
-	if ( t > EPSILON && t < r.t ) // ray intersection
+	if ( t > EPS && t < r.t ) // ray intersection
 	{
 		r.t = t;
 		r.u = u;

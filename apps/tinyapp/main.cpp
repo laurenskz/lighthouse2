@@ -27,7 +27,7 @@ struct Spaceman
 	float3 velocity;
 };
 
-#define SPACEMAN_COUNT 50
+#define SPACEMAN_COUNT 20
 static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0;
 static Shader* shader = 0;
@@ -51,6 +51,8 @@ void PrepareScene()
 	//	int node = renderer->FindNode( "Cesium_Man" );
 	//	renderer->AddInstance( 0, mat4::Translate( -3, 0, 0 ) );
 	int mesh = renderer->AddMesh( "../_shareddata/spaceman/untitled.obj" );
+	int planeIdx = renderer->AddMesh( "../_shareddata/plane/plane.obj" );
+	renderer->AddInstance( planeIdx, mat4::Scale( 4 ) );
 	spacemans = new Spaceman[SPACEMAN_COUNT];
 	for ( int i = 0; i < SPACEMAN_COUNT; ++i )
 	{
@@ -70,8 +72,8 @@ void PrepareScene()
 	//	mat->pbrtMaterialType = lighthouse2::MaterialType::PBRT_GLASS;
 	//	mat->specular.value = 0.5;
 
-	//		Point light
-	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
+	//			Point light
+	//	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
 
 	//		Directional light
 	renderer->AddDirectionalLight( normalize( make_float3( -1 ) ), make_float3( 1.0 / 2 ) );
@@ -121,9 +123,9 @@ int main()
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7Filter" );			// OPTIX7 core, with filtering (static scenes only for now)
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7" );			// OPTIX7 core, best for RTX devices
 	//	renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_B" );		// OPTIX PRIME, best for pre-RTX CUDA devices
-	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Custom" ); // OPTIX PRIME, best for pre-RTX CUDA devices
-																  //	renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" ); // RASTERIZER, your only option if not on NVidia
-																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
+	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Custom" );		  // OPTIX PRIME, best for pre-RTX CUDA devices
+//	renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" ); // RASTERIZER, your only option if not on NVidia
+																		  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
 	renderer->GetCamera()->LookAt( make_float3( 0, 3, 10 ), make_float3( 0, 2, 0 ) );
 	//	renderer->DeserializeCamera( "camera.xml" );
@@ -143,18 +145,19 @@ int main()
 		// render
 		renderer->Render( Restart /* alternative: converge */ );
 		// handle user input
-		HandleInput( 0.025f );
 		for ( int i = 0; i < renderer->AnimationCount(); i++ )
 		{
 			renderer->UpdateAnimation( i, deltaTime );
 		}
 		deltaTime = timer.elapsed();
+		HandleInput( 0.025f );
+
 		for ( int i = 0; i < SPACEMAN_COUNT; ++i )
 		{
 			const float3& newPos = spacemans[i].start + deltaTime * spacemans[i].velocity;
-			if ( fabs( newPos.x ) > 3 ) spacemans[i].velocity.x = -spacemans[i].velocity.x;
-			if ( fabs( newPos.y ) > 3 ) spacemans[i].velocity.y = -spacemans[i].velocity.y;
-			if ( fabs( newPos.z ) > 3 ) spacemans[i].velocity.z = -spacemans[i].velocity.z;
+			if ( fabs( newPos.x ) > 4 ) spacemans[i].velocity.x = -spacemans[i].velocity.x;
+			if ( newPos.y < 0 || newPos.y > 3 ) spacemans[i].velocity.y = -spacemans[i].velocity.y;
+			if ( fabs( newPos.z ) > 4 ) spacemans[i].velocity.z = -spacemans[i].velocity.z;
 			spacemans[i].start += deltaTime * spacemans[i].velocity;
 			renderer->SetNodeTransform( spacemans[i].nodeIdx, mat4::Translate( spacemans[i].start ) * mat4::Scale( spacemans[i].scale ) );
 		}

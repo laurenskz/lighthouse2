@@ -8,6 +8,8 @@ namespace lh2core
 {
 #define SET_BIT( pos ) ( (uint)1 << ( pos ) )
 //#define CULLING
+#define EPS 0.000000001
+
 const uint SPHERE_BIT = (uint)1 << (uint)0;
 const uint TRIANGLE_BIT = (uint)1 << (uint)1;
 const uint PLANE_BIT = (uint)1 << (uint)2;
@@ -27,7 +29,6 @@ struct Distance
 	float u{};
 	float v{};
 };
-
 
 inline bool isSphere( const Primitive& primitive ) { return primitive.flags & SPHERE_BIT; }
 inline bool isTriangle( const Primitive& primitive ) { return primitive.flags & TRIANGLE_BIT; }

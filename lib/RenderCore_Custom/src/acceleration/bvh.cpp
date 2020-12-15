@@ -92,6 +92,7 @@ void TopLevelBVH::setMesh( int meshIndex, Primitive* primitives, int count )
 	}
 	else
 	{
+		isDirty = true;
 		trees[meshIndex]->refit( primitives );
 	}
 }
@@ -305,6 +306,10 @@ SplitResult evaluateSplitPlane( const SplitPlane& plane, const BVHTree& tree, in
 }
 float distanceTo( const Ray& ray, const AABB& box )
 {
+	if (
+		box.min.x <= ray.start.x && ray.start.x <= box.max.x &&
+		box.min.y <= ray.start.y && ray.start.y <= box.max.y &&
+		box.min.z <= ray.start.z && ray.start.z <= box.max.z ) return 0; //We are inside the box;
 	// r.dir is unit direction vector of ray
 	float3 dirfrac = 1.0f / ray.direction;
 	// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
@@ -326,7 +331,7 @@ float distanceTo( const Ray& ray, const AABB& box )
 	}
 
 	// if tmin > tmax, ray doesn't intersect AABB
-	if ( tmin > tmax )
+	if ( tmin > ( tmax ) )
 	{
 		return MAX_DISTANCE;
 	}
@@ -418,7 +423,7 @@ void BaseBVHTree<Derived, Node>::traverse( Ray& ray ) const
 		int nodeIdx = traverselStack[stackPtr--];
 		auto node = nodes[nodeIdx];
 		float boundDistance = distanceTo( ray, node.bounds );
-		if ( !node.isUsed() || boundDistance < 0 || ray.t <= boundDistance )
+		if ( !node.isUsed() || boundDistance < 0 || ray.t <= boundDistance - 1e-1 )
 		{
 			continue;
 		}
@@ -453,7 +458,7 @@ void TLBVHTree::visitLeaf( const TLBVHNode& node, Ray& ray ) const
 	float3 pos = ray.start;
 	float3 dir = ray.direction;
 	ray.start = make_float3( tree.inverted * make_float4( pos, 1 ) );
-	ray.direction = normalize( make_float3( tree.inverted * make_float4( dir, 0 ) ) );
+	ray.direction = make_float3( tree.inverted * make_float4( dir, 0 ) );
 	tree.tree->traverse( ray );
 	if ( ray.t < t )
 	{

@@ -103,6 +103,7 @@ class TLBVHTree final : public BaseBVHTree<TLBVHTree, TLBVHNode>
 	explicit TLBVHTree( const std::vector<TLInstance>& instances );
 	inline bool leftIsNear( const TLBVHNode& node, const Ray& ray ) const;
 	inline void visitLeaf( const TLBVHNode& node, Ray& ray ) const;
+	inline void leafOccluded( const TLBVHNode& node, Ray& ray, float d ) const;
 };
 
 class TopLevelBVH : public Intersector
