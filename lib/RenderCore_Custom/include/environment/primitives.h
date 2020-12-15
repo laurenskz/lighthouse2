@@ -7,7 +7,7 @@ using namespace lighthouse2;
 namespace lh2core
 {
 #define SET_BIT( pos ) ( (uint)1 << ( pos ) )
-#define CULLING
+//#define CULLING
 const uint SPHERE_BIT = (uint)1 << (uint)0;
 const uint TRIANGLE_BIT = (uint)1 << (uint)1;
 const uint PLANE_BIT = (uint)1 << (uint)2;

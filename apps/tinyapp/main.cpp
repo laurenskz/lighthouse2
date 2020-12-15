@@ -18,7 +18,7 @@
 
 #include <bitset>
 
-struct Car
+struct Spaceman
 {
 	int nodeIdx;
 	float scale;
@@ -27,13 +27,13 @@ struct Car
 	float3 velocity;
 };
 
-#define CAR_COUNT 100
+#define SPACEMAN_COUNT 50
 static RenderAPI* renderer = 0;
 static GLTexture* renderTarget = 0;
 static Shader* shader = 0;
 static uint scrwidth = 0, scrheight = 0, car = 0, scrspp = 1;
 static bool running = true;
-static Car* cars;
+static Spaceman* spacemans;
 
 static std::bitset<1024> keystates;
 
@@ -51,13 +51,13 @@ void PrepareScene()
 	//	int node = renderer->FindNode( "Cesium_Man" );
 	//	renderer->AddInstance( 0, mat4::Translate( -3, 0, 0 ) );
 	int mesh = renderer->AddMesh( "../_shareddata/spaceman/untitled.obj" );
-	cars = new Car[CAR_COUNT];
-	for ( int i = 0; i < CAR_COUNT; ++i )
+	spacemans = new Spaceman[SPACEMAN_COUNT];
+	for ( int i = 0; i < SPACEMAN_COUNT; ++i )
 	{
-		cars[i].scale = 0.1;
-		cars[i].start = make_float3( (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX );
-		cars[i].velocity = make_float3( (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX ) / 1.5;
-		cars[i].nodeIdx = renderer->AddInstance( mesh, mat4::Translate( cars[i].start ) * mat4::Scale( cars[i].scale ) );
+		spacemans[i].scale = 0.1;
+		spacemans[i].start = make_float3( (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX );
+		spacemans[i].velocity = make_float3( (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX ) / 1.5;
+		spacemans[i].nodeIdx = renderer->AddInstance( mesh, mat4::Translate( spacemans[i].start ) * mat4::Scale( spacemans[i].scale ) );
 	}
 	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 2, 0 ) ) );
 	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 9, 0 ) ) );
@@ -122,7 +122,7 @@ int main()
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7" );			// OPTIX7 core, best for RTX devices
 	//	renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_B" );		// OPTIX PRIME, best for pre-RTX CUDA devices
 	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Custom" ); // OPTIX PRIME, best for pre-RTX CUDA devices
-																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" );	// RASTERIZER, your only option if not on NVidia
+																  //	renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" ); // RASTERIZER, your only option if not on NVidia
 																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
 	renderer->GetCamera()->LookAt( make_float3( 0, 3, 10 ), make_float3( 0, 2, 0 ) );
@@ -149,14 +149,14 @@ int main()
 			renderer->UpdateAnimation( i, deltaTime );
 		}
 		deltaTime = timer.elapsed();
-		for ( int i = 0; i < CAR_COUNT; ++i )
+		for ( int i = 0; i < SPACEMAN_COUNT; ++i )
 		{
-			const float3& newPos = cars[i].start + deltaTime * cars[i].velocity;
-			if ( fabs( newPos.x ) > 3 ) cars[i].velocity.x = -cars[i].velocity.x;
-			if ( fabs( newPos.y ) > 3 ) cars[i].velocity.y = -cars[i].velocity.y;
-			if ( fabs( newPos.z ) > 3 ) cars[i].velocity.z = -cars[i].velocity.z;
-			cars[i].start += deltaTime * cars[i].velocity;
-			renderer->SetNodeTransform( cars[i].nodeIdx, mat4::Translate( cars[i].start ) * mat4::Scale( cars[i].scale ) );
+			const float3& newPos = spacemans[i].start + deltaTime * spacemans[i].velocity;
+			if ( fabs( newPos.x ) > 3 ) spacemans[i].velocity.x = -spacemans[i].velocity.x;
+			if ( fabs( newPos.y ) > 3 ) spacemans[i].velocity.y = -spacemans[i].velocity.y;
+			if ( fabs( newPos.z ) > 3 ) spacemans[i].velocity.z = -spacemans[i].velocity.z;
+			spacemans[i].start += deltaTime * spacemans[i].velocity;
+			renderer->SetNodeTransform( spacemans[i].nodeIdx, mat4::Translate( spacemans[i].start ) * mat4::Scale( spacemans[i].scale ) );
 		}
 		timer.reset();
 		// minimal rigid animation example

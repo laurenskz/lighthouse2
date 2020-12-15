@@ -31,7 +31,6 @@ void Mesh::setPositions( const float4* positions, const CoreTri* fatData, const 
 }
 void Geometry::setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles )
 {
-	cout << "Received new mesh with index: " << meshIdx << endl;
 	Mesh* mesh;
 	if ( meshIdx >= meshes.size() )
 		meshes.push_back( mesh = new Mesh( vertexCount ) );
@@ -149,12 +148,15 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 {
 	Intersection intersection{};
 	intersection.location = intersectionLocation( r );
+	const float w = ( 1 - r.u - r.v );
 	if ( r.primitive->flags & LIGHT_BIT )
 	{
 		intersection.mat = lightMaterials[r.primitive->meshIndex];
 	}
 	const CoreTri& triangleData = meshes[r.primitive->meshIndex]->triangles[r.primitive->triangleNumber];
-	auto normal = r.u * triangleData.vN0 + ( r.v ) * triangleData.vN1 + ( 1 - r.u - r.v ) * triangleData.vN2;
+	float2 uv = make_float2( w * triangleData.u0 + r.u * triangleData.u1 + r.v * triangleData.u2,
+							 w * triangleData.v0 + r.u * triangleData.v1 + r.v * triangleData.v2 );
+	auto normal = w * triangleData.vN0 + r.u * triangleData.vN1 + r.v * triangleData.vN2;
 	intersection.normal = normalize( make_float3( transforms[r.instanceIndex] * ( make_float4( normal ) ) ) );
 	auto mat = materials[triangleData.material];
 	intersection.mat.type = DIFFUSE;
@@ -166,11 +168,11 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 	if ( mat.color.textureID != -1 )
 	{
 		auto texture = textures[mat.color.textureID];
-		float2 uv = make_float2( r.u, r.v );
+
 		uv *= mat.color.uvscale;
 		uv += mat.color.uvoffset;
-		int x = floor( uv.x * texture.width );
-		int y = floor( uv.y * texture.height );
+		int x = round( uv.x * texture.width );
+		int y = round( uv.y * texture.height );
 		const uchar4& iColor = texture.idata[x + y * texture.width];
 		intersection.mat.color = make_float3( (float)iColor.x / 256, (float)iColor.y / 256, (float)iColor.z / 256 );
 	}
