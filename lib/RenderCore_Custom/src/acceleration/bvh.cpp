@@ -84,6 +84,7 @@ int TopLevelBVH::findBestMatch( int nodeIdx, int count, const int* nodes, TLBVHT
 }
 void TopLevelBVH::setMesh( int meshIndex, Primitive* primitives, int count )
 {
+	cout << "Mesh size:" << count << endl;
 	if ( meshIndex >= trees.size() )
 	{
 		auto* splitter = new BinningSplit( 32 );

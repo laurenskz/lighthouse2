@@ -83,7 +83,7 @@ void RenderCore::SetLights( const CoreLightTri* triLights, const int triLightCou
 }
 void RenderCore::FinalizeInstances()
 {
-	geometry->finalizeInstances();
+//	geometry->finalizeInstances();
 	intersector->finalize();
 }
 //  +-----------------------------------------------------------------------------+
@@ -103,8 +103,8 @@ void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const
 //  +-----------------------------------------------------------------------------+
 void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bool async )
 {
-	auto primitives = geometry->getPrimitives();
-	intersector->setPrimitives( primitives.data, primitives.size );
+//	auto primitives = geometry->getPrimitives();
+//	intersector->setPrimitives( primitives.data, primitives.size );
 	// render
 	screen->Clear();
 	renderer->renderTo( view, screen );

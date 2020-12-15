@@ -21,6 +21,7 @@
 struct Car
 {
 	int nodeIdx;
+	float scale;
 	float3 start;
 	float3 rotation;
 	float3 velocity;
@@ -46,16 +47,17 @@ void PrepareScene()
 {
 	// initialize scene
 	//	renderer->AddScene( "AnimatedCube.gltf", "../_shareddata/animatedCube" );
-	//	renderer->AddScene( "CesiumMan.gltf", "../_shareddata/CesiumMan/glTF" );
+	renderer->AddScene( "CesiumMan.gltf", "../_shareddata/CesiumMan/glTF" );
 	//	int node = renderer->FindNode( "Cesium_Man" );
 	//	renderer->AddInstance( 0, mat4::Translate( -3, 0, 0 ) );
-	int mesh = renderer->AddMesh( "../_shareddata/legocar.obj" );
+	int mesh = renderer->AddMesh( "../_shareddata/spaceman/untitled.obj" );
 	cars = new Car[CAR_COUNT];
 	for ( int i = 0; i < CAR_COUNT; ++i )
 	{
+		cars[i].scale = 0.1;
 		cars[i].start = make_float3( (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX, (float)rand() * 3 / RAND_MAX );
-		cars[i].velocity = make_float3( 0.1, 0.1, 0.1 );
-		cars[i].nodeIdx = renderer->AddInstance( mesh, mat4::Translate( cars[i].start ) );
+		cars[i].velocity = make_float3( (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX ) / 1.5;
+		cars[i].nodeIdx = renderer->AddInstance( mesh, mat4::Translate( cars[i].start ) * mat4::Scale( cars[i].scale ) );
 	}
 	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 2, 0 ) ) );
 	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 9, 0 ) ) );
@@ -149,12 +151,12 @@ int main()
 		deltaTime = timer.elapsed();
 		for ( int i = 0; i < CAR_COUNT; ++i )
 		{
+			const float3& newPos = cars[i].start + deltaTime * cars[i].velocity;
+			if ( fabs( newPos.x ) > 3 ) cars[i].velocity.x = -cars[i].velocity.x;
+			if ( fabs( newPos.y ) > 3 ) cars[i].velocity.y = -cars[i].velocity.y;
+			if ( fabs( newPos.z ) > 3 ) cars[i].velocity.z = -cars[i].velocity.z;
 			cars[i].start += deltaTime * cars[i].velocity;
-			if ( dot( make_float3( 1 ), cars[i].start ) > 5 )
-			{
-				cars[i].velocity = -cars[i].velocity;
-			}
-			renderer->SetNodeTransform( cars[i].nodeIdx, mat4::Translate( cars[i].start ) );
+			renderer->SetNodeTransform( cars[i].nodeIdx, mat4::Translate( cars[i].start ) * mat4::Scale( cars[i].scale ) );
 		}
 		timer.reset();
 		// minimal rigid animation example

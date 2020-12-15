@@ -22,7 +22,7 @@
 
 #include "platform.h"
 #define WHITTED
-//#define MULTITHREADED
+#define MULTITHREADED
 //#define ANTI_ALIASING
 using namespace lighthouse2;
 #include "core_api_base.h"
