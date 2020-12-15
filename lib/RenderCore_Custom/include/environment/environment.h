@@ -14,8 +14,10 @@ namespace lh2core
 class IEnvironment
 {
   public:
-	virtual Intersection intersect( Ray& r )  = 0;
+	virtual Intersection intersect( Ray& r ) = 0;
 	virtual void intersectPacket( const RayPacket& rayPacket ) = 0;
+	virtual float3 skyColor( const float3& direction ) = 0;
+	virtual void SetSkyData( const float3* pixels, const uint width, const uint height ) = 0;
 };
 class TestEnvironment : public IEnvironment
 {
@@ -24,7 +26,7 @@ class TestEnvironment : public IEnvironment
 	void intersectPacket( const RayPacket& rayPacket ) override;
 	TestEnvironment( std::vector<Intersection> intersections,
 					 std::vector<Ray> rays ) : intersections( std::move( intersections ) ), rays( std::move( rays ) ){};
-	Intersection intersect( Ray& r )  override;
+	Intersection intersect( Ray& r ) override;
 
   private:
 	std::vector<Intersection> intersections;
@@ -36,11 +38,15 @@ class Environment : public IEnvironment
   private:
 	IGeometry* geometry;
 	Intersector* intersector;
+	float3* skyPixels;
+	int skyWidth, skyHeight;
 
   public:
 	Environment( IGeometry* geometry,
 				 Intersector* intersector ) : geometry( geometry ), intersector( intersector ){};
-	Intersection intersect( Ray& r ) override ;
-	void intersectPacket( const RayPacket& rayPacket ) override ;
+	Intersection intersect( Ray& r ) override;
+	void intersectPacket( const RayPacket& rayPacket ) override;
+	float3 skyColor( const float3& direction ) override;
+	void SetSkyData( const float3* pixels, const uint width, const uint height ) override;
 };
 } // namespace lh2core

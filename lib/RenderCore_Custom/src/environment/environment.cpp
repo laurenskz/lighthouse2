@@ -39,4 +39,19 @@ Intersection Environment::intersect( Ray& r )
 	intersection.hitObject = true;
 	return intersection;
 }
+float3 Environment::skyColor( const float3& direction )
+{
+	float u = 1 + atan2( direction.x, -direction.z ) / PI;
+	float v = acos( direction.y ) / PI;
+	int x = round( u * skyWidth );
+	int y = round( v * skyHeight );
+	return skyPixels[x + y * skyWidth];
+}
+void Environment::SetSkyData( const float3* pixels, const uint width, const uint height )
+{
+	skyPixels = new float3[width * height];
+	skyHeight = height;
+	skyWidth = width;
+	memcpy( skyPixels, pixels, sizeof( float3 ) * width * height );
+}
 } // namespace lh2core

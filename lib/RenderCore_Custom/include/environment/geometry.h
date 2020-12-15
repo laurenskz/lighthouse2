@@ -51,6 +51,7 @@ class Geometry : public IGeometry
 	int addTriangles( int primitiveIndex );
 	Intersection triangleIntersection( const Ray& r );
 
+
   public:
 	const Mesh* getMesh( int meshIdx );
 	void setGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );

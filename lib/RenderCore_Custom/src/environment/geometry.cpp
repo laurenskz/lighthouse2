@@ -230,4 +230,5 @@ const Mesh* Geometry::getMesh( int meshIdx )
 {
 	return meshes[meshIdx];
 }
+
 } // namespace lh2core

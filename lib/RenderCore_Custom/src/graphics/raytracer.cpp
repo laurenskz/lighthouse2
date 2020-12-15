@@ -24,7 +24,7 @@ float3 RayTracer::trace( Ray& r, int count )
 	r.t = MAX_DISTANCE;
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
-		return make_float3( 0.529, 0.808, 0.929 ); //Black if nothing hit
+		return environment->skyColor( r.direction );
 	if ( intersection.mat.type == DIFFUSE )
 	{
 		return computeDiffuseColor( intersection );
@@ -157,7 +157,7 @@ float3 PathTracer::trace( Ray& r, int count )
 	if ( count <= 0 ) return BLACK; //Recursion limit
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
-		return BLACK;
+		return environment->skyColor( r.direction );
 	if ( intersection.mat.type == LIGHT )
 	{
 		return intersection.mat.color;

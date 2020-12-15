@@ -30,12 +30,12 @@ void RenderCore::Init()
 	//	geometry->addPlane( make_float3( 0, 1, 0 ), 1 );
 	//	intersector = new BruteForceIntersector();
 	intersector = new TopLevelBVH();
-	auto* env = new Environment( geometry, intersector );
+	environment = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
 #ifdef WHITTED
-	rayTracer = new RayTracer( env, lighting );
+	rayTracer = new RayTracer( environment, lighting );
 #else
-	rayTracer = new PathTracer( env, lighting );
+	rayTracer = new PathTracer( environment, lighting );
 #endif
 	PixelRenderer* baseRenderer = new BasePixelRenderer( rayTracer );
 #ifdef ANTI_ALIASING
@@ -83,7 +83,7 @@ void RenderCore::SetLights( const CoreLightTri* triLights, const int triLightCou
 }
 void RenderCore::FinalizeInstances()
 {
-//	geometry->finalizeInstances();
+	//	geometry->finalizeInstances();
 	intersector->finalize();
 }
 //  +-----------------------------------------------------------------------------+
@@ -103,8 +103,8 @@ void RenderCore::SetGeometry( const int meshIdx, const float4* vertexData, const
 //  +-----------------------------------------------------------------------------+
 void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bool async )
 {
-//	auto primitives = geometry->getPrimitives();
-//	intersector->setPrimitives( primitives.data, primitives.size );
+	//	auto primitives = geometry->getPrimitives();
+	//	intersector->setPrimitives( primitives.data, primitives.size );
 	// render
 	screen->Clear();
 	renderer->renderTo( view, screen );
@@ -129,6 +129,11 @@ void RenderCore::SetMaterials( CoreMaterial* mat, const int materialCount )
 CoreStats RenderCore::GetCoreStats() const
 {
 	return coreStats;
+}
+
+void RenderCore::SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& worldToLight )
+{
+	environment->SetSkyData( pixels, width, height );
 }
 
 //  +-----------------------------------------------------------------------------+

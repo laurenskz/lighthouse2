@@ -27,6 +27,7 @@ class RenderCore : public CoreAPI_Base
 {
   public:
 	RenderCore() {} // methods
+
 	void Init();
 	void SetTarget( GLTexture* target, const uint spp );
 	void SetGeometry( const int meshIdx, const float4* vertexData, const int vertexCount, const int triangleCount, const CoreTri* triangles );
@@ -37,8 +38,10 @@ class RenderCore : public CoreAPI_Base
 	void SetInstance( const int instanceIdx, const int modelIdx, const mat4& transform );
 	void SetTextures( const CoreTexDesc* tex, const int textureCount ) override;
 	void SetMaterials( CoreMaterial* mat, const int materialCount ) override;
+	void SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& worldToLight = mat4() ) override;
 	CoreStats GetCoreStats() const override;
 	void Shutdown();
+
 
 	// unimplemented for the minimal core
 	inline void SetProbePos( const int2 pos ) override {}
@@ -48,7 +51,6 @@ class RenderCore : public CoreAPI_Base
 					const CorePointLight* pointLights, const int pointLightCount,
 					const CoreSpotLight* spotLights, const int spotLightCount,
 					const CoreDirectionalLight* directionalLights, const int directionalLightCount ) override;
-	inline void SetSkyData( const float3* pixels, const uint width, const uint height, const mat4& worldToLight ) override {}
 	void FinalizeInstances() override;
 
 	// internal methods
@@ -60,6 +62,7 @@ class RenderCore : public CoreAPI_Base
 	IRayTracer* rayTracer;
 	Geometry* geometry;
 	TopLevelBVH* intersector;
+	Environment* environment;
 	Renderer* renderer;
 	Lighting* lighting;
 
