@@ -32,8 +32,6 @@ class Intersector
   public:
 	virtual void setPrimitives( Primitive* primitives, int count ) = 0;
 	virtual void intersect( Ray& r ) = 0;
-	virtual void intersectPacket( const RayPacket& packet ) = 0;
-	virtual void packetOccluded( const RayPacket& packet ) = 0;
 	virtual bool isOccluded( Ray& r, float d ) = 0;
 };
 
@@ -47,8 +45,6 @@ class BruteForceIntersector : public Intersector
 	void setPrimitives( Primitive* newPrimitives, int newCount ) override;
 	bool isOccluded( Ray& r, float d ) override;
 	void intersect( Ray& r ) override;
-	void intersectPacket( const RayPacket& packet ) override;
-	void packetOccluded( const RayPacket& packet ) override;
 };
 
 

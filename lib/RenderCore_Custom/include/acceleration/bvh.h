@@ -58,9 +58,7 @@ class BaseBVHTree
 {
   public:
 	void traverse( Ray& ray ) const;
-	void traversePacket( const RayPacket& packet ) const;
 	bool isOccluded( Ray& ray, float d ) const;
-	void isOccludedPacket( const RayPacket& packet, float d ) const;
 	Node* nodes;
 	int nodeCount;
 	int poolPtr;
@@ -111,8 +109,6 @@ class TopLevelBVH : public Intersector
   public:
 	void setPrimitives( Primitive* primitives, int count ) override;
 	void intersect( Ray& r ) override;
-	void intersectPacket( const RayPacket& packet ) override;
-	void packetOccluded( const RayPacket& packet ) override;
 	bool isOccluded( Ray& r, float d ) override;
 	static inline int findBestMatch( int node, int count, const int* nodes, TLBVHTree* tree );
 	void setMesh( int meshIndex, Primitive* primitives, int count );

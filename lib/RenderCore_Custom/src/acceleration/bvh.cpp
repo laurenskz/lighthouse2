@@ -9,12 +9,6 @@ void TopLevelBVH::intersect( Ray& r )
 {
 	tlBVH->traverse( r );
 }
-void TopLevelBVH::intersectPacket( const RayPacket& packet )
-{
-}
-void TopLevelBVH::packetOccluded( const RayPacket& packet )
-{
-}
 bool TopLevelBVH::isOccluded( Ray& r, float d )
 {
 	return tlBVH->isOccluded( r, d );

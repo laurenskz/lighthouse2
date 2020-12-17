@@ -29,18 +29,4 @@ bool BruteForceIntersector::isOccluded( Ray& r, float object )
 	}
 	return false;
 }
-void BruteForceIntersector::intersectPacket( const RayPacket& packet )
-{
-	for ( int i = 0; i < packet.rayCount; ++i )
-	{
-		intersect( packet.rays[i] );
-	}
-}
-void BruteForceIntersector::packetOccluded( const RayPacket& packet )
-{
-	for ( int i = 0; i < packet.rayCount; ++i )
-	{
-		packet.occlusions[i] = isOccluded( packet.rays[i], packet.occlusionDistances[i] );
-	}
-}
 } // namespace lh2core

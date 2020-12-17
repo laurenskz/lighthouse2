@@ -15,7 +15,6 @@ class IEnvironment
 {
   public:
 	virtual Intersection intersect( Ray& r ) = 0;
-	virtual void intersectPacket( const RayPacket& rayPacket ) = 0;
 	virtual float3 skyColor( const float3& direction ) = 0;
 	virtual void SetSkyData( const float3* pixels, const uint width, const uint height ) = 0;
 };
@@ -23,7 +22,6 @@ class TestEnvironment : public IEnvironment
 {
 
   public:
-	void intersectPacket( const RayPacket& rayPacket ) override;
 	TestEnvironment( std::vector<Intersection> intersections,
 					 std::vector<Ray> rays ) : intersections( std::move( intersections ) ), rays( std::move( rays ) ){};
 	Intersection intersect( Ray& r ) override;
@@ -45,7 +43,6 @@ class Environment : public IEnvironment
 	Environment( IGeometry* geometry,
 				 Intersector* intersector ) : geometry( geometry ), intersector( intersector ){};
 	Intersection intersect( Ray& r ) override;
-	void intersectPacket( const RayPacket& rayPacket ) override;
 	float3 skyColor( const float3& direction ) override;
 	void SetSkyData( const float3* pixels, const uint width, const uint height ) override;
 };
