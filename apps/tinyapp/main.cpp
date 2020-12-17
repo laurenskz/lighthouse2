@@ -46,12 +46,9 @@ static std::bitset<1024> keystates;
 void PrepareScene()
 {
 	// initialize scene
-	//	renderer->AddScene( "AnimatedCube.gltf", "../_shareddata/animatedCube" );
-	renderer->AddScene( "CesiumMan.gltf", "../_shareddata/CesiumMan/glTF" );
-	//	int node = renderer->FindNode( "Cesium_Man" );
-	//	renderer->AddInstance( 0, mat4::Translate( -3, 0, 0 ) );
-	int mesh = renderer->AddMesh( "../_shareddata/spaceman/untitled.obj" );
-	int planeIdx = renderer->AddMesh( "../_shareddata/plane/plane.obj" );
+	renderer->AddScene( "CesiumMan.gltf", "../demodata/CesiumMan/glTF" );
+	int mesh = renderer->AddMesh( "../demodata/spaceman/untitled.obj" );
+	int planeIdx = renderer->AddMesh( "../demodata/plane/plane.obj" );
 	renderer->AddInstance( planeIdx, mat4::Scale( 4 ) );
 	spacemans = new Spaceman[SPACEMAN_COUNT];
 	for ( int i = 0; i < SPACEMAN_COUNT; ++i )
@@ -61,33 +58,12 @@ void PrepareScene()
 		spacemans[i].velocity = make_float3( (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX ) / 1.5;
 		spacemans[i].nodeIdx = renderer->AddInstance( mesh, mat4::Translate( spacemans[i].start ) * mat4::Scale( spacemans[i].scale ) );
 	}
-	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 2, 0 ) ) );
-	//	renderer->AddInstance( mesh, mat4::Translate( make_float3( 0, 9, 0 ) ) );
 	auto sky = new HostSkyDome();
-	sky->Load( "../_shareddata/sky_15.hdr" );
+	sky->Load( "../demodata/sky_15.hdr" );
 	renderer->GetScene()->SetSkyDome( sky );
-
-	// Compensate for different evaluation in PBRT
-	//	sky->worldToLight = mat4::RotateX( -PI / 2 );
-	//	renderer->GetScene()->SetSkyDome( sky );
-	//	auto mat = renderer->GetMaterial( renderer->FindMaterialID( "tetrahedronmtl" ) );
-	//	mat->pbrtMaterialType = lighthouse2::MaterialType::PBRT_GLASS;
-	//	mat->specular.value = 0.5;
-
-	//			Point light
-	//	renderer->AddPointLight( make_float3( -3, 4, 1 ), make_float3( 13 ), true );
 
 	//		Directional light
 	renderer->AddDirectionalLight( normalize( make_float3( -1 ) ), make_float3( 1.0 / 2 ) );
-
-	//		Spot light
-	//	const float3& spotPos = make_float3( 2, 8, 2 );
-	//	renderer->AddSpotLight( spotPos, normalize( make_float3( 0 ) - spotPos ), 0.97, 0.92, make_float3( 20 ), true );
-
-	//	Area light for path tracer
-	//	int lightMat = renderer->AddMaterial( make_float3( 3 ) );
-	//	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 6.0f, 0 ), 6.9f, 6.9f, lightMat );
-	//	renderer->AddInstance( lightQuad );
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -120,14 +96,9 @@ int main()
 {
 	// initialize OpenGL
 	InitGLFW();
-
-	// initialize renderer: pick one
-	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7Filter" );			// OPTIX7 core, with filtering (static scenes only for now)
-	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_Optix7" );			// OPTIX7 core, best for RTX devices
-	//	renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_B" );		// OPTIX PRIME, best for pre-RTX CUDA devices
 	renderer = RenderAPI::CreateRenderAPI( "RenderCore_Custom" ); // OPTIX PRIME, best for pre-RTX CUDA devices
-																  //	renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" ); // RASTERIZER, your only option if not on NVidia
-																  //	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
+	//	renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" ); // RASTERIZER, your only option if not on NVidia
+	//	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
 	renderer->GetCamera()->LookAt( make_float3( 0, 3, 10 ), make_float3( 0, 2, 0 ) );
 	//	renderer->DeserializeCamera( "camera.xml" );
@@ -165,10 +136,6 @@ int main()
 		}
 		timer.reset();
 		// minimal rigid animation example
-		static float r = 0;
-		r += 0.025f * 0.3f;
-		if ( r > 2 * PI ) r -= 2 * PI;
-		// finalize and present
 		shader->Bind();
 		shader->SetInputTexture( 0, "color", renderTarget );
 		shader->SetInputMatrix( "view", mat4::Identity() );
