@@ -31,7 +31,9 @@ float3 Environment::skyColor( const float3& direction )
 	float v = acos( direction.y ) / PI;
 	int x = round( u * skyWidth );
 	int y = round( v * skyHeight );
-	return skyPixels[x + y * skyWidth];
+	int index = x + y * skyWidth;
+	if ( index > skyWidth * skyHeight ) return BLACK;
+	return skyPixels[index];
 }
 void Environment::SetSkyData( const float3* pixels, const uint width, const uint height )
 {
