@@ -11,10 +11,6 @@ using namespace lh2core;
 	EXPECT_FLOAT3_EQ( expected.min, actual.min ); \
 	EXPECT_FLOAT3_EQ( expected.max, actual.max );
 
-std::ostream& operator<<( std::ostream& os, const float3& s )
-{
-	return ( os << "{" << s.x << "," << s.y << "," << s.z << "}" << std::endl );
-}
 
 class BVHFixture : public ::testing::Test
 {

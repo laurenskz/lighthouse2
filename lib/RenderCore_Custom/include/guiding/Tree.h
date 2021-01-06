@@ -15,12 +15,37 @@ enum AXIS
 };
 class QuadTree
 {
+  public:
+	QuadTree *nw = nullptr, *ne = nullptr, *sw = nullptr, *se = nullptr;
+	float flux = 0;
+	float2 topLeft, bottomRight;
+	float xPlane{}, yPlane{};
+	static float3 cylindricalToDirection( float2 cylindrical );
+	QuadTree( const float2& topLeft, const float2& bottomRight );
+	QuadTree( QuadTree* nw, QuadTree* ne, QuadTree* sw, QuadTree* se, const float2& topLeft, const float2& bottomRight, float xPlane, float yPlane );
+	[[nodiscard]] float2 uniformRandomPosition() const;
+	QuadTree* sampleChildByEnergy();
+	QuadTree* getChild( const float2& cylindrical );
+	void depositEnergy( const float3& direction, float receivedEnergy );
+	static float2 directionToCylindrical( float3 direction );
+	float3 sample();
+	float pdf( float3 direction );
+	QuadTree* traverse( float2 pos );
+	void splitLeaf();
+
+  private:
+	inline bool isLeaf() { return nw == nullptr; }
+	float pdf( float2 cylindrical );
+
 };
 
 class SpatialLeaf
 {
 	int visitCount = 0;
-	QuadTree directions{};
+	QuadTree* directions;
+
+  public:
+	explicit SpatialLeaf( QuadTree* directions ) : directions( directions ) {}
 
   public:
 	void incrementVisits() { visitCount++; };
