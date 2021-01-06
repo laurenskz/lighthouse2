@@ -182,9 +182,9 @@ TEST_F( BVHFixture, TraverseTree )
 	auto* builder = new BaseBuilder( split );
 	BVHTree* tree = builder->buildBVH( primitive, count );
 	Ray ray = Ray{ make_float3( -2.2, 0.2, 0.2 ), make_float3( 1, 0, 0 ) };
-	tree->traverse( ray, mat4::Identity() );
+	tree->traverse( ray );
 	cout << ray.t << endl;
 	ray = Ray{ make_float3( 4.2, 0.2, 0.2 ), make_float3( -1, 0, 0 ) };
-	tree->traverse( ray, mat4::Identity() );
+	tree->traverse( ray );
 	cout << ray.t << endl;
 }

@@ -14,6 +14,13 @@ Intersection TestEnvironment::intersect( Ray& r )
 	}
 	return Intersection{};
 }
+float3 TestEnvironment::skyColor( const float3& direction )
+{
+	return float3();
+}
+void TestEnvironment::SetSkyData( const float3* pixels, const uint width, const uint height )
+{
+}
 Intersection Environment::intersect( Ray& r )
 {
 	intersector->intersect( r );

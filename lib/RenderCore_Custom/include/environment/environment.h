@@ -22,6 +22,8 @@ class TestEnvironment : public IEnvironment
 {
 
   public:
+	float3 skyColor( const float3& direction ) override;
+	void SetSkyData( const float3* pixels, const uint width, const uint height ) override;
 	TestEnvironment( std::vector<Intersection> intersections,
 					 std::vector<Ray> rays ) : intersections( std::move( intersections ) ), rays( std::move( rays ) ){};
 	Intersection intersect( Ray& r ) override;
