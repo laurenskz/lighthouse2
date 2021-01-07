@@ -113,13 +113,19 @@ void QuadTree::depositEnergy( const float3& direction, float receivedEnergy )
 		current = current->getChild( cylindrical );
 	}
 }
+
+/**
+ * PDF considers the entire hemisphere, so not only the top part.
+ */
 float QuadTree::pdf( float3 direction )
 {
 	float2 cylindrical = directionToCylindrical( direction );
 	return pdf( cylindrical );
 }
+
 float QuadTree::pdf( float2 cylindrical )
 {
+	if ( flux < 1e-7 ) return 0;
 	if ( isLeaf() ) return 1 / ( 4 * PI );
 	auto child = getChild( cylindrical );
 	float beta = 4 * child->flux / flux;

@@ -67,15 +67,20 @@ TEST_F( GuidingFixture, Traverse )
 {
 	auto root = new QuadTree( make_float2( 0, 1 ), make_float2( 1, 0 ) );
 	root->splitLeaf();
-	splitAll( 5, root );
+	splitAll( 1, root );
 	const float3& direction = normalize( make_float3( 0.5, 0.2, 0.3 ) );
+	const float3& direction2 = normalize( make_float3( 0.3, 0.2, 0.3 ) );
 	const float2& cylindrical = QuadTree::directionToCylindrical( direction );
-	root->depositEnergy( direction, 15 );
-	cout << direction << endl;
-	cout << root->sample() << endl;
-	cout << root->sample() << endl;
-	cout << root->sample() << endl;
-	cout << root->sample() << endl;
-	cout << root->sample() << endl;
-	cout << root->sample() << endl;
+	root->depositEnergy( direction, 4 );
+	root->depositEnergy( direction2, 1 );
+	cout << root->pdf( direction ) * 4 * PI << endl;
+	cout << root->pdf( direction2 ) * 4 * PI << endl;
+	auto sampled = root->sample();
+	cout << root->pdf( sampled ) * 4 * PI << endl;
+	cout << root->pdf( normalize( make_float3( 0.3, 0.2, 0.3 ) ) ) << endl;
+	//	cout << root->sample() << endl;
+	//	cout << root->sample() << endl;
+	//	cout << root->sample() << endl;
+	//	cout << root->sample() << endl;
+	//	cout << root->sample() << endl;
 }
