@@ -21,6 +21,7 @@ SpatialLeaf* SpatialNode::lookup( float3 pos )
 		}
 	}
 }
+
 SpatialNode::SpatialChild& SpatialNode::SpatialChild::operator=( const SpatialNode::SpatialChild& other ) noexcept
 {
 	this->isLeaf = other.isLeaf;
@@ -33,6 +34,18 @@ SpatialNode::SpatialChild& SpatialNode::SpatialChild::operator=( const SpatialNo
 		this->node = other.node;
 	}
 	return *this;
+}
+SpatialNode::SpatialChild::SpatialChild( const SpatialNode::SpatialChild& other )
+{
+	if ( other.isLeaf )
+	{
+		isLeaf = true;
+		leaf = new SpatialLeaf( *other.leaf );
+	}
+	else
+	{
+		node = new SpatialNode( *other.node );
+	}
 }
 QuadTree* QuadTree::traverse( float2 pos )
 {
@@ -73,11 +86,6 @@ QuadTree::QuadTree( QuadTree* nw, QuadTree* ne, QuadTree* sw, QuadTree* se,
 					const float2& topLeft, const float2& bottomRight, float xPlane, float yPlane )
 	: nw( nw ), ne( ne ), sw( sw ), se( se ), topLeft( topLeft ), bottomRight( bottomRight ), xPlane( xPlane ), yPlane( yPlane ) {}
 QuadTree::QuadTree( const float2& topLeft, const float2& bottomRight ) : topLeft( topLeft ), bottomRight( bottomRight ) {}
-
-float randFloat()
-{
-	return static_cast<float>( random() ) / static_cast<float>( RAND_MAX );
-}
 
 float2 QuadTree::uniformRandomPosition() const
 {
@@ -140,5 +148,70 @@ void QuadTree::splitLeaf()
 	ne = new QuadTree( make_float2( middle.x, topLeft.y ), make_float2( bottomRight.x, middle.y ) );
 	se = new QuadTree( middle, bottomRight );
 	sw = new QuadTree( make_float2( topLeft.x, middle.y ), make_float2( middle.x, bottomRight.y ) );
+}
+QuadTree::QuadTree( const QuadTree& other )
+{
+	flux = other.flux;
+	xPlane = other.xPlane;
+	yPlane = other.yPlane;
+	topLeft = other.topLeft;
+	bottomRight = other.bottomRight;
+	if ( !other.isLeaf() )
+	{
+		nw = new QuadTree( *other.nw );
+		sw = new QuadTree( *other.sw );
+		ne = new QuadTree( *other.ne );
+		se = new QuadTree( *other.se );
+	}
+}
+void QuadTree::splitAllAbove( float fluxThreshold )
+{
+	if ( flux < fluxThreshold ) return;
+	if ( isLeaf() )
+	{
+		splitLeaf();
+	}
+	else
+	{
+		nw->splitAllAbove( fluxThreshold );
+		ne->splitAllAbove( fluxThreshold );
+		sw->splitAllAbove( fluxThreshold );
+		se->splitAllAbove( fluxThreshold );
+	}
+}
+void SpatialLeaf::misOptimizationStep( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )
+{
+	float productEstimate = radianceEstimate * foreshortening * lightTransport;
+	float alpha = this->brdfProb();
+	float deltaAlpha = -productEstimate * ( sample.bsdfPdf - sample.combinedPdf ) / ( sample.guidingPdf * sample.combinedPdf );
+	float deltaTheta = deltaAlpha * alpha * ( 1 - alpha );
+	float regGradient = regularization * theta;
+	adamStep( deltaTheta + regGradient );
+}
+void SpatialLeaf::adamStep( float deltaTheta )
+{
+	t++;
+	float l = lr * sqrt( 1 - pow( beta1, t ) / ( 1 - pow( beta2, t ) ) ); //Calculate learning rate for iteration
+	m = beta1 * m + ( 1 - beta1 ) * deltaTheta;							  //Update first moment
+	v = beta2 * v + ( 1 - beta2 ) * deltaTheta * deltaTheta;			  //Update second moment
+	theta = theta - ( l * m ) / ( sqrt( v ) + eps );					  //Apply moments to the learned parameter
+}
+float SpatialLeaf::brdfProb() const
+{
+	return 1.f / ( 1.f + exp( -theta ) );
+}
+SpatialLeaf::SpatialLeaf( const SpatialLeaf& other )
+{
+	this->theta = other.theta;
+	this->visitCount = other.visitCount;
+	this->m = other.m;
+	this->v = other.v;
+	this->t = other.t;
+	this->beta1 = other.beta1;
+	this->beta2 = other.beta2;
+	this->eps = other.eps;
+	this->lr = other.lr;
+	this->regularization = other.regularization;
+	this->directions = new QuadTree( *other.directions );
 }
 } // namespace lh2core
