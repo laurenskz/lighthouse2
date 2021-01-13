@@ -21,6 +21,44 @@ SpatialLeaf* SpatialNode::lookup( float3 pos )
 		}
 	}
 }
+float3 SpatialNode::replaceAxis( const float3& point, float value, AXIS axis )
+{
+	return axis == X ? make_float3( value, point.y, point.z ) : axis == Y ? make_float3( point.x, value, point.z )
+																		  : make_float3( point.x, point.y, value );
+}
+float SpatialNode::midPoint( const float3& min, const float3& max, AXIS axis )
+{
+	return axis == X ? ( max.x - min.x ) / 2 + min.x : axis == Y ? ( max.y - min.y ) / 2 + min.y
+																 : ( max.z - min.z ) / 2 + min.z;
+}
+void SpatialNode::splitAllAbove( int visits )
+{
+	if ( !left.isLeaf )
+	{
+		left.node->splitAllAbove( visits );
+	}
+	else
+	{
+		if ( left.leaf->visitCount >= visits )
+			left = splitLeaf( left, min, replaceAxis( max, splitPane, splitAxis ) );
+	}
+	if ( !right.isLeaf )
+	{
+		right.node->splitAllAbove( visits );
+	}
+	else
+	{
+		if ( right.leaf->visitCount >= visits )
+			right = splitLeaf( right, replaceAxis( min, splitPane, splitAxis ), max );
+	}
+}
+SpatialNode::SpatialChild SpatialNode::splitLeaf( const SpatialNode::SpatialChild& child, const float3& newMin, const float3& newMax ) const
+{
+	AXIS newAxis = splitAxis == X ? Y : splitAxis == Y ? Z
+													   : X;
+	auto node = new SpatialNode( newAxis, SpatialChild( new SpatialLeaf( *child.leaf ) ), SpatialChild( new SpatialLeaf( *child.leaf ) ), newMin, newMax );
+	return SpatialNode::SpatialChild( node );
+}
 
 SpatialNode::SpatialChild& SpatialNode::SpatialChild::operator=( const SpatialNode::SpatialChild& other ) noexcept
 {
@@ -46,6 +84,10 @@ SpatialNode::SpatialChild::SpatialChild( const SpatialNode::SpatialChild& other 
 	{
 		node = new SpatialNode( *other.node );
 	}
+}
+SpatialNode::SpatialChild SpatialNode::newLeaf()
+{
+	return SpatialNode::SpatialChild( new SpatialLeaf( new QuadTree( make_float2( 0, 1 ), make_float2( 1, 0 ) ) ) );
 }
 QuadTree* QuadTree::traverse( float2 pos )
 {

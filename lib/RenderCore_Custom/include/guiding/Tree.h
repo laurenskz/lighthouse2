@@ -54,12 +54,12 @@ class QuadTree
 
 class SpatialLeaf
 {
-	int visitCount = 0;
 	float theta = 0, m = 0, v = 0;
 	int t = 0;
 	float beta1 = 0.9, beta2 = 0.999, eps = 1e-8, lr = 0.01, regularization = 0.01;
 
   public:
+	int visitCount = 0;
 	QuadTree* directions;
 
 	explicit SpatialLeaf( QuadTree* directions ) : directions( directions ) {}
@@ -90,16 +90,22 @@ class SpatialNode
 		};
 		SpatialChild& operator=( const SpatialChild& other ) noexcept;
 	};
-	SpatialNode( const SpatialNode& other ) : SpatialNode( other.splitPane, other.splitAxis, SpatialChild( other.left ), SpatialChild( other.right ) ){};
-	SpatialNode( float splitPane, AXIS splitAxis ) : splitPane( splitPane ), splitAxis( splitAxis ){};
-	SpatialNode( float splitPane, AXIS splitAxis, SpatialChild left, SpatialChild right ) : splitPane( splitPane ), splitAxis( splitAxis ), left( left ), right( right ){};
+	static SpatialChild newLeaf();
+	SpatialNode( const SpatialNode& other ) : SpatialNode( other.splitAxis, SpatialChild( other.left ), SpatialChild( other.right ), other.min, other.max ){};
+	SpatialNode( AXIS splitAxis, const float3& min, const float3& max ) : splitAxis( splitAxis ), min( min ), max( max ) { splitPane = midPoint( min, max, splitAxis ); };
+	SpatialNode( AXIS splitAxis, const SpatialChild& left, const SpatialChild& right, const float3& min, const float3& max ) : splitAxis( splitAxis ), min( min ), max( max ), left( left ), right( right ) { splitPane = midPoint( min, max, splitAxis ); };
 	SpatialLeaf* lookup( float3 pos );
-	void splitLeaf();
 	void splitAllAbove( int visits );
 	void splitDirectionsAbove( float flux );
+	[[nodiscard]] SpatialChild splitLeaf( const SpatialNode::SpatialChild& child, const float3& newMin, const float3& newMax ) const;
 
 	float splitPane;
 	AXIS splitAxis;
+	float3 min, max;
 	SpatialChild left, right;
+
+  private:
+	static float3 replaceAxis( const float3& point, float value, AXIS axis );
+	inline static float midPoint( const float3& min, const float3& max, AXIS axis );
 };
 } // namespace lh2core

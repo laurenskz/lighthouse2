@@ -34,11 +34,12 @@ TEST_F( GuidingFixture, TraverseTree )
 	auto* minX = new SpatialLeaf( new QuadTree( make_float2( 0 ), make_float2( 1 ) ) );
 	auto* posXMinY = new SpatialLeaf( new QuadTree( make_float2( 0 ), make_float2( 1 ) ) );
 	auto* posXPosY = new SpatialLeaf( new QuadTree( make_float2( 0 ), make_float2( 1 ) ) );
-	SpatialNode root = SpatialNode( 0, X,
+	SpatialNode root = SpatialNode( X,
 									SpatialNode::SpatialChild( minX ),
 									SpatialNode::SpatialChild(
-										new SpatialNode( 0, Y, SpatialNode::SpatialChild( posXMinY ),
-														 SpatialNode::SpatialChild( posXPosY ) ) ) );
+										new SpatialNode( Y, SpatialNode::SpatialChild( posXMinY ),
+														 SpatialNode::SpatialChild( posXPosY ), make_float3( -1 ), make_float3( 1 ) ) ),
+									make_float3( -1 ), make_float3( 1 ) );
 	ASSERT_EQ( minX, root.lookup( make_float3( -1, 3, 3 ) ) );
 	ASSERT_EQ( posXMinY, root.lookup( make_float3( 1, -1, 3 ) ) );
 	ASSERT_EQ( posXPosY, root.lookup( make_float3( 1, 1, 3 ) ) );
@@ -78,9 +79,23 @@ TEST_F( GuidingFixture, Traverse )
 	auto sampled = root->sample();
 	cout << root->pdf( sampled ) * 4 * PI << endl;
 	cout << root->pdf( normalize( make_float3( 0.3, 0.2, 0.3 ) ) ) << endl;
-	//	cout << root->sample() << endl;
-	//	cout << root->sample() << endl;
-	//	cout << root->sample() << endl;
-	//	cout << root->sample() << endl;
-	//	cout << root->sample() << endl;
+}
+
+TEST_F( GuidingFixture, TestTree )
+{
+	const SpatialNode::SpatialChild left = SpatialNode::newLeaf();
+	const SpatialNode::SpatialChild right = SpatialNode::newLeaf();
+	auto root = new SpatialNode( X, left, right, make_float3( -5 ), make_float3( 5 ) );
+	auto result = root->lookup( make_float3( -1, 1, 1 ) );
+	result->incrementVisits();
+	auto other = root->lookup( make_float3( 1, 1, 1 ) );
+	ASSERT_EQ( 0, other->visitCount );
+	ASSERT_EQ( 1, result->visitCount );
+	root->splitAllAbove( 1 );
+	auto minXMinY = root->lookup( make_float3( -1, -1, 0 ) );
+	auto minXPosY = root->lookup( make_float3( -1, 1, 0 ) );
+	ASSERT_NE( minXMinY, minXPosY );
+	ASSERT_EQ( root->lookup( make_float3( 1, -1, 0 ) ), root->lookup( make_float3( 1, 1, 0 ) ) );
+	root->splitAllAbove( 0 );
+	ASSERT_NE( root->lookup( make_float3( 1, -1, 0 ) ), root->lookup( make_float3( 1, 1, 0 ) ) );
 }

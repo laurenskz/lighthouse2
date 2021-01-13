@@ -22,17 +22,19 @@ float3 PathGuidingTracer::trace( Ray& r )
 	//	}
 	Ray newRay = Ray{ intersection.location, sample.direction };
 	float3 lightSample = trace( newRay );
-	module->train( intersection.location, sample, lightSample.x + lightSample.y + lightSample.z );
-	return dot( intersection.normal, sample.direction ) * // Irradiance to radiance
+	float foreShortening = dot( intersection.normal, sample.direction );
+	float lightTransport = brdf->lightTransport( intersection.location, intersection.normal, r.direction, sample.direction );
+	module->train( intersection.location, sample, lightSample.x + lightSample.y + lightSample.z, foreShortening, lightTransport );
+	return foreShortening *
 		   ( lightSample / sample.combinedPdf ) *
-		   brdf->lightTransport( intersection.location, intersection.normal, r.direction, sample.direction );
+		   lightTransport;
 }
 Sample TrainModule::sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming )
 {
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
 	float alpha = leaf->brdfProb();
 	float3 dir{};
-	if ( randFloat() < alpha)
+	if ( randFloat() < alpha )
 	{
 		dir = brdf.sampleDirection( intersection.location, intersection.normal, incoming );
 	}
@@ -59,7 +61,7 @@ void TrainModule::train( const float3& position, const Sample& sample, float rad
 }
 void TrainModule::completeSample()
 {
-	guidingNode = SpatialNode(storingNode);
-//	TODO: split on visitcount and collected
+	guidingNode = SpatialNode( storingNode );
+	//	TODO: split on visitcount and collected
 }
 } // namespace lh2core
