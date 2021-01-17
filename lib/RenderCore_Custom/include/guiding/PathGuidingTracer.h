@@ -24,6 +24,7 @@ class TrainModule
 	Sample sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming );
 	void train( const float3& position, const Sample& sample, float flux, float foreshortening, float lightTransport );
 	void completeSample();
+	TrainModule( const float3& min, const float3& max ) : guidingNode( SpatialNode( X, SpatialNode::newLeaf(), SpatialNode::newLeaf(), min, max ) ), storingNode( SpatialNode( X, SpatialNode::newLeaf(), SpatialNode::newLeaf(), min, max ) ){};
 };
 class PathGuidingTracer
 {

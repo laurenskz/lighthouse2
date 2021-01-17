@@ -89,6 +89,25 @@ SpatialNode::SpatialChild SpatialNode::newLeaf()
 {
 	return SpatialNode::SpatialChild( new SpatialLeaf( new QuadTree( make_float2( 0, 1 ), make_float2( 1, 0 ) ) ) );
 }
+void SpatialNode::splitDirectionsAbove( float flux )
+{
+	if ( left.isLeaf )
+	{
+		left.leaf->directions->splitAllAbove( flux );
+	}
+	else
+	{
+		left.node->splitDirectionsAbove( flux );
+	}
+	if ( right.isLeaf )
+	{
+		right.leaf->directions->splitAllAbove( flux );
+	}
+	else
+	{
+		right.node->splitDirectionsAbove( flux );
+	}
+}
 QuadTree* QuadTree::traverse( float2 pos )
 {
 	QuadTree* current = this;

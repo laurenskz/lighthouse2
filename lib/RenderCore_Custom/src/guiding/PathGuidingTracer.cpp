@@ -32,7 +32,7 @@ float3 PathGuidingTracer::trace( Ray& r )
 Sample TrainModule::sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming )
 {
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
-	float alpha = leaf->brdfProb();
+	float alpha = completedIterations == 0 ? 1 : leaf->brdfProb();
 	float3 dir{};
 	if ( randFloat() < alpha )
 	{
@@ -62,6 +62,9 @@ void TrainModule::train( const float3& position, const Sample& sample, float rad
 void TrainModule::completeSample()
 {
 	guidingNode = SpatialNode( storingNode );
-	//	TODO: split on visitcount and collected
+	float fluxThreshold;
+	storingNode.splitDirectionsAbove( fluxThreshold );
+	long twoToK = pow( 2, completedIterations );
+	storingNode.splitAllAbove( 12000.0 * sqrt( twoToK ) );
 }
 } // namespace lh2core

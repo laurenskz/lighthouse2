@@ -1,3 +1,4 @@
+#include "guiding/PathGuidingTracer.h"
 #include "guiding/Tree.h"
 #include "gtest/gtest.h"
 using namespace lh2core;
@@ -98,4 +99,20 @@ TEST_F( GuidingFixture, TestTree )
 	ASSERT_EQ( root->lookup( make_float3( 1, -1, 0 ) ), root->lookup( make_float3( 1, 1, 0 ) ) );
 	root->splitAllAbove( 0 );
 	ASSERT_NE( root->lookup( make_float3( 1, -1, 0 ) ), root->lookup( make_float3( 1, 1, 0 ) ) );
+}
+
+TEST_F( GuidingFixture, TestTrainModule )
+{
+	auto* trainModule = new TrainModule( make_float3( 0 ), make_float3( 1 ) );
+	auto brdf = DiffuseBRDF();
+	srand (time(NULL));
+	auto direction = trainModule->sampleDirection(
+		Intersection{ make_float3( 0.2 ), make_float3( 0, 1, 0 ), Material{
+																	  make_float3( 0, 1, 0 ),
+																  } },
+		brdf, make_float3( 0, 1, 0 ) );
+	cout << direction.direction << endl;
+	cout << direction.guidingPdf << endl;
+	cout << direction.bsdfPdf << endl;
+	cout << direction.combinedPdf << endl;
 }
