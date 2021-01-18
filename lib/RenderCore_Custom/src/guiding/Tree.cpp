@@ -156,11 +156,7 @@ float2 QuadTree::uniformRandomPosition() const
 }
 QuadTree* QuadTree::sampleChildByEnergy()
 {
-	float total = ne->flux + nw->flux + se->flux + sw->flux;
-	if ( total < 1e-6 )
-	{
-		//		?
-	}
+	float total = flux;
 	float dice = randFloat() * total;
 	if ( ne->flux > dice ) return ne;
 	dice -= ne->flux;
@@ -247,7 +243,7 @@ void QuadTree::splitAllAbove( float fluxThreshold )
 }
 void QuadTree::splitLeafsAbove( float fluxPercentage )
 {
-	float fluxThreshold = fluxPercentage * fluxPercentage;
+	float fluxThreshold = fluxPercentage * flux;
 	splitAllAbove( fluxThreshold );
 }
 void SpatialLeaf::misOptimizationStep( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )
@@ -269,6 +265,7 @@ void SpatialLeaf::adamStep( float deltaTheta )
 }
 float SpatialLeaf::brdfProb() const
 {
+	return 0;
 	return 1.f / ( 1.f + exp( -theta ) );
 }
 SpatialLeaf::SpatialLeaf( const SpatialLeaf& other )

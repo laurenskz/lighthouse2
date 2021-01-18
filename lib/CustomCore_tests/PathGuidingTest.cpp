@@ -105,13 +105,35 @@ TEST_F( GuidingFixture, TestTrainModule )
 {
 	auto* trainModule = new TrainModule( make_float3( 0 ), make_float3( 1 ) );
 	auto brdf = DiffuseBRDF();
-	srand (time(NULL));
+	srand( time( NULL ) );
+	const Intersection& intersection = Intersection{ make_float3( 0.2 ), make_float3( 0, 1, 0 ), Material{
+																									 make_float3( 0, 1, 0 ),
+																								 } };
 	auto direction = trainModule->sampleDirection(
-		Intersection{ make_float3( 0.2 ), make_float3( 0, 1, 0 ), Material{
-																	  make_float3( 0, 1, 0 ),
-																  } },
+		intersection,
 		brdf, make_float3( 0, 1, 0 ) );
 	trainModule->train( make_float3( 0.2 ), direction, 5, 0.7, 0.3 );
 	trainModule->completeSample();
-	cout << endl;
+	direction = trainModule->sampleDirection(
+		intersection,
+		brdf, make_float3( 0, 1, 0 ) );
+	float totalFlux = 5;
+	for ( int i = 0; i < 1; ++i )
+	{
+		totalFlux = totalFlux * ( 100 * ( i + 1 ) );
+		trainModule->train( make_float3( 0.2 ), direction, totalFlux, 0.7, 0.3 );
+		trainModule->completeSample();
+	}
+	double total = 0;
+	int iterations = 10000;
+	for ( int i = 0; i < iterations; ++i )
+	{
+		auto nDirection = trainModule->sampleDirection(
+			intersection,
+			brdf, make_float3( 0, 1, 0 ) );
+		float d = dot( nDirection.direction, direction.direction );
+		total += d;
+	}
+	cout << "Avg" << endl;
+	cout << ( total / iterations ) << endl;
 }

@@ -59,11 +59,13 @@ void TrainModule::train( const float3& position, const Sample& sample, float rad
 	leaf->directions->depositEnergy( sample.direction, radianceEstimate );
 	leaf->misOptimizationStep( position, sample, radianceEstimate, foreshortening, lightTransport );
 }
-void TrainModule::completeSample()
+void TrainModule::
+	completeSample()
 {
 	guidingNode = SpatialNode( storingNode );
-	storingNode.splitDirectionsAbove( 0.01 );
-	long twoToK = pow( 2, completedIterations );
-	storingNode.splitAllAbove( 12000.0 * sqrt( twoToK ) );
+	storingNode.splitDirectionsAbove( 0.1 );
+	//	long twoToK = pow( 2, completedIterations );
+	//	storingNode.splitAllAbove( 12000.0 * sqrt( twoToK ) );
+	completedIterations++;
 }
 } // namespace lh2core
