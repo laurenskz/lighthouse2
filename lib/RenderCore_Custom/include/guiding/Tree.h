@@ -46,6 +46,7 @@ class QuadTree
 	QuadTree* traverse( float2 pos );
 	void splitLeaf();
 	void splitAllAbove( float fluxThreshold );
+	void splitLeafsAbove( float fluxPercentage );
 
   private:
 	[[nodiscard]] inline bool isLeaf() const { return nw == nullptr; }

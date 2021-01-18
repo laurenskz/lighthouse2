@@ -93,7 +93,7 @@ void SpatialNode::splitDirectionsAbove( float flux )
 {
 	if ( left.isLeaf )
 	{
-		left.leaf->directions->splitAllAbove( flux );
+		left.leaf->directions->splitLeafsAbove( flux );
 	}
 	else
 	{
@@ -101,7 +101,7 @@ void SpatialNode::splitDirectionsAbove( float flux )
 	}
 	if ( right.isLeaf )
 	{
-		right.leaf->directions->splitAllAbove( flux );
+		right.leaf->directions->splitLeafsAbove( flux );
 	}
 	else
 	{
@@ -157,6 +157,10 @@ float2 QuadTree::uniformRandomPosition() const
 QuadTree* QuadTree::sampleChildByEnergy()
 {
 	float total = ne->flux + nw->flux + se->flux + sw->flux;
+	if ( total < 1e-6 )
+	{
+		//		?
+	}
 	float dice = randFloat() * total;
 	if ( ne->flux > dice ) return ne;
 	dice -= ne->flux;
@@ -209,6 +213,7 @@ void QuadTree::splitLeaf()
 	ne = new QuadTree( make_float2( middle.x, topLeft.y ), make_float2( bottomRight.x, middle.y ) );
 	se = new QuadTree( middle, bottomRight );
 	sw = new QuadTree( make_float2( topLeft.x, middle.y ), make_float2( middle.x, bottomRight.y ) );
+	nw->flux = ne->flux = sw->flux = se->flux = flux / 4;
 }
 QuadTree::QuadTree( const QuadTree& other )
 {
@@ -239,6 +244,11 @@ void QuadTree::splitAllAbove( float fluxThreshold )
 		sw->splitAllAbove( fluxThreshold );
 		se->splitAllAbove( fluxThreshold );
 	}
+}
+void QuadTree::splitLeafsAbove( float fluxPercentage )
+{
+	float fluxThreshold = fluxPercentage * fluxPercentage;
+	splitAllAbove( fluxThreshold );
 }
 void SpatialLeaf::misOptimizationStep( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )
 {

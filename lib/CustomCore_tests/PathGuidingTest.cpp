@@ -111,8 +111,7 @@ TEST_F( GuidingFixture, TestTrainModule )
 																	  make_float3( 0, 1, 0 ),
 																  } },
 		brdf, make_float3( 0, 1, 0 ) );
-	cout << direction.direction << endl;
-	cout << direction.guidingPdf << endl;
-	cout << direction.bsdfPdf << endl;
-	cout << direction.combinedPdf << endl;
+	trainModule->train( make_float3( 0.2 ), direction, 5, 0.7, 0.3 );
+	trainModule->completeSample();
+	cout << endl;
 }

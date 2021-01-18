@@ -56,14 +56,13 @@ void TrainModule::train( const float3& position, const Sample& sample, float rad
 {
 	SpatialLeaf* leaf = storingNode.lookup( position );
 	leaf->incrementVisits();
-	leaf->directions->depositEnergy( sample.direction, radianceEstimate / sample.combinedPdf );
+	leaf->directions->depositEnergy( sample.direction, radianceEstimate );
 	leaf->misOptimizationStep( position, sample, radianceEstimate, foreshortening, lightTransport );
 }
 void TrainModule::completeSample()
 {
 	guidingNode = SpatialNode( storingNode );
-	float fluxThreshold;
-	storingNode.splitDirectionsAbove( fluxThreshold );
+	storingNode.splitDirectionsAbove( 0.01 );
 	long twoToK = pow( 2, completedIterations );
 	storingNode.splitAllAbove( 12000.0 * sqrt( twoToK ) );
 }
