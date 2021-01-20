@@ -29,6 +29,12 @@ float3 PathGuidingTracer::trace( Ray& r )
 		   ( lightSample / sample.combinedPdf ) *
 		   lightTransport;
 }
+float3 PathGuidingTracer::performSample( Ray& r, int px, int py )
+{
+	const float3& sampledColor = trace( r );
+
+	return float3();
+}
 Sample TrainModule::sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming )
 {
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
@@ -54,6 +60,7 @@ Sample TrainModule::sampleDirection( const Intersection& intersection, const BRD
 }
 void TrainModule::train( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )
 {
+	completedSamples++;
 	SpatialLeaf* leaf = storingNode.lookup( position );
 	leaf->incrementVisits();
 	leaf->directions->depositEnergy( sample.direction, radianceEstimate );
@@ -64,8 +71,14 @@ void TrainModule::
 {
 	guidingNode = SpatialNode( storingNode );
 	storingNode.splitDirectionsAbove( 0.1 );
-	//	long twoToK = pow( 2, completedIterations );
-	//	storingNode.splitAllAbove( 12000.0 * sqrt( twoToK ) );
+	int twoToK = pow( 2, completedIterations );
+	storingNode.splitAllAbove( 12000.0 * sqrt( twoToK ) );
 	completedIterations++;
+	samplesPerPixel = pow( 2, completedIterations );
+	completedSamples = 0;
+}
+inline bool TrainModule::iterationIsFinished() const
+{
+	return ( samplesPerPixel * pixelCount ) <= completedSamples;
 }
 } // namespace lh2core
