@@ -32,13 +32,21 @@ float3 PathGuidingTracer::trace( Ray& r )
 float3 PathGuidingTracer::performSample( Ray& r, int px, int py )
 {
 	const float3& sampledColor = trace( r );
-
-	return float3();
+	imageBuffer->recordSample( module->completedIterations, px, py, sampledColor );
+	return imageBuffer->currentEstimate( px, py );
 }
+void PathGuidingTracer::cameraChanged( TrainModule* trainModule, ImageBuffer* buffer )
+{
+	imageBuffer = buffer;
+	module = trainModule;
+}
+PathGuidingTracer::PathGuidingTracer( Environment* environment, BRDFs* brdfs ) : environment( environment ), brdfs( brdfs ) {}
 Sample TrainModule::sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming )
 {
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
-	float alpha = completedIterations == 0 ? 1 : leaf->brdfProb();
+	//	TODO: fix this
+	//	float alpha = completedIterations == 0 ? 1 : leaf->brdfProb();
+	float alpha = completedIterations == 0 ? 1 : 0.5;
 	float3 dir{};
 	if ( randFloat() < alpha )
 	{
@@ -65,6 +73,10 @@ void TrainModule::train( const float3& position, const Sample& sample, float rad
 	leaf->incrementVisits();
 	leaf->directions->depositEnergy( sample.direction, radianceEstimate );
 	leaf->misOptimizationStep( position, sample, radianceEstimate, foreshortening, lightTransport );
+	if ( iterationIsFinished() )
+	{
+		completeSample();
+	}
 }
 void TrainModule::
 	completeSample()
@@ -80,5 +92,33 @@ void TrainModule::
 inline bool TrainModule::iterationIsFinished() const
 {
 	return ( samplesPerPixel * pixelCount ) <= completedSamples;
+}
+void ImageBuffer::recordSample( int iteration, int px, int py, float3 value )
+{
+	if ( pixels.size() <= iteration )
+	{
+		pixels.push_back( new float3[width * height] );
+	}
+	pixels[iteration][px + py * width] += value;
+	if ( px >= width - 1 && py >= height - 1 )
+	{
+		counts[iteration]++;
+		if ( counts[iteration] >= counts[bestIteration] )
+		{
+			bestIteration = iteration;
+		}
+	}
+}
+float3 ImageBuffer::currentEstimate( int px, int py )
+{
+	return pixels[bestIteration][px + py * width] / static_cast<float>( counts[bestIteration] );
+}
+ImageBuffer::ImageBuffer( int width, int height ) : width( width ), height( height ) {}
+ImageBuffer::~ImageBuffer()
+{
+	for ( auto& pixel : pixels )
+	{
+		delete pixel;
+	}
 }
 } // namespace lh2core

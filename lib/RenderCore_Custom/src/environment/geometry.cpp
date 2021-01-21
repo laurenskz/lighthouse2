@@ -21,7 +21,7 @@ void Mesh::setPositions( const float4* positions, const CoreTri* fatData, const 
 	{
 		auto matId = triangles[i].material;
 		int transparentModifier = materials[matId].pbrtMaterialType == MaterialType::PBRT_GLASS ? 1 : 0;
-		primitives[i] = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ),
+		primitives[i] = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ) | materials[matId].flags,
 								   make_float3( positions[i * 3] ),
 								   make_float3( positions[i * 3 + 1] ),
 								   make_float3( positions[i * 3 + 2] ),
@@ -148,10 +148,12 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 {
 	Intersection intersection{};
 	intersection.location = intersectionLocation( r );
+	intersection.mat.type = DIFFUSE;
 	const float w = ( 1 - r.u - r.v );
 	if ( r.primitive->flags & LIGHT_BIT )
 	{
 		intersection.mat = lightMaterials[r.primitive->meshIndex];
+		intersection.mat.type = LIGHT;
 	}
 	const CoreTri& triangleData = meshes[r.primitive->meshIndex]->triangles[r.primitive->triangleNumber];
 	float2 uv = make_float2( w * triangleData.u0 + r.u * triangleData.u1 + r.v * triangleData.u2,
@@ -159,7 +161,6 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 	auto normal = w * triangleData.vN0 + r.u * triangleData.vN1 + r.v * triangleData.vN2;
 	intersection.normal = normalize( make_float3( transforms[r.instanceIndex] * ( make_float4( normal ) ) ) );
 	auto mat = materials[triangleData.material];
-	intersection.mat.type = DIFFUSE;
 	if ( mat.pbrtMaterialType == lighthouse2::MaterialType::PBRT_GLASS )
 	{
 		intersection.mat.type = GLASS;

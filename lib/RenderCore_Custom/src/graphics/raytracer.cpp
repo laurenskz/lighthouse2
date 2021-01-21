@@ -167,7 +167,10 @@ float3 PathTracer::trace( Ray& r, int count )
 	bool goReflected = ( intersection.mat.type == SPECULAR && !goDiffuse );
 	if ( goDiffuse )
 	{
-		const float3& newDirection = randomDirectionFrom( intersection.normal );
+		float3 newDirection;
+		do {
+			newDirection = randomDirectionFrom( intersection.normal );
+		} while ( isnan( newDirection.x ) );
 		Ray newRay{ intersection.location + 1e-3 * newDirection, newDirection };
 		const float3& brdf = intersection.mat.color / PI;
 		float3 hit = trace( newRay, count - 1 ) * dot( newDirection, intersection.normal );

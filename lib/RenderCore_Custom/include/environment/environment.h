@@ -39,7 +39,7 @@ class Environment : public IEnvironment
 	IGeometry* geometry;
 	Intersector* intersector;
 	float3* skyPixels;
-	int skyWidth, skyHeight;
+	int skyWidth=0, skyHeight=0;
 
   public:
 	Environment( IGeometry* geometry,
