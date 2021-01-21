@@ -40,9 +40,9 @@ void PrepareScene()
 	//	For path tracer
 	int lightMat = renderer->AddMaterial( make_float3( 10 ) );
 	HostMaterial* mat = renderer->GetMaterial( lightMat );
-	mat->flags = (uint)1 << (uint)4;
+	mat->pbrtMaterialType = MaterialType::PBRT_UBER;
 	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 4.0f, 0 ), 6.9f, 6.9f, lightMat );
-	renderer->AddInstance( lightQuad );
+		renderer->AddInstance( lightQuad );
 	//		Directional light
 	renderer->AddDirectionalLight( normalize( make_float3( -1 ) ), make_float3( 1.0 / 2 ) );
 }

@@ -21,7 +21,8 @@ void Mesh::setPositions( const float4* positions, const CoreTri* fatData, const 
 	{
 		auto matId = triangles[i].material;
 		int transparentModifier = materials[matId].pbrtMaterialType == MaterialType::PBRT_GLASS ? 1 : 0;
-		primitives[i] = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ) | materials[matId].flags,
+		int lightModifier = materials[matId].pbrtMaterialType == MaterialType::PBRT_UBER ? 1 : 0; //Abusing this type
+		primitives[i] = Primitive{ TRIANGLE_BIT | ( TRANSPARENT_BIT * transparentModifier ) | ( LIGHT_BIT * lightModifier ),
 								   make_float3( positions[i * 3] ),
 								   make_float3( positions[i * 3 + 1] ),
 								   make_float3( positions[i * 3 + 2] ),
@@ -153,7 +154,7 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 	if ( r.primitive->flags & LIGHT_BIT )
 	{
 		intersection.mat = lightMaterials[r.primitive->meshIndex];
-		intersection.mat.type = LIGHT;
+		//		intersection.mat.type = LIGHT;
 	}
 	const CoreTri& triangleData = meshes[r.primitive->meshIndex]->triangles[r.primitive->triangleNumber];
 	float2 uv = make_float2( w * triangleData.u0 + r.u * triangleData.u1 + r.v * triangleData.u2,
