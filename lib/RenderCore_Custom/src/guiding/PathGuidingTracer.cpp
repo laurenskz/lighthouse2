@@ -27,11 +27,12 @@ float3 PathGuidingTracer::trace( Ray& r )
 	module->train( intersection.location, sample, lightSample.x + lightSample.y + lightSample.z, foreShortening, lightTransport );
 	return foreShortening *
 		   ( lightSample / sample.combinedPdf ) *
-		   lightTransport;
+		   lightTransport * intersection.mat.color;
 }
 float3 PathGuidingTracer::performSample( Ray& r, int px, int py )
 {
 	const float3& sampledColor = trace( r );
+	module->increaseSamples();
 	imageBuffer->recordSample( module->completedIterations, px, py, sampledColor );
 	return imageBuffer->currentEstimate( px, py );
 }
@@ -46,7 +47,7 @@ Sample TrainModule::sampleDirection( const Intersection& intersection, const BRD
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
 	//	TODO: fix this
 	//	float alpha = completedIterations == 0 ? 1 : leaf->brdfProb();
-	float alpha = completedIterations == 0 ? 1 : 0.5;
+	float alpha = completedIterations == 0 ? 1 : 0.2;
 	float3 dir{};
 	if ( randFloat() < alpha )
 	{
@@ -66,9 +67,9 @@ Sample TrainModule::sampleDirection( const Intersection& intersection, const BRD
 						  ( 1 - alpha ) * guidingPdf;
 	return Sample{ dir, directionProb, bsdfPdf, guidingPdf };
 }
+
 void TrainModule::train( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )
 {
-	completedSamples++;
 	SpatialLeaf* leaf = storingNode.lookup( position );
 	leaf->incrementVisits();
 	leaf->directions->depositEnergy( sample.direction, radianceEstimate );
@@ -113,7 +114,14 @@ float3 ImageBuffer::currentEstimate( int px, int py )
 {
 	return pixels[bestIteration][px + py * width] / static_cast<float>( counts[bestIteration] );
 }
-ImageBuffer::ImageBuffer( int width, int height ) : width( width ), height( height ) {}
+ImageBuffer::ImageBuffer( int width, int height ) : width( width ), height( height )
+{
+	counts = new int[64];
+	for ( int i = 0; i < 64; ++i )
+	{
+		counts[i] = 1;
+	}
+}
 ImageBuffer::~ImageBuffer()
 {
 	for ( auto& pixel : pixels )

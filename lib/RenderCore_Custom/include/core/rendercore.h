@@ -42,7 +42,6 @@ class RenderCore : public CoreAPI_Base
 	CoreStats GetCoreStats() const override;
 	void Shutdown();
 
-
 	// unimplemented for the minimal core
 	inline void SetProbePos( const int2 pos ) override {}
 	inline void Setting( const char* name, float value ) override {}
@@ -59,12 +58,13 @@ class RenderCore : public CoreAPI_Base
 	Bitmap* screen = 0;		 // temporary storage of RenderCore output; will be copied to render target
 	int targetTextureID = 0; // ID of the target OpenGL texture
 	vector<Mesh> meshes;	 // mesh data storage
-	IRayTracer* rayTracer;
+	PathGuidingTracer* rayTracer;
 	Geometry* geometry;
 	TopLevelBVH* intersector;
 	Environment* environment;
 	Renderer* renderer;
 	Lighting* lighting;
+	float3 lastRenderPos;
 
   public:
 	CoreStats coreStats; // rendering statistics

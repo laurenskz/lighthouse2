@@ -32,23 +32,9 @@ void RenderCore::Init()
 	intersector = new TopLevelBVH();
 	environment = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
-#ifdef WHITTED
-	rayTracer = new RayTracer( environment, lighting );
-#else
-	rayTracer = new PathTracer( environment, lighting );
-#endif
-	PixelRenderer* baseRenderer = new BasePixelRenderer( rayTracer );
-#ifdef ANTI_ALIASING
-	baseRenderer = new AntiAliasedRenderer( baseRenderer );
-#endif
-#ifndef WHITTED
-	baseRenderer = new AveragingPixelRenderer( baseRenderer );
-#endif
-#ifdef MULTITHREADED
-	renderer = new MultiThreadedRenderer( baseRenderer );
-#else
+	rayTracer = new PathGuidingTracer( environment, new BRDFs() );
+	PixelRenderer* baseRenderer = new PathGuidingRenderer( rayTracer );
 	renderer = new SingleCoreRenderer( baseRenderer );
-#endif
 }
 
 //  +-----------------------------------------------------------------------------+
@@ -106,6 +92,12 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 	//	auto primitives = geometry->getPrimitives();
 	//	intersector->setPrimitives( primitives.data, primitives.size );
 	// render
+	if ( !feq( view.pos, lastRenderPos, 1e-4 ) )
+	{
+		const AABB& bounds = intersector->getBounds();
+		renderer->cameraChanged( bounds.min, bounds.max, screen->width, screen->height );
+	}
+	lastRenderPos = view.pos;
 	screen->Clear();
 	renderer->renderTo( view, screen );
 	// copy pixel buffer to OpenGL render target texture

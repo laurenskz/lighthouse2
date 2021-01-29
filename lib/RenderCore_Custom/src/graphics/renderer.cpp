@@ -28,6 +28,10 @@ void SingleCoreRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 		}
 	}
 }
+void SingleCoreRenderer::cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height )
+{
+	pixelRenderer->cameraChanged( geometryMin, geometryMax, width, height );
+}
 
 void plotColor( Bitmap* screen, int y, int x, const float3& fColor )
 {
@@ -112,4 +116,20 @@ void TestPixelRenderer::beforeRender( const ViewPyramid& view, int width, int he
 	count++;
 	sleep( 1 );
 }
+float3 PathGuidingRenderer::render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection )
+{
+	ray.start = view.pos;
+	const float3& rayDirection = RayTracer::rayDirection( ( x / width ), ( y / height ), view );
+	ray.direction = rayDirection;
+	return tracer->performSample( ray, round( x ), round( y ) );
+}
+void PathGuidingRenderer::beforeRender( const ViewPyramid& view, int width, int height )
+{
+	PixelRenderer::beforeRender( view, width, height );
+}
+void PathGuidingRenderer::cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height )
+{
+	tracer->cameraChanged( new TrainModule( geometryMin, geometryMax, width * height ), new ImageBuffer( width, height ) );
+}
+PathGuidingRenderer::PathGuidingRenderer( PathGuidingTracer* tracer ) : tracer( tracer ) {}
 } // namespace lh2core

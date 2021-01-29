@@ -114,6 +114,7 @@ class TopLevelBVH : public Intersector
 	void setMesh( int meshIndex, Primitive* primitives, int count );
 	void setInstance( int instanceIndex, int meshIndex, const mat4& transform );
 	void finalize();
+	AABB getBounds();
 
   private:
 	bool isDirty = false;

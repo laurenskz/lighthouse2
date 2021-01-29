@@ -9,6 +9,7 @@ using namespace lighthouse2;
 #include "core/base_definitions.h"
 #include "environment/intersections.h"
 #include "graphics/raytracer.h"
+#include "guiding/PathGuidingTracer.h"
 #include "threading/ctpl_stl.h"
 
 namespace lh2core
@@ -18,6 +19,21 @@ class PixelRenderer
   public:
 	virtual float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) = 0;
 	virtual void beforeRender( const ViewPyramid& view, int width, int height ){};
+	virtual void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ){};
+};
+
+class PathGuidingRenderer : public PixelRenderer
+{
+  private:
+	PathGuidingTracer* tracer;
+
+  public:
+	explicit PathGuidingRenderer( PathGuidingTracer* tracer );
+
+  public:
+	float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) override;
+	void beforeRender( const ViewPyramid& view, int width, int height ) override;
+	void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ) override;
 };
 
 class TestPixelRenderer : public PixelRenderer
@@ -31,6 +47,7 @@ class Renderer
 {
   public:
 	virtual void renderTo( const ViewPyramid& view, Bitmap* screen ) = 0;
+	virtual void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ){};
 };
 
 class BasePixelRenderer : public PixelRenderer
@@ -75,6 +92,7 @@ class SingleCoreRenderer : public Renderer
   public:
 	explicit SingleCoreRenderer( PixelRenderer* pixelRenderer ) : pixelRenderer( pixelRenderer ){};
 	void renderTo( const ViewPyramid& view, Bitmap* screen ) override;
+	void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ) override;
 
   private:
 	PixelRenderer* pixelRenderer;

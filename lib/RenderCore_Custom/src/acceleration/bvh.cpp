@@ -111,6 +111,10 @@ void TopLevelBVH::finalize()
 		isDirty = false;
 	}
 }
+AABB TopLevelBVH::getBounds()
+{
+	return tlBVH->bounds();
+}
 BVHTree* BaseBuilder::buildBVH( Primitive* primitives, int count )
 {
 	BVHTree* tree = new BVHTree( primitives, count );
