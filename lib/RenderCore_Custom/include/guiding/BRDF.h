@@ -28,6 +28,15 @@ class DiffuseBRDF : public BRDF
 	[[nodiscard]] bool isDiscrete() const override;
 };
 
+class MicroFacetBRDF : public BRDF
+{
+  public:
+	[[nodiscard]] float3 sampleDirection( const float3& pos, const float3& normal, const float3& incoming ) const override;
+	[[nodiscard]] float probabilityOfOutgoingDirection( const float3& pos, const float3& normal, const float3& incoming, const float3& outgoing ) const override;
+	[[nodiscard]] float lightTransport( const float3& pos, const float3& normal, const float3& incoming, const float3& outgoing ) const override;
+	[[nodiscard]] bool isDiscrete() const override;
+};
+
 class BRDFs
 {
   public:

@@ -36,13 +36,13 @@ void PrepareScene()
 {
 	// initialize scene
 	int planeIdx = renderer->AddMesh( "../demodata/plane/plane.obj" );
-	renderer->AddInstance( planeIdx, mat4::Scale( 4 ) );
+	renderer->AddInstance( planeIdx, mat4::Translate( make_float3( -4, 0, 0 ) ) * mat4::Scale( 0.8 ) );
 	//	For path tracer
-	int lightMat = renderer->AddMaterial( make_float3( 10 ) );
+	int lightMat = renderer->AddMaterial( make_float3( 1000 ) );
 	HostMaterial* mat = renderer->GetMaterial( lightMat );
 	mat->pbrtMaterialType = MaterialType::PBRT_UBER;
-	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 4.0f, 0 ), 6.9f, 6.9f, lightMat );
-		renderer->AddInstance( lightQuad );
+	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 4.0f, 0 ), 0.3f, 0.3f, lightMat );
+	renderer->AddInstance( lightQuad );
 	//		Directional light
 	renderer->AddDirectionalLight( normalize( make_float3( -1 ) ), make_float3( 1.0 / 2 ) );
 }

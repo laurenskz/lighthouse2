@@ -32,9 +32,14 @@ void RenderCore::Init()
 	intersector = new TopLevelBVH();
 	environment = new Environment( geometry, intersector );
 	lighting = new Lighting( intersector );
+#ifdef GUIDED
 	rayTracer = new PathGuidingTracer( environment, new BRDFs() );
 	PixelRenderer* baseRenderer = new PathGuidingRenderer( rayTracer );
 	renderer = new SingleCoreRenderer( baseRenderer );
+#else
+	PathTracer* pTracer = new PathTracer( environment, lighting );
+	renderer = new MultiThreadedRenderer( new AveragingPixelRenderer( new BasePixelRenderer( pTracer ) ) );
+#endif
 }
 
 //  +-----------------------------------------------------------------------------+

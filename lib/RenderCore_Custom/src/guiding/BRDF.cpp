@@ -22,4 +22,20 @@ bool DiffuseBRDF::isDiscrete() const
 {
 	return false;
 }
+float3 MicroFacetBRDF::sampleDirection( const float3& pos, const float3& normal, const float3& incoming ) const
+{
+	return float3();
+}
+float MicroFacetBRDF::probabilityOfOutgoingDirection( const float3& pos, const float3& normal, const float3& incoming, const float3& outgoing ) const
+{
+	return 0;
+}
+float MicroFacetBRDF::lightTransport( const float3& pos, const float3& normal, const float3& incoming, const float3& outgoing ) const
+{
+	return 0;
+}
+bool MicroFacetBRDF::isDiscrete() const
+{
+	return false;
+}
 } // namespace lh2core

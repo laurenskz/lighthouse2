@@ -47,7 +47,7 @@ Sample TrainModule::sampleDirection( const Intersection& intersection, const BRD
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
 	//	TODO: fix this
 	//	float alpha = completedIterations == 0 ? 1 : leaf->brdfProb();
-	float alpha = completedIterations == 0 ? 1 : 0.2;
+	float alpha = completedIterations == 0 ? 1 : 0;
 	float3 dir{};
 	if ( randFloat() < alpha )
 	{

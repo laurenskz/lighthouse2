@@ -47,6 +47,7 @@ class QuadTree
 	void splitLeaf();
 	void splitAllAbove( float fluxThreshold );
 	void splitLeafsAbove( float fluxPercentage );
+	void scaleFlux( float scale );
 
   private:
 	[[nodiscard]] inline bool isLeaf() const { return nw == nullptr; }
@@ -107,6 +108,10 @@ class SpatialNode
 
   private:
 	static float3 replaceAxis( const float3& point, float value, AXIS axis );
-	inline static float midPoint( const float3& min, const float3& max, AXIS axis );
+	inline static float midPoint( const float3& min, const float3& max, AXIS axis )
+	{
+		return axis == X ? ( max.x - min.x ) / 2 + min.x : axis == Y ? ( max.y - min.y ) / 2 + min.y
+																	 : ( max.z - min.z ) / 2 + min.z;
+	}
 };
 } // namespace lh2core

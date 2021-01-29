@@ -26,11 +26,7 @@ float3 SpatialNode::replaceAxis( const float3& point, float value, AXIS axis )
 	return axis == X ? make_float3( value, point.y, point.z ) : axis == Y ? make_float3( point.x, value, point.z )
 																		  : make_float3( point.x, point.y, value );
 }
-float SpatialNode::midPoint( const float3& min, const float3& max, AXIS axis )
-{
-	return axis == X ? ( max.x - min.x ) / 2 + min.x : axis == Y ? ( max.y - min.y ) / 2 + min.y
-																 : ( max.z - min.z ) / 2 + min.z;
-}
+
 void SpatialNode::splitAllAbove( int visits )
 {
 	if ( !left.isLeaf )
@@ -57,6 +53,8 @@ SpatialNode::SpatialChild SpatialNode::splitLeaf( const SpatialNode::SpatialChil
 	AXIS newAxis = splitAxis == X ? Y : splitAxis == Y ? Z
 													   : X;
 	auto node = new SpatialNode( newAxis, SpatialChild( new SpatialLeaf( *child.leaf ) ), SpatialChild( new SpatialLeaf( *child.leaf ) ), newMin, newMax );
+	node->left.leaf->directions->scaleFlux( 0.5 );
+	node->right.leaf->directions->scaleFlux( 0.5 );
 	return SpatialNode::SpatialChild( node );
 }
 
@@ -156,7 +154,7 @@ float2 QuadTree::uniformRandomPosition() const
 }
 QuadTree* QuadTree::sampleChildByEnergy()
 {
-	float total = flux;
+	float total = ne->flux + nw->flux + se->flux + sw->flux;
 	float dice = randFloat() * total;
 	if ( ne->flux > dice ) return ne;
 	dice -= ne->flux;
@@ -194,10 +192,9 @@ float QuadTree::pdf( float3 direction )
 
 float QuadTree::pdf( float2 cylindrical )
 {
-	if ( flux < 1e-7 ) return 0;
 	if ( isLeaf() ) return 1 / ( 4 * PI );
 	auto child = getChild( cylindrical );
-	float beta = 4 * child->flux / flux;
+	float beta = 4 * child->flux / ( ne->flux + nw->flux + se->flux + sw->flux );
 	return beta * child->pdf( cylindrical );
 }
 void QuadTree::splitLeaf()
@@ -245,6 +242,17 @@ void QuadTree::splitLeafsAbove( float fluxPercentage )
 {
 	float fluxThreshold = fluxPercentage * flux;
 	splitAllAbove( fluxThreshold );
+}
+void QuadTree::scaleFlux( float scale )
+{
+	flux *= scale;
+	if ( !isLeaf() )
+	{
+		nw->scaleFlux( scale );
+		ne->scaleFlux( scale );
+		sw->scaleFlux( scale );
+		se->scaleFlux( scale );
+	}
 }
 void SpatialLeaf::misOptimizationStep( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )
 {

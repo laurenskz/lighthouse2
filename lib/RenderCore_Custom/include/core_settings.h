@@ -21,6 +21,7 @@
 #pragma once
 
 #include "platform.h"
+# define GUIDED
 //#define WHITTED
 //#define MULTITHREADED
 //#define ANTI_ALIASING

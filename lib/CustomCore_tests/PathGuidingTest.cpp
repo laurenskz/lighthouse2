@@ -103,7 +103,7 @@ TEST_F( GuidingFixture, TestTree )
 
 TEST_F( GuidingFixture, TestTrainModule )
 {
-	auto* trainModule = new TrainModule( make_float3( 0 ), make_float3( 1 ) );
+	auto* trainModule = new TrainModule( make_float3( 0 ), make_float3( 1 ), 100 );
 	auto brdf = DiffuseBRDF();
 	srand( time( NULL ) );
 	const Intersection& intersection = Intersection{ make_float3( 0.2 ), make_float3( 0, 1, 0 ), Material{
