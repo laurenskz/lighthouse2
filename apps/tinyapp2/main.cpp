@@ -36,13 +36,21 @@ void PrepareScene()
 {
 	// initialize scene
 	int planeIdx = renderer->AddMesh( "../demodata/plane/plane.obj" );
-	renderer->AddInstance( planeIdx, mat4::Translate( make_float3( -4, 0, 0 ) ) * mat4::Scale( 0.8 ) );
+	auto matId = renderer->FindMaterialID( "Texture" );
+	renderer->AddInstance( planeIdx, mat4::Scale( 4.8 ) );
+	HostMaterial* material = renderer->GetMaterial( matId );
+//	material->pbrtMaterialType = lighthouse2::MaterialType::CUSTOM_BSDF;
+	material->specular = 0.1;
+	material->Ks = make_float3( 1 );
+	material->clearcoatGloss = 500;
 	//	For path tracer
-	int lightMat = renderer->AddMaterial( make_float3( 1000 ) );
+	int lightMat = renderer->AddMaterial( make_float3( 30 ) );
 	HostMaterial* mat = renderer->GetMaterial( lightMat );
 	mat->pbrtMaterialType = MaterialType::PBRT_UBER;
-	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 4.0f, 0 ), 0.3f, 0.3f, lightMat );
+	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 2.5f, 0 ), 0.9f, 0.9f, lightMat );
 	renderer->AddInstance( lightQuad );
+	int mesh = renderer->AddMesh( "../demodata/spaceman/untitled.obj" );
+	renderer->AddInstance( mesh, mat4::Translate( -1.5, 0, 0 ) * mat4::Scale( 0.3 ) );
 	//		Directional light
 	renderer->AddDirectionalLight( normalize( make_float3( -1 ) ), make_float3( 1.0 / 2 ) );
 }
@@ -81,7 +89,7 @@ int main()
 	//	renderer = RenderAPI::CreateRenderAPI( "RenderCore_SoftRasterizer" ); // RASTERIZER, your only option if not on NVidia
 	//	 renderer = RenderAPI::CreateRenderAPI( "RenderCore_Vulkan_RT" );			// Meir's Vulkan / RTX core
 	// renderer = RenderAPI::CreateRenderAPI( "RenderCore_OptixPrime_BDPT" );	// Peter's OptixPrime / BDPT core
-	renderer->GetCamera()->LookAt( make_float3( 0, 3, 10 ), make_float3( 0, 2, 0 ) );
+	renderer->GetCamera()->LookAt( make_float3( 0, 2, 10 ), make_float3( 0, 2, 0 ) );
 	//	renderer->DeserializeCamera( "camera.xml" );
 	// initialize scene
 	PrepareScene();

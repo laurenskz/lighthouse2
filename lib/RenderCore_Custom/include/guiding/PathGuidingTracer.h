@@ -28,7 +28,7 @@ class TrainModule
 	void increaseSamples() { completedSamples++; }
 	void completeSample();
 	[[nodiscard]] inline bool iterationIsFinished() const;
-	TrainModule( const float3& min, const float3& max, int pixelCount ) : guidingNode( SpatialNode( X, SpatialNode::newLeaf(), SpatialNode::newLeaf(), min, max ) ), storingNode( SpatialNode( X, SpatialNode::newLeaf(), SpatialNode::newLeaf(), min, max ) ), pixelCount( pixelCount ){};
+	TrainModule( const float3& min, const float3& max, int pixelCount );;
 };
 
 class ImageBuffer

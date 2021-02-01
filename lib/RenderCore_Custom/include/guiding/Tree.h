@@ -48,6 +48,7 @@ class QuadTree
 	void splitAllAbove( float fluxThreshold );
 	void splitLeafsAbove( float fluxPercentage );
 	void scaleFlux( float scale );
+	void resetData();
 
   private:
 	[[nodiscard]] inline bool isLeaf() const { return nw == nullptr; }
@@ -99,6 +100,7 @@ class SpatialNode
 	SpatialLeaf* lookup( float3 pos );
 	void splitAllAbove( int visits );
 	void splitDirectionsAbove( float flux );
+	void resetData();
 	[[nodiscard]] SpatialChild splitLeaf( const SpatialNode::SpatialChild& child, const float3& newMin, const float3& newMax ) const;
 
 	float splitPane;

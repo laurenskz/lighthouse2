@@ -187,6 +187,12 @@ Intersection Geometry::triangleIntersection( const Ray& r )
 		intersection.mat.type = SPECULAR;
 		intersection.mat.specularity = mat.specular.value;
 	}
+	if ( mat.pbrtMaterialType == lighthouse2::MaterialType::CUSTOM_BSDF )
+	{
+		intersection.mat.type = MICROFACET;
+		intersection.mat.microAlpha = mat.clearcoatGloss.value;
+		intersection.mat.kspec = mat.Ks.value;
+	}
 	return intersection;
 }
 void Geometry::SetTextures( const CoreTexDesc* tex, const int textureCount )

@@ -11,7 +11,8 @@ enum MaterialKind
 	DIFFUSE,
 	SPECULAR,
 	GLASS,
-	LIGHT
+	LIGHT,
+	MICROFACET
 };
 struct Material
 {
@@ -19,6 +20,8 @@ struct Material
 	float specularity = 0;
 	MaterialKind type = DIFFUSE;
 	float refractionIndex = 1;
+	float microAlpha = 1;
+	float3 kspec{};
 };
 
 struct Intersection

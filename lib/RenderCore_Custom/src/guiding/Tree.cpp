@@ -53,8 +53,8 @@ SpatialNode::SpatialChild SpatialNode::splitLeaf( const SpatialNode::SpatialChil
 	AXIS newAxis = splitAxis == X ? Y : splitAxis == Y ? Z
 													   : X;
 	auto node = new SpatialNode( newAxis, SpatialChild( new SpatialLeaf( *child.leaf ) ), SpatialChild( new SpatialLeaf( *child.leaf ) ), newMin, newMax );
-	node->left.leaf->directions->scaleFlux( 0.5 );
-	node->right.leaf->directions->scaleFlux( 0.5 );
+	//	node->left.leaf->directions->scaleFlux( 0.5 );
+	//	node->right.leaf->directions->scaleFlux( 0.5 );
 	return SpatialNode::SpatialChild( node );
 }
 
@@ -106,6 +106,27 @@ void SpatialNode::splitDirectionsAbove( float flux )
 		right.node->splitDirectionsAbove( flux );
 	}
 }
+void SpatialNode::resetData()
+{
+	if ( left.isLeaf )
+	{
+		left.leaf->visitCount = 0;
+		left.leaf->directions->resetData();
+	}
+	else
+	{
+		left.node->resetData();
+	}
+	if ( right.isLeaf )
+	{
+		right.leaf->visitCount = 0;
+		right.leaf->directions->resetData();
+	}
+	else
+	{
+		right.node->resetData();
+	}
+}
 QuadTree* QuadTree::traverse( float2 pos )
 {
 	QuadTree* current = this;
@@ -154,6 +175,14 @@ float2 QuadTree::uniformRandomPosition() const
 }
 QuadTree* QuadTree::sampleChildByEnergy()
 {
+	if ( flux < 1e-7 )
+	{
+		float dice = randFloat();
+		if ( dice < 0.25 ) return nw;
+		if ( dice < 0.5 ) return ne;
+		if ( dice < 0.75 ) return se;
+		return sw;
+	}
 	float total = ne->flux + nw->flux + se->flux + sw->flux;
 	float dice = randFloat() * total;
 	if ( ne->flux > dice ) return ne;
@@ -194,6 +223,10 @@ float QuadTree::pdf( float2 cylindrical )
 {
 	if ( isLeaf() ) return 1 / ( 4 * PI );
 	auto child = getChild( cylindrical );
+	if ( flux < 1e-7 )
+	{
+		return 4 * child->pdf( cylindrical );
+	}
 	float beta = 4 * child->flux / ( ne->flux + nw->flux + se->flux + sw->flux );
 	return beta * child->pdf( cylindrical );
 }
@@ -225,18 +258,26 @@ QuadTree::QuadTree( const QuadTree& other )
 }
 void QuadTree::splitAllAbove( float fluxThreshold )
 {
-	if ( flux < fluxThreshold ) return;
+	if ( flux <= fluxThreshold )
+	{
+		if ( !isLeaf() )
+		{
+			delete nw;
+			delete ne;
+			delete sw;
+			delete se;
+			nw = se = sw = ne = nullptr;
+		}
+		return;
+	}
 	if ( isLeaf() )
 	{
 		splitLeaf();
 	}
-	else
-	{
-		nw->splitAllAbove( fluxThreshold );
-		ne->splitAllAbove( fluxThreshold );
-		sw->splitAllAbove( fluxThreshold );
-		se->splitAllAbove( fluxThreshold );
-	}
+	nw->splitAllAbove( fluxThreshold );
+	ne->splitAllAbove( fluxThreshold );
+	sw->splitAllAbove( fluxThreshold );
+	se->splitAllAbove( fluxThreshold );
 }
 void QuadTree::splitLeafsAbove( float fluxPercentage )
 {
@@ -252,6 +293,17 @@ void QuadTree::scaleFlux( float scale )
 		ne->scaleFlux( scale );
 		sw->scaleFlux( scale );
 		se->scaleFlux( scale );
+	}
+}
+void QuadTree::resetData()
+{
+	flux = 0;
+	if ( !isLeaf() )
+	{
+		nw->resetData();
+		sw->resetData();
+		ne->resetData();
+		se->resetData();
 	}
 }
 void SpatialLeaf::misOptimizationStep( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )

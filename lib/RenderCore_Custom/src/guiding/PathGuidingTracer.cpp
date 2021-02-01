@@ -9,25 +9,38 @@ float3 PathGuidingTracer::trace( Ray& r )
 	//	TODO HANDLE RECURSION LIMIT VIA RUSSIAN ROULETTE
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
+	{
+		return make_float3( 0.529, 0.808, 0.929 );
 		return environment->skyColor( r.direction );
+	}
 	if ( intersection.mat.type == LIGHT )
 	{
 		return intersection.mat.color;
 	}
 	auto brdf = brdfs->brdfForMat( intersection.mat );
 	const Sample sample = module->sampleDirection( intersection, *brdf, r.direction );
+	if ( sample.combinedPdf < 1e-7 )
+	{
+		return BLACK;
+	}
 	//	if ( !brdf->directionMayResultInTransport( intersection.location, intersection.normal, r.direction, sample.direction ) )
 	//	{
 	//		return BLACK;
 	//	}
 	Ray newRay = Ray{ intersection.location, sample.direction };
 	float3 lightSample = trace( newRay );
+	if ( isnan( lightSample.x ) )
+	{
+		trace( newRay );
+	}
 	float foreShortening = dot( intersection.normal, sample.direction );
-	float lightTransport = brdf->lightTransport( intersection.location, intersection.normal, r.direction, sample.direction );
-	module->train( intersection.location, sample, lightSample.x + lightSample.y + lightSample.z, foreShortening, lightTransport );
+	const float3& lightTransport = brdf->lightTransport( intersection.location, intersection.normal, r.direction, sample.direction );
+	module->train( intersection.location, sample,
+				   0.299 * lightSample.x + 0.587 * lightSample.y + 0.114 * lightSample.z, foreShortening,
+				   0.299 * lightTransport.x + 0.5987 * lightTransport.y + 0.114 * lightTransport.z );
 	return foreShortening *
 		   ( lightSample / sample.combinedPdf ) *
-		   lightTransport * intersection.mat.color;
+		   lightTransport;
 }
 float3 PathGuidingTracer::performSample( Ray& r, int px, int py )
 {
@@ -47,9 +60,10 @@ Sample TrainModule::sampleDirection( const Intersection& intersection, const BRD
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
 	//	TODO: fix this
 	//	float alpha = completedIterations == 0 ? 1 : leaf->brdfProb();
-	float alpha = completedIterations == 0 ? 1 : 0;
+	float alpha = completedIterations == 0 ? 1 : 0.5;
+	alpha = 1;
 	float3 dir{};
-	if ( randFloat() < alpha )
+	if ( randFloat() <= alpha )
 	{
 		dir = brdf.sampleDirection( intersection.location, intersection.normal, incoming );
 	}
@@ -83,9 +97,10 @@ void TrainModule::
 	completeSample()
 {
 	guidingNode = SpatialNode( storingNode );
-	storingNode.splitDirectionsAbove( 0.1 );
 	int twoToK = pow( 2, completedIterations );
 	storingNode.splitAllAbove( 12000.0 * sqrt( twoToK ) );
+	storingNode.splitDirectionsAbove( 0.1 );
+	storingNode.resetData();
 	completedIterations++;
 	samplesPerPixel = pow( 2, completedIterations );
 	completedSamples = 0;
@@ -93,6 +108,11 @@ void TrainModule::
 inline bool TrainModule::iterationIsFinished() const
 {
 	return ( samplesPerPixel * pixelCount ) <= completedSamples;
+}
+TrainModule::TrainModule( const float3& min, const float3& max, int pixelCount ) : guidingNode( SpatialNode( X, SpatialNode::newLeaf(), SpatialNode::newLeaf(), min, max ) ), storingNode( SpatialNode( X, SpatialNode::newLeaf(), SpatialNode::newLeaf(), min, max ) ), pixelCount( pixelCount )
+{
+	storingNode.right.leaf->directions->splitLeaf();
+	storingNode.left.leaf->directions->splitLeaf();
 }
 void ImageBuffer::recordSample( int iteration, int px, int py, float3 value )
 {
