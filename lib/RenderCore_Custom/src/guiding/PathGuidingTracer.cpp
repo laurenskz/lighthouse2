@@ -10,7 +10,7 @@ float3 PathGuidingTracer::trace( Ray& r )
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
 	{
-		return make_float3( 0.529, 0.808, 0.929 );
+		//		return make_float3( 0.529, 0.808, 0.929 );
 		return environment->skyColor( r.direction );
 	}
 	if ( intersection.mat.type == LIGHT )
@@ -55,6 +55,10 @@ void PathGuidingTracer::cameraChanged( TrainModule* trainModule, ImageBuffer* bu
 	module = trainModule;
 }
 PathGuidingTracer::PathGuidingTracer( Environment* environment, BRDFs* brdfs ) : environment( environment ), brdfs( brdfs ) {}
+void PathGuidingTracer::iterationStarted()
+{
+	imageBuffer->increaseCount( module->completedIterations );
+}
 Sample TrainModule::sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming )
 {
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
@@ -121,15 +125,8 @@ void ImageBuffer::recordSample( int iteration, int px, int py, float3 value )
 		pixels.push_back( new float3[width * height] );
 	}
 	pixels[iteration][px + py * width] += value;
-	if ( px >= width - 1 && py >= height - 1 )
-	{
-		counts[iteration]++;
-		if ( counts[iteration] >= counts[bestIteration] )
-		{
-			bestIteration = iteration;
-		}
-	}
 }
+
 float3 ImageBuffer::currentEstimate( int px, int py )
 {
 	return pixels[bestIteration][px + py * width] / static_cast<float>( counts[bestIteration] );
@@ -139,7 +136,7 @@ ImageBuffer::ImageBuffer( int width, int height ) : width( width ), height( heig
 	counts = new int[64];
 	for ( int i = 0; i < 64; ++i )
 	{
-		counts[i] = 1;
+		counts[i] = 0;
 	}
 }
 ImageBuffer::~ImageBuffer()
@@ -147,6 +144,14 @@ ImageBuffer::~ImageBuffer()
 	for ( auto& pixel : pixels )
 	{
 		delete pixel;
+	}
+}
+void ImageBuffer::increaseCount( int iteration )
+{
+	counts[iteration]++;
+	if ( counts[iteration] >= counts[bestIteration] )
+	{
+		bestIteration = iteration;
 	}
 }
 } // namespace lh2core

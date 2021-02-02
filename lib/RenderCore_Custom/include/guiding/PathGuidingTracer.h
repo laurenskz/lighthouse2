@@ -36,12 +36,13 @@ class ImageBuffer
   private:
 	int width, height;
 	std::vector<float3*> pixels{};
-	int* counts;
+	int* counts{};
 	int bestIteration = 0;
 
   public:
 	ImageBuffer( int width, int height );
 	void recordSample( int iteration, int px, int py, float3 value );
+	void increaseCount( int iteration );
 	float3 currentEstimate( int px, int py );
 	virtual ~ImageBuffer();
 };
@@ -60,5 +61,6 @@ class PathGuidingTracer
 	float3 trace( Ray& r );
 	float3 performSample( Ray& r, int px, int py );
 	void cameraChanged( TrainModule* trainModule, ImageBuffer* buffer );
+	void iterationStarted();
 };
 } // namespace lh2core

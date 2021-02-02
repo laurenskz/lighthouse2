@@ -126,6 +126,7 @@ float3 PathGuidingRenderer::render( const ViewPyramid& view, float x, float y, f
 void PathGuidingRenderer::beforeRender( const ViewPyramid& view, int width, int height )
 {
 	PixelRenderer::beforeRender( view, width, height );
+	tracer->iterationStarted();
 }
 void PathGuidingRenderer::cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height )
 {

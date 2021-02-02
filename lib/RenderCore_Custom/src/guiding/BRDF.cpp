@@ -12,6 +12,7 @@ BRDF* BRDFs::brdfForMat( const Material& material )
 	{
 		return new DualBRDF( new MicroFacetBRDF( material.microAlpha, material.kspec ), new DiffuseBRDF( material.color ), material.specularity );
 	}
+	throw std::invalid_argument( "Material not recognized" );
 }
 float3 DiffuseBRDF::sampleDirection( const float3& pos, const float3& normal, const float3& incoming ) const
 {
@@ -19,7 +20,7 @@ float3 DiffuseBRDF::sampleDirection( const float3& pos, const float3& normal, co
 }
 float DiffuseBRDF::probabilityOfOutgoingDirection( const float3& pos, const float3& normal, const float3& incoming, const float3& outgoing ) const
 {
-	return dot( normal, outgoing );
+	return dot( normal, outgoing ) / PI;
 }
 float3 DiffuseBRDF::lightTransport( const float3& pos, const float3& normal, const float3& incoming, const float3& outgoing ) const
 {

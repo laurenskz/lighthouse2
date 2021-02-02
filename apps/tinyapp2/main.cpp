@@ -39,10 +39,14 @@ void PrepareScene()
 	auto matId = renderer->FindMaterialID( "Texture" );
 	renderer->AddInstance( planeIdx, mat4::Scale( 4.8 ) );
 	HostMaterial* material = renderer->GetMaterial( matId );
-//	material->pbrtMaterialType = lighthouse2::MaterialType::CUSTOM_BSDF;
-	material->specular = 0.1;
+//	material->pbrtMaterialType = lighthouse2::MaterialType;
+	material->specular = 0.;
 	material->Ks = make_float3( 1 );
-	material->clearcoatGloss = 500;
+	material->clearcoatGloss = 50;
+
+	auto sky = new HostSkyDome();
+	sky->Load( "../demodata/sky_15.hdr" );
+	renderer->GetScene()->SetSkyDome( sky );
 	//	For path tracer
 	int lightMat = renderer->AddMaterial( make_float3( 30 ) );
 	HostMaterial* mat = renderer->GetMaterial( lightMat );
