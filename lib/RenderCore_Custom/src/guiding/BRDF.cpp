@@ -10,7 +10,6 @@ BRDF* BRDFs::brdfForMat( const Material& material )
 	}
 	if ( material.type == MICROFACET )
 	{
-		//		return new DiffuseBRDF( material.color );
 		return new DualBRDF( new MicroFacetBRDF( material.microAlpha, material.kspec ), new DiffuseBRDF( material.color ), material.specularity );
 	}
 	throw std::invalid_argument( "Material not recognized" );

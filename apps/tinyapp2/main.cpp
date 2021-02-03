@@ -44,15 +44,6 @@ void PrepareScene()
 	material->Ks = make_float3( 1 );
 	material->clearcoatGloss = 5000;
 
-	auto tetMat = renderer->AddMaterial( make_float3( 1 ) );
-	int quad = renderer->AddQuad( make_float3( 0, 0, 1 ), make_float3( 8.5, 3.5, -11 ), 1, 1, tetMat );
-	renderer->AddInstance( quad );
-	HostMaterial* reflMat = renderer->GetMaterial( tetMat );
-	reflMat->pbrtMaterialType = lighthouse2::MaterialType::CUSTOM_BSDF;
-	reflMat->specular = 1;
-	reflMat->Ks = make_float3( 1 );
-	reflMat->clearcoatGloss = 5;
-
 	auto sky = new HostSkyDome();
 	sky->Load( "../demodata/sky_15.hdr" );
 	renderer->GetScene()->SetSkyDome( sky );
