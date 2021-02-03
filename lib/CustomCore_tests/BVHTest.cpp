@@ -116,7 +116,6 @@ TEST_F( BVHFixture, Reorder )
 	const SplitPlane& plane = SplitPlane{ AXIS_X, -1 };
 	SplitResult result = evaluateSplitPlane( SplitPlane{ AXIS_Y, 1.5 }, *tree, 0 );
 	tree->reorder( plane, 0, count );
-	cout << "Left: " << result.lCount << ", right: " << result.rCount << endl;
 	for ( int i = 0; i < count; ++i )
 	{
 		cout << "Primitive index " << i << ": " << tree->primitiveIndices[i] << endl;

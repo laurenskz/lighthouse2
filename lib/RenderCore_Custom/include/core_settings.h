@@ -22,9 +22,12 @@
 
 #include "platform.h"
 # define GUIDED
+# define USE_GUIDING
+# define ITERATIONS 6
 //#define WHITTED
 //#define MULTITHREADED
 //#define ANTI_ALIASING
+#define LEARN_ALPHA
 using namespace lighthouse2;
 #include "core_api_base.h"
 

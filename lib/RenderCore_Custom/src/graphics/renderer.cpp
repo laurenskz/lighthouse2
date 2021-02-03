@@ -33,6 +33,10 @@ void SingleCoreRenderer::cameraChanged( const float3& geometryMin, const float3&
 {
 	pixelRenderer->cameraChanged( geometryMin, geometryMax, width, height );
 }
+bool SingleCoreRenderer::isDone()
+{
+	return pixelRenderer->isDone();
+}
 
 void plotColor( Bitmap* screen, int y, int x, const float3& fColor )
 {
@@ -77,6 +81,14 @@ MultiThreadedRenderer::MultiThreadedRenderer( PixelRenderer* pixelRenderer )
 	this->pixelRenderer = pixelRenderer;
 	auto const cpuCount = std::max( (uint)1, std::thread::hardware_concurrency() );
 	threadPool = new ctpl::thread_pool( cpuCount );
+}
+void MultiThreadedRenderer::cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height )
+{
+	pixelRenderer->cameraChanged( geometryMin, geometryMax, width, height );
+}
+bool MultiThreadedRenderer::isDone()
+{
+	return pixelRenderer->isDone();
 }
 float3 AntiAliasedRenderer::render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection )
 {
@@ -139,5 +151,9 @@ void PathGuidingRenderer::afterRender()
 {
 	PixelRenderer::afterRender();
 	tracer->iterationFinished();
+}
+bool PathGuidingRenderer::isDone()
+{
+	return tracer->isDone();
 }
 } // namespace lh2core

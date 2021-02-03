@@ -1,4 +1,5 @@
 #include "guiding/PathGuidingTracer.h"
+#include <core_settings.h>
 
 namespace lh2core
 {
@@ -10,7 +11,6 @@ float3 PathGuidingTracer::trace( Ray& r )
 	auto intersection = environment->intersect( r );
 	if ( !intersection.hitObject )
 	{
-		//		return make_float3( 0.529, 0.808, 0.929 );
 		return environment->skyColor( r.direction );
 	}
 	if ( intersection.mat.type == LIGHT )
@@ -18,15 +18,12 @@ float3 PathGuidingTracer::trace( Ray& r )
 		return intersection.mat.color;
 	}
 	auto brdf = brdfs->brdfForMat( intersection.mat );
+
 	const Sample sample = module->sampleDirection( intersection, *brdf, r.direction );
-	if ( sample.combinedPdf < 1e-7 )
+	if ( sample.combinedPdf < 1e-9 )
 	{
 		return BLACK;
 	}
-	//	if ( !brdf->directionMayResultInTransport( intersection.location, intersection.normal, r.direction, sample.direction ) )
-	//	{
-	//		return BLACK;
-	//	}
 	Ray newRay = Ray{ intersection.location, sample.direction };
 	float foreShortening = dot( intersection.normal, sample.direction );
 	if ( foreShortening <= 0 )
@@ -42,10 +39,6 @@ float3 PathGuidingTracer::trace( Ray& r )
 	const float3& result = foreShortening *
 						   ( lightSample / sample.combinedPdf ) *
 						   lightTransport;
-	if ( !isfinite( result.x ) )
-	{
-		cout << ":(";
-	}
 	return result;
 }
 float3 PathGuidingTracer::performSample( Ray& r, int px, int py )
@@ -68,12 +61,17 @@ void PathGuidingTracer::iterationFinished()
 	imageBuffer->increaseCount( module->currentIteration );
 	module->closeIteration();
 }
+bool PathGuidingTracer::isDone()
+{
+	return module->currentIteration == ( ITERATIONS + 1 );
+}
 Sample TrainModule::sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming )
 {
 	SpatialLeaf* leaf = guidingNode.lookup( intersection.location );
-	//	float alpha = currentIteration == 0 ? 1 : leaf->brdfProb();
-	float alpha = currentIteration == 0 ? 1 : 0.5;
-	//	alpha = 1;
+	float alpha = currentIteration == 0 ? 1 : leaf->brdfProb();
+#ifndef USE_GUIDING
+	alpha = 1;
+#endif
 	float3 dir{};
 	if ( randFloat() <= alpha )
 	{
@@ -96,14 +94,17 @@ Sample TrainModule::sampleDirection( const Intersection& intersection, const BRD
 
 void TrainModule::train( const float3& position, const Sample& sample, float radianceEstimate, float foreshortening, float lightTransport )
 {
-	if ( isnan( radianceEstimate ) )
-	{
-		cout << ":(" << endl;
-	}
+	lock.lock();
 	SpatialLeaf* leaf = storingNode.lookup( position );
 	leaf->incrementVisits();
 	leaf->directions->depositEnergy( sample.direction, radianceEstimate );
-	leaf->misOptimizationStep( position, sample, radianceEstimate, foreshortening, lightTransport );
+#ifdef LEARN_ALPHA
+	if ( currentIteration >= 1 )
+	{
+		leaf->misOptimizationStep( position, sample, radianceEstimate, foreshortening, lightTransport );
+	}
+#endif
+	lock.unlock();
 }
 void TrainModule::
 	completeSample()
@@ -132,11 +133,13 @@ void TrainModule::closeIteration()
 }
 void ImageBuffer::recordSample( int iteration, int px, int py, float3 value )
 {
+	lock.lock();
 	if ( pixels.size() <= iteration )
 	{
 		pixels.push_back( new float3[width * height] );
 	}
 	pixels[iteration][px + py * width] += value;
+	lock.unlock();
 }
 
 float3 ImageBuffer::currentEstimate( int px, int py )

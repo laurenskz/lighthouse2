@@ -20,6 +20,7 @@ class TrainModule
 	int completedSamples = 0;
 	int samplesPerPixel = 1;
 	int pixelCount;
+	std::mutex lock;
 
   public:
 	int currentIteration = 0;
@@ -27,7 +28,8 @@ class TrainModule
 	void train( const float3& position, const Sample& sample, float flux, float foreshortening, float lightTransport );
 	void completeSample();
 	void closeIteration();
-	TrainModule( const float3& min, const float3& max, int pixelCount );;
+	TrainModule( const float3& min, const float3& max, int pixelCount );
+	;
 };
 
 class ImageBuffer
@@ -37,6 +39,7 @@ class ImageBuffer
 	std::vector<float3*> pixels{};
 	int* counts{};
 	int bestIteration = 0;
+	std::mutex lock;
 
   public:
 	ImageBuffer( int width, int height );
@@ -62,5 +65,6 @@ class PathGuidingTracer
 	void cameraChanged( TrainModule* trainModule, ImageBuffer* buffer );
 	void iterationStarted();
 	void iterationFinished();
+	bool isDone();
 };
 } // namespace lh2core

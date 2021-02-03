@@ -21,6 +21,7 @@ class PixelRenderer
 	virtual void beforeRender( const ViewPyramid& view, int width, int height ){};
 	virtual void afterRender(){};
 	virtual void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ){};
+	virtual bool isDone(){return false;}
 };
 
 class PathGuidingRenderer : public PixelRenderer
@@ -36,6 +37,7 @@ class PathGuidingRenderer : public PixelRenderer
 	void beforeRender( const ViewPyramid& view, int width, int height ) override;
 	void afterRender() override;
 	void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ) override;
+	bool isDone() override;
 };
 
 class TestPixelRenderer : public PixelRenderer
@@ -50,6 +52,7 @@ class Renderer
   public:
 	virtual void renderTo( const ViewPyramid& view, Bitmap* screen ) = 0;
 	virtual void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ){};
+	virtual bool isDone(){return false;}
 };
 
 class BasePixelRenderer : public PixelRenderer
@@ -95,6 +98,7 @@ class SingleCoreRenderer : public Renderer
 	explicit SingleCoreRenderer( PixelRenderer* pixelRenderer ) : pixelRenderer( pixelRenderer ){};
 	void renderTo( const ViewPyramid& view, Bitmap* screen ) override;
 	void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ) override;
+	bool isDone() override;
 
   private:
 	PixelRenderer* pixelRenderer;
@@ -105,6 +109,8 @@ class MultiThreadedRenderer : public Renderer
   public:
 	explicit MultiThreadedRenderer( PixelRenderer* pixelRenderer );
 	void renderTo( const ViewPyramid& view, Bitmap* screen ) override;
+	void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ) override;
+	bool isDone() override;
 
   private:
 	ctpl::thread_pool* threadPool;

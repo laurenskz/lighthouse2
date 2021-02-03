@@ -35,7 +35,11 @@ void RenderCore::Init()
 #ifdef GUIDED
 	rayTracer = new PathGuidingTracer( environment, new BRDFs() );
 	PixelRenderer* baseRenderer = new PathGuidingRenderer( rayTracer );
+#ifdef MULTITHREADED
+	renderer = new MultiThreadedRenderer( baseRenderer );
+#else
 	renderer = new SingleCoreRenderer( baseRenderer );
+#endif
 #else
 	PathTracer* pTracer = new PathTracer( environment, lighting );
 	renderer = new MultiThreadedRenderer( new AveragingPixelRenderer( new BasePixelRenderer( pTracer ) ) );
@@ -102,12 +106,21 @@ void RenderCore::Render( const ViewPyramid& view, const Convergence converge, bo
 		const AABB& bounds = intersector->getBounds();
 		renderer->cameraChanged( bounds.min, bounds.max, screen->width, screen->height );
 	}
+
 	lastRenderPos = view.pos;
 	screen->Clear();
-	renderer->renderTo( view, screen );
-	// copy pixel buffer to OpenGL render target texture
-	glBindTexture( GL_TEXTURE_2D, targetTextureID );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, screen->width, screen->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screen->pixels );
+	if ( !renderer->isDone() )
+	{
+		renderer->renderTo( view, screen );
+		// copy pixel buffer to OpenGL render target texture
+		glBindTexture( GL_TEXTURE_2D, targetTextureID );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, screen->width, screen->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, screen->pixels );
+	}
+	else
+	{
+		std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+		cout << "Done rendering" << endl;
+	}
 }
 
 void RenderCore::SetTextures( const CoreTexDesc* tex, const int textureCount )

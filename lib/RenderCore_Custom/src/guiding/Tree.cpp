@@ -200,10 +200,6 @@ QuadTree* QuadTree::getChild( const float2& cylindrical )
 }
 void QuadTree::depositEnergy( const float3& direction, float receivedEnergy )
 {
-	if ( !isfinite( receivedEnergy ) )
-	{
-		cout << "End";
-	}
 	float2 cylindrical = directionToCylindrical( direction );
 	QuadTree* current = this;
 	while ( true )
@@ -229,17 +225,13 @@ float QuadTree::pdf( float2 cylindrical )
 	auto child = getChild( cylindrical );
 	if ( flux < 1e-7 )
 	{
-		return 4 * child->pdf( cylindrical );
+		return  child->pdf( cylindrical );
 	}
 	float beta = 4 * child->flux / ( ne->flux + nw->flux + se->flux + sw->flux );
 	return beta * child->pdf( cylindrical );
 }
 void QuadTree::splitLeaf()
 {
-	if ( isnan( flux ) )
-	{
-		cout << ":(" << endl;
-	}
 	float2 middle{ topLeft.x + ( bottomRight.x - topLeft.x ) / 2, bottomRight.y + ( topLeft.y - bottomRight.y ) / 2 };
 	xPlane = middle.x;
 	yPlane = middle.y;
@@ -252,10 +244,6 @@ void QuadTree::splitLeaf()
 QuadTree::QuadTree( const QuadTree& other )
 {
 	flux = other.flux;
-	if ( isnan( flux ) )
-	{
-		cout << "End";
-	}
 	xPlane = other.xPlane;
 	yPlane = other.yPlane;
 	topLeft = other.topLeft;
@@ -311,7 +299,7 @@ void SpatialLeaf::misOptimizationStep( const float3& position, const Sample& sam
 {
 	float productEstimate = radianceEstimate * foreshortening * lightTransport;
 	float alpha = this->brdfProb();
-	float deltaAlpha = -productEstimate * ( sample.bsdfPdf - sample.combinedPdf ) / ( sample.guidingPdf * sample.combinedPdf );
+	float deltaAlpha = -productEstimate * ( sample.bsdfPdf - sample.guidingPdf ) / ( sample.combinedPdf * sample.combinedPdf );
 	float deltaTheta = deltaAlpha * alpha * ( 1 - alpha );
 	float regGradient = regularization * theta;
 	adamStep( deltaTheta + regGradient );
@@ -319,10 +307,11 @@ void SpatialLeaf::misOptimizationStep( const float3& position, const Sample& sam
 void SpatialLeaf::adamStep( float deltaTheta )
 {
 	t++;
-	float l = lr * sqrt( 1 - pow( beta1, t ) / ( 1 - pow( beta2, t ) ) ); //Calculate learning rate for iteration
+	float l = lr * sqrt( (1 - pow( beta1, t )) / ( 1 - pow( beta2, t ) ) ); //Calculate learning rate for iteration
 	m = beta1 * m + ( 1 - beta1 ) * deltaTheta;							  //Update first moment
 	v = beta2 * v + ( 1 - beta2 ) * deltaTheta * deltaTheta;			  //Update second moment
-	theta = theta - ( l * m ) / ( sqrt( v ) + eps );					  //Apply moments to the learned parameter
+	float dTheta = ( l * m ) / ( sqrt( v ) + eps );
+	theta = theta - dTheta;					  //Apply moments to the learned parameter
 }
 float SpatialLeaf::brdfProb() const
 {
@@ -340,10 +329,6 @@ SpatialLeaf::SpatialLeaf( const SpatialLeaf& other )
 	this->eps = other.eps;
 	this->lr = other.lr;
 	this->regularization = other.regularization;
-	if ( isnan( other.directions->flux ) )
-	{
-		cout << "End";
-	}
 	this->directions = new QuadTree( *other.directions );
 }
 } // namespace lh2core

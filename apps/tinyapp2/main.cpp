@@ -40,18 +40,27 @@ void PrepareScene()
 	renderer->AddInstance( planeIdx, mat4::Scale( 4.8 ) );
 	HostMaterial* material = renderer->GetMaterial( matId );
 	material->pbrtMaterialType = lighthouse2::MaterialType::CUSTOM_BSDF;
-	material->specular = 0.5;
+	material->specular = 0.4;
 	material->Ks = make_float3( 1 );
-	material->clearcoatGloss = 50;
+	material->clearcoatGloss = 5000;
+
+	auto tetMat = renderer->AddMaterial( make_float3( 1 ) );
+	int quad = renderer->AddQuad( make_float3( 0, 0, 1 ), make_float3( 8.5, 3.5, -11 ), 1, 1, tetMat );
+	renderer->AddInstance( quad );
+	HostMaterial* reflMat = renderer->GetMaterial( tetMat );
+	reflMat->pbrtMaterialType = lighthouse2::MaterialType::CUSTOM_BSDF;
+	reflMat->specular = 1;
+	reflMat->Ks = make_float3( 1 );
+	reflMat->clearcoatGloss = 5;
 
 	auto sky = new HostSkyDome();
 	sky->Load( "../demodata/sky_15.hdr" );
 	renderer->GetScene()->SetSkyDome( sky );
 	//	For path tracer
-	int lightMat = renderer->AddMaterial( make_float3( 30 ) );
+	int lightMat = renderer->AddMaterial( make_float3( 100 ) );
 	HostMaterial* mat = renderer->GetMaterial( lightMat );
 	mat->pbrtMaterialType = MaterialType::PBRT_UBER;
-	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 0, 2.5f, 0 ), 0.9f, 0.9f, lightMat );
+	int lightQuad = renderer->AddQuad( make_float3( 0, -1, 0 ), make_float3( 8, 4.5f, -10 ), 0.9f, 0.9f, lightMat );
 	renderer->AddInstance( lightQuad );
 	int mesh = renderer->AddMesh( "../demodata/spaceman/untitled.obj" );
 	renderer->AddInstance( mesh, mat4::Translate( -1.5, 0, 0 ) * mat4::Scale( 0.3 ) );
