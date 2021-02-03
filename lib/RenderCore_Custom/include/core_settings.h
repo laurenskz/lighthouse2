@@ -22,7 +22,7 @@
 
 #include "platform.h"
 # define GUIDED
-# define USE_GUIDING
+//# define USE_GUIDING
 # define ITERATIONS 6
 //#define WHITTED
 #define MULTITHREADED
