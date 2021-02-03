@@ -25,7 +25,7 @@
 # define USE_GUIDING
 # define ITERATIONS 6
 //#define WHITTED
-//#define MULTITHREADED
+#define MULTITHREADED
 //#define ANTI_ALIASING
 #define LEARN_ALPHA
 using namespace lighthouse2;
