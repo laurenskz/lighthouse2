@@ -22,12 +22,11 @@ class TrainModule
 	int pixelCount;
 
   public:
-	int completedIterations = 0;
+	int currentIteration = 0;
 	Sample sampleDirection( const Intersection& intersection, const BRDF& brdf, const float3& incoming );
 	void train( const float3& position, const Sample& sample, float flux, float foreshortening, float lightTransport );
-	void increaseSamples() { completedSamples++; }
 	void completeSample();
-	[[nodiscard]] inline bool iterationIsFinished() const;
+	void closeIteration();
 	TrainModule( const float3& min, const float3& max, int pixelCount );;
 };
 
@@ -62,5 +61,6 @@ class PathGuidingTracer
 	float3 performSample( Ray& r, int px, int py );
 	void cameraChanged( TrainModule* trainModule, ImageBuffer* buffer );
 	void iterationStarted();
+	void iterationFinished();
 };
 } // namespace lh2core

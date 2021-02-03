@@ -200,6 +200,10 @@ QuadTree* QuadTree::getChild( const float2& cylindrical )
 }
 void QuadTree::depositEnergy( const float3& direction, float receivedEnergy )
 {
+	if ( !isfinite( receivedEnergy ) )
+	{
+		cout << "End";
+	}
 	float2 cylindrical = directionToCylindrical( direction );
 	QuadTree* current = this;
 	while ( true )
@@ -232,6 +236,10 @@ float QuadTree::pdf( float2 cylindrical )
 }
 void QuadTree::splitLeaf()
 {
+	if ( isnan( flux ) )
+	{
+		cout << ":(" << endl;
+	}
 	float2 middle{ topLeft.x + ( bottomRight.x - topLeft.x ) / 2, bottomRight.y + ( topLeft.y - bottomRight.y ) / 2 };
 	xPlane = middle.x;
 	yPlane = middle.y;
@@ -244,6 +252,10 @@ void QuadTree::splitLeaf()
 QuadTree::QuadTree( const QuadTree& other )
 {
 	flux = other.flux;
+	if ( isnan( flux ) )
+	{
+		cout << "End";
+	}
 	xPlane = other.xPlane;
 	yPlane = other.yPlane;
 	topLeft = other.topLeft;
@@ -284,17 +296,6 @@ void QuadTree::splitLeafsAbove( float fluxPercentage )
 	float fluxThreshold = fluxPercentage * flux;
 	splitAllAbove( fluxThreshold );
 }
-void QuadTree::scaleFlux( float scale )
-{
-	flux *= scale;
-	if ( !isLeaf() )
-	{
-		nw->scaleFlux( scale );
-		ne->scaleFlux( scale );
-		sw->scaleFlux( scale );
-		se->scaleFlux( scale );
-	}
-}
 void QuadTree::resetData()
 {
 	flux = 0;
@@ -325,7 +326,6 @@ void SpatialLeaf::adamStep( float deltaTheta )
 }
 float SpatialLeaf::brdfProb() const
 {
-	return 0;
 	return 1.f / ( 1.f + exp( -theta ) );
 }
 SpatialLeaf::SpatialLeaf( const SpatialLeaf& other )
@@ -340,6 +340,10 @@ SpatialLeaf::SpatialLeaf( const SpatialLeaf& other )
 	this->eps = other.eps;
 	this->lr = other.lr;
 	this->regularization = other.regularization;
+	if ( isnan( other.directions->flux ) )
+	{
+		cout << "End";
+	}
 	this->directions = new QuadTree( *other.directions );
 }
 } // namespace lh2core

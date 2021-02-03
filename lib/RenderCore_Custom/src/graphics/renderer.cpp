@@ -27,6 +27,7 @@ void SingleCoreRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 			plotColor( screen, y, x, fColor );
 		}
 	}
+	pixelRenderer->afterRender();
 }
 void SingleCoreRenderer::cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height )
 {
@@ -54,6 +55,7 @@ void MultiThreadedRenderer::renderTo( const ViewPyramid& view, Bitmap* screen )
 	{
 		result.get();
 	}
+	pixelRenderer->afterRender();
 }
 
 void MultiThreadedRenderer::renderRows( const ViewPyramid& view, Bitmap* screen, int start, uint end )
@@ -133,4 +135,9 @@ void PathGuidingRenderer::cameraChanged( const float3& geometryMin, const float3
 	tracer->cameraChanged( new TrainModule( geometryMin, geometryMax, width * height ), new ImageBuffer( width, height ) );
 }
 PathGuidingRenderer::PathGuidingRenderer( PathGuidingTracer* tracer ) : tracer( tracer ) {}
+void PathGuidingRenderer::afterRender()
+{
+	PixelRenderer::afterRender();
+	tracer->iterationFinished();
+}
 } // namespace lh2core

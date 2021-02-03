@@ -47,7 +47,6 @@ class QuadTree
 	void splitLeaf();
 	void splitAllAbove( float fluxThreshold );
 	void splitLeafsAbove( float fluxPercentage );
-	void scaleFlux( float scale );
 	void resetData();
 
   private:

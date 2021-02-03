@@ -19,6 +19,7 @@ class PixelRenderer
   public:
 	virtual float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) = 0;
 	virtual void beforeRender( const ViewPyramid& view, int width, int height ){};
+	virtual void afterRender(){};
 	virtual void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ){};
 };
 
@@ -33,6 +34,7 @@ class PathGuidingRenderer : public PixelRenderer
   public:
 	float3 render( const ViewPyramid& view, float x, float y, float width, float height, Ray& ray, Intersection& intersection ) override;
 	void beforeRender( const ViewPyramid& view, int width, int height ) override;
+	void afterRender() override;
 	void cameraChanged( const float3& geometryMin, const float3& geometryMax, int width, int height ) override;
 };
 
